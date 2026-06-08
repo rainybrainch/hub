@@ -15,7 +15,8 @@
       --green: #4CAF7D;
       --red: #E8354A;
       --purple: #9B6DD6;
-      --dark: #1A1A2E;
+      --dark: #0d1117;
+      --dark2: #111827;
       --white: #FFFFFF;
       --cream: #FFFDF5;
     }
@@ -30,9 +31,22 @@
       padding: 56px 20px 80px;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── Rain Canvas ── */
+    #rain-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
     }
 
     .container {
+      position: relative;
+      z-index: 1;
       max-width: 720px;
       margin: 0 auto;
     }
@@ -98,7 +112,8 @@
       flex-direction: column;
       gap: 10px;
       padding: 18px 16px;
-      background: var(--cream);
+      background: rgba(255, 253, 245, 0.92);
+      backdrop-filter: blur(8px);
       border: 3px solid var(--dark);
       border-radius: 18px;
       text-decoration: none;
@@ -112,18 +127,17 @@
       transform: translate(-2px, -2px);
     }
 
-    /* Per-card accent colors */
-    .card-sky  { box-shadow: 4px 4px 0 var(--sky);    border-color: var(--dark); }
-    .card-gold { box-shadow: 4px 4px 0 var(--gold-dark); }
-    .card-green{ box-shadow: 4px 4px 0 var(--green);  }
-    .card-red  { box-shadow: 4px 4px 0 var(--red);    }
+    .card-sky   { box-shadow: 4px 4px 0 var(--sky); }
+    .card-gold  { box-shadow: 4px 4px 0 var(--gold-dark); }
+    .card-green { box-shadow: 4px 4px 0 var(--green); }
+    .card-red   { box-shadow: 4px 4px 0 var(--red); }
     .card-purple{ box-shadow: 4px 4px 0 var(--purple); }
 
-    .card-sky:hover   { box-shadow: 6px 6px 0 var(--sky);     }
-    .card-gold:hover  { box-shadow: 6px 6px 0 var(--gold-dark); }
-    .card-green:hover { box-shadow: 6px 6px 0 var(--green);   }
-    .card-red:hover   { box-shadow: 6px 6px 0 var(--red);     }
-    .card-purple:hover{ box-shadow: 6px 6px 0 var(--purple);  }
+    .card-sky:hover    { box-shadow: 6px 6px 0 var(--sky); }
+    .card-gold:hover   { box-shadow: 6px 6px 0 var(--gold-dark); }
+    .card-green:hover  { box-shadow: 6px 6px 0 var(--green); }
+    .card-red:hover    { box-shadow: 6px 6px 0 var(--red); }
+    .card-purple:hover { box-shadow: 6px 6px 0 var(--purple); }
 
     .card-icon {
       font-size: 28px;
@@ -151,7 +165,6 @@
       color: #999;
     }
 
-    /* Footer */
     footer {
       text-align: center;
       margin-top: 60px;
@@ -162,6 +175,9 @@
   </style>
 </head>
 <body>
+
+<canvas id="rain-canvas"></canvas>
+
 <div class="container">
 
   <header class="header">
@@ -257,5 +273,66 @@
   <footer>RAINYBRAINCH · 2026</footer>
 
 </div>
+
+<script>
+  const canvas = document.getElementById('rain-canvas');
+  const ctx = canvas.getContext('2d');
+
+  let drops = [];
+  const COUNT = 120;
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function initDrops() {
+    drops = [];
+    for (let i = 0; i < COUNT; i++) {
+      drops.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        len: 10 + Math.random() * 20,
+        speed: 1.2 + Math.random() * 2.4,
+        opacity: 0.08 + Math.random() * 0.18,
+        width: 0.6 + Math.random() * 0.8,
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const d of drops) {
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - d.len * 0.15, d.y + d.len);
+      ctx.strokeStyle = `rgba(140, 200, 240, ${d.opacity})`;
+      ctx.lineWidth = d.width;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      d.y += d.speed;
+      d.x -= d.speed * 0.15;
+
+      if (d.y - d.len > canvas.height || d.x < -20) {
+        d.x = Math.random() * (canvas.width + 60);
+        d.y = -d.len;
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  initDrops();
+  draw();
+
+  window.addEventListener('resize', () => {
+    resize();
+    initDrops();
+  });
+</script>
+
 </body>
 </html>
