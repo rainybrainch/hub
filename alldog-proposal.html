@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>R13 窶・繧√＄縺ｸ縺ｮ謠先｡・/title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Noto+Sans+JP:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #07070e;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.07);
+    --text: rgba(255,255,255,0.92);
+    --dim: rgba(255,255,255,0.45);
+    --faint: rgba(255,255,255,0.18);
+    --violet: #9b72f7;
+    --rose: #f472b6;
+    --amber: #f0a944;
+    --green: #4ade80;
+    --blue: #3a6fc9;
+  }
+  html, body { width:100%; height:100%; background:var(--bg); color:var(--text);
+    font-family:'Noto Sans JP',sans-serif; font-weight:300; overflow:hidden; user-select:none; }
+  #rain { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.1; }
+  #deck { position:fixed; inset:0; z-index:1; }
+
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:5vw 7vw; opacity:0; pointer-events:none;
+    transition:opacity 0.5s ease, transform 0.5s ease;
+    transform:translateY(14px);
+  }
+  .slide.active { opacity:1; pointer-events:auto; transform:translateY(0); }
+  .slide.exit   { opacity:0; transform:translateY(-14px); }
+
+  .eyebrow { font-family:'Cormorant Garamond',serif; font-size:clamp(0.55rem,1vw,0.66rem);
+    letter-spacing:0.28em; color:var(--violet); margin-bottom:1.2rem; text-transform:uppercase; }
+  h1 { font-family:'Noto Serif JP',serif; font-weight:300; font-size:clamp(1.8rem,4.5vw,3.2rem);
+    line-height:1.3; letter-spacing:0.05em; margin-bottom:0.8rem; }
+  h2 { font-family:'Noto Serif JP',serif; font-weight:300; font-size:clamp(1.3rem,2.8vw,2.2rem);
+    line-height:1.35; letter-spacing:0.05em; margin-bottom:0.8rem; }
+  p { font-size:clamp(0.76rem,1.3vw,0.92rem); line-height:1.9; color:var(--dim); }
+  .rule { width:36px; height:1px; background:var(--violet); opacity:0.5; margin:1rem 0; }
+  .rule.c { margin-left:auto; margin-right:auto; }
+  .hla { color:var(--amber); } .hlv { color:var(--violet); } .hlr { color:var(--rose); }
+  .hlg { color:var(--green); } .hlb { color:var(--blue); } .hl { color:var(--text); font-weight:400; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; position:relative; overflow:hidden; }
+  .card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent,var(--c,var(--violet)),transparent); opacity:0.35; }
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+  .g4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0.8rem; }
+
+  /* Nav */
+  #nav { position:fixed; bottom:1.6rem; left:50%; transform:translateX(-50%);
+    z-index:100; display:flex; align-items:center; gap:0.8rem; }
+  .nbtn { width:2.4rem; height:2.4rem; border-radius:50%;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    color:var(--dim); font-size:0.85rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.2s; backdrop-filter:blur(8px); }
+  .nbtn:hover { background:rgba(155,114,247,0.14); color:var(--violet); border-color:rgba(155,114,247,0.35); }
+  #pager { display:flex; gap:0.3rem; align-items:center; }
+  .dot { width:5px; height:5px; border-radius:50%; background:var(--faint); transition:all 0.3s; cursor:pointer; }
+  .dot.on { background:var(--violet); width:14px; border-radius:3px; }
+
+  @keyframes fi { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+  .active .a { animation:fi 0.6s ease forwards; }
+  .active .d1 { animation-delay:.08s; opacity:0; }
+  .active .d2 { animation-delay:.2s;  opacity:0; }
+  .active .d3 { animation-delay:.32s; opacity:0; }
+  .active .d4 { animation-delay:.44s; opacity:0; }
+  .active .d5 { animation-delay:.56s; opacity:0; }
+  .active .d6 { animation-delay:.68s; opacity:0; }
+
+  /* ===== S1 繧ｫ繝舌・ ===== */
+  #s1 { padding:0; overflow:hidden; }
+  .cover-wrap { display:flex; width:100%; height:100%; align-items:stretch; }
+  .cover-img-side { flex-shrink:0; width:clamp(200px,35vw,440px); position:relative; overflow:hidden;
+    background:linear-gradient(135deg,#0a0a18,#060610); }
+  .cover-img-side img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.92; }
+  .cover-img-side::after { content:''; position:absolute; inset:0;
+    background:linear-gradient(to right, transparent 55%, var(--bg) 100%); pointer-events:none; }
+  /* 蜿ｳ驟咲ｽｮ逕ｨ */
+  .cover-img-right { flex-shrink:0; width:clamp(200px,35vw,440px); position:relative; overflow:hidden;
+    background:linear-gradient(135deg,#0a0a18,#060610); order:2; }
+  .cover-img-right img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.92; }
+  .cover-img-right::after { content:''; position:absolute; inset:0;
+    background:linear-gradient(to left, transparent 55%, var(--bg) 100%); pointer-events:none; }
+  .cover-text { flex:1; display:flex; flex-direction:column; justify-content:center; padding:4vw 5vw 4vw 3vw; }
+  .cover-text.rpad { padding:4vw 3vw 4vw 5vw; order:1; }
+  .cover-org  { font-size:0.58rem; letter-spacing:0.28em; color:rgba(58,111,201,0.7); text-transform:uppercase; margin-bottom:0.5rem; }
+  .cover-name { font-family:'Noto Serif JP',serif; font-weight:300;
+    font-size:clamp(2rem,4.5vw,3.4rem); line-height:1.2; letter-spacing:0.05em; color:var(--text); margin-bottom:0.4rem; }
+  .cover-en   { font-family:'Cormorant Garamond',serif; font-size:clamp(0.9rem,1.8vw,1.3rem);
+    color:rgba(58,111,201,0.7); letter-spacing:0.2em; margin-bottom:1.4rem; }
+  .cover-div  { width:30px; height:1px; background:rgba(58,111,201,0.4); margin-bottom:1.4rem; }
+  .cover-ask  { font-family:'Noto Serif JP',serif; font-weight:300;
+    font-size:clamp(1.1rem,2.2vw,1.7rem); line-height:1.55; letter-spacing:0.04em; color:rgba(255,255,255,0.85); margin-bottom:0.8rem; }
+  .cover-sub  { font-size:clamp(0.7rem,1.15vw,0.82rem); color:var(--dim); line-height:1.8; }
+  .cover-from { margin-top:1.8rem; font-size:0.55rem; letter-spacing:0.22em; color:var(--faint); text-transform:uppercase; }
+
+  @media (max-width:640px) {
+    .cover-img-side { display:none; }
+    .cover-text { padding:2rem; }
+    .g2,.g4 { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<canvas id="rain"></canvas>
+<div id="deck">
+
+  <!-- S1: 繧ｫ繝舌・ -->
+  <div class="slide active" id="s1">
+    <!-- 蜿ｳ蛛ｴ: 豁｣髱｢逕ｻ蜒・(mix-blend-mode:multiply縺ｧ逋ｽ謚懊″) -->
+    <div class="a d2" style="position:absolute; right:0; top:0; width:clamp(200px,32vw,420px); height:100%; overflow:hidden; pointer-events:none; display:flex; align-items:center; justify-content:center;">
+      <img src="alldog-imgs/alldog-front.png" style="width:85%; object-fit:contain; object-position:top center; mix-blend-mode:multiply; display:block;"
+        onerror="this.style.display='none'" />
+      <div style="position:absolute; inset:0; background:linear-gradient(to right, var(--bg) 0%, transparent 30%, transparent 70%, var(--bg) 100%);"></div>
+    </div>
+    <div class="cover-wrap">
+      <div class="cover-img-side a d1">
+        <img src="alldog-imgs/alldog-samune.png" alt="繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ"
+          onerror="this.src='alldog-imgs/alldog-vroid-3.png'" />
+      </div>
+      <div class="cover-text">
+        <p class="cover-org a d2">RAINYBRAIN 窶・VTuber莠句漁謇縲軍13縲・/p>
+        <h1 class="cover-name a d3">繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ</h1>
+        <p class="cover-en a d3">ALL DOG / GODLLA</p>
+        <div class="cover-div a d4"></div>
+        <p class="cover-ask a d4">縺薙・繧ｭ繝｣繝ｩ縺ｮ螢ｰ蜆ｪ縺ｨ縺励※縲・br>荳邱偵↓繧・ｉ縺ｪ縺・°縲・/p>
+        <p class="cover-sub a d5">
+          遘√◆縺｡縺ｯVTuber莠句漁謇繧堤ｫ九■荳翫￡繧医≧縺ｨ縺励※繧九・br>
+          繧ｭ繝｣繝ｩ繧ゅΔ繝・Ν繧ら腸蠅・ｂ謠・▲縺ｦ繧九・br>
+          縺ゅ→縺ｯ縺阪∩縺ｮ螢ｰ縺縺代・        </p>
+        <p class="cover-from a d6">from 譛咲欧・医・縺上ｍ縺・ｼ俄・2026</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: RAINYBRAIN邏ｹ莉・窶・逕ｻ蜒丞承 -->
+  <div class="slide" id="s2" style="padding:0; overflow:hidden;">
+    <div class="cover-wrap">
+      <div class="cover-text rpad a d4">
+        <p class="eyebrow a d1">The Project</p>
+        <h2 class="a d2">RAINYBRAIN 縺ｨ縺・≧繝薙ず繝阪せ</h2>
+        <div class="rule a d3"></div>
+        <p style="font-size:0.84rem; color:rgba(255,255,255,0.72); line-height:2; margin-bottom:1.1rem;">
+          <span class="hlv">RAINYBRAIN</span>縺ｯ縲√∴繧薙□縺ｨ譛咲欧縺ｮ2莠ｺ縺ｧ蜍輔°縺励※縺・ｋ縲・br>
+          迴ｾ蝨ｨ縺ｯ邨梧ｸ医・謾ｿ豐ｻ繝ｻ謚戊ｳ・・謨呵ご繧ｳ繝ｳ繝・Φ繝・ｒ霆ｸ縺ｫ縺励◆繝薙ず繝阪せ縺縲・br>
+          縺昴％縺九ｉ譁ｰ縺励￥遶九■荳翫￡繧九・縺後√け繝ｪ繧ｨ繧､繝・ぅ繝紋ｺ句漁謇 <span class="hla">R13</span>縲・        </p>
+        <div style="background:rgba(240,169,68,0.06); border:1px solid rgba(240,169,68,0.25); border-radius:11px; padding:0.9rem 1.1rem; margin-bottom:0.8rem;" class="a d5">
+          <p style="font-size:0.6rem; letter-spacing:0.15em; color:var(--amber); margin-bottom:0.45rem;">R13 縺ｧ繧・ｊ縺溘＞縺薙→</p>
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <span style="font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.25); color:var(--amber);">髻ｳ讌ｽ</span>
+            <span style="font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.25); color:var(--amber);">貍ｫ逕ｻ</span>
+            <span style="font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.25); color:var(--amber);">繧ｲ繝ｼ繝</span>
+            <span style="font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.25); color:var(--amber);">VTuber</span>
+            <span style="font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.25); color:var(--amber);">繧｢繝九Γ蛻ｶ菴・/span>
+          </div>
+        </div>
+        <div style="background:rgba(155,114,247,0.06); border:1px solid rgba(155,114,247,0.2); border-radius:11px; padding:0.8rem 1.1rem;" class="a d6">
+          <p style="font-size:0.6rem; letter-spacing:0.15em; color:var(--violet); margin-bottom:0.3rem;">R13 VTuber莠句漁謇</p>
+          <p style="font-size:0.76rem; color:rgba(255,255,255,0.65); line-height:1.75;">
+            縺昴・譛蛻昴・蜍輔″縺ｨ縺励※縲〃Tuber莠句漁謇繧堤ｫ九■荳翫￡繧九・br>
+            繧｢繝舌ち繝ｼ縺ｯ菴懈・貂医∩縲ょ｣ｰ蜆ｪ縺ｨ縺励※蜿ょ刈縺吶ｋ莠ｺ繧呈爾縺励※縺・ｋ縲・          </p>
+        </div>
+      </div>
+      <div class="cover-img-right a d1">
+        <img src="alldog-imgs/alldog-vroid-9.png" alt="繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ" onerror="this.src='alldog-imgs/alldog-vroid-1.png'" />
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: 繧ｭ繝｣繝ｩ邏ｹ莉・窶・逕ｻ蜒丞ｷｦ -->
+  <div class="slide" id="s3" style="padding:0; overflow:hidden;">
+    <div class="cover-wrap">
+      <div class="cover-img-side a d1">
+        <img src="alldog-imgs/alldog-vroid-10.png" alt="繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ" onerror="this.src='alldog-imgs/alldog-vroid-2.png'" />
+      </div>
+      <div class="cover-text a d4">
+        <p class="eyebrow a d1">The Character</p>
+        <h2 class="a d2"><span class="hla">繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ</span></h2>
+        <div class="rule a d3"></div>
+        <p style="font-size:0.84rem; color:rgba(255,255,255,0.72); line-height:2; margin-bottom:1.1rem;">
+          鮟偵＞迢ｼ迥ｬ縲ゆｽ薙・蟾ｦ蛛ｴ縺ｫ<span class="hla">驥代・譌･譛ｬ蛻怜ｳｶ縺ｮ邏区ｧ・/span>縲・br>
+          縺ｵ縺上ｍ縺・・逶ｮ繝｢繝√・繝輔・繧｢繧ｯ繧ｻ繧ｵ繝ｪ繝ｼ縲・br>
+          遨上ｄ縺九〒蠢螳溘ゅ〒繧ょ錐蜑阪↓莉墓寺縺代′縺ゅｋ縲・        </p>
+        <div style="background:rgba(240,169,68,0.07); border:1px solid rgba(240,169,68,0.22); border-radius:11px; padding:0.9rem 1.1rem; margin-bottom:0.8rem;" class="a d5">
+          <p style="font-size:0.6rem; letter-spacing:0.15em; color:var(--faint); margin-bottom:0.45rem;">蜷榊燕縺ｮ莉墓寺縺・/p>
+          <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+            <p style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; color:var(--amber);">ALLDOG</p>
+            <p style="color:var(--faint); font-size:0.72rem;">騾・°繧芽ｪｭ繧</p>
+            <p style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; color:rgba(240,169,68,0.5);">GODLLA</p>
+            <p style="color:var(--faint); font-size:0.72rem;">竕・/p>
+            <p style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; color:rgba(255,255,255,0.2);">GODZILLA</p>
+          </div>
+        </div>
+        <div style="background:rgba(74,222,128,0.06); border:1px solid rgba(74,222,128,0.2); border-radius:11px; padding:0.8rem 1.1rem;" class="a d6">
+          <p style="font-size:0.65rem; color:var(--green); margin-bottom:0.2rem;">笨・VTuber菴懈・螳御ｺ・ｸ医∩</p>
+          <p style="font-size:0.68rem; color:rgba(255,255,255,0.45); line-height:1.65;">縺阪∩縺ｮPC縺ｫ繧ｻ繝・ヨ繧｢繝・・縺吶ｌ縺ｰ縲∽ｻ翫☆縺新Tuber縺ｨ縺励※遞ｼ蜒阪〒縺阪ｋ縲・/p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4: 豢ｻ蜍募・螳ｹ 窶・逕ｻ蜒丞承 -->
+  <div class="slide" id="s4" style="padding:0; overflow:hidden;">
+    <div class="cover-wrap">
+      <div class="cover-text rpad a d4">
+        <p class="eyebrow a d1">What You'd Do</p>
+        <h2 class="a d2">繧・ｋ縺薙→縲・span class="hlv">荳險縺ｧ險縺・・/span></h2>
+        <div class="rule a d3"></div>
+        <p class="a d3" style="font-size:1.05rem; color:rgba(255,255,255,0.85); line-height:2; margin-bottom:1.2rem;">
+          <span class="hla">蜿ｰ譛ｬ繧堤畑諢上☆繧九・縺ｧ縲∬ｪｭ繧薙〒縺ｻ縺励＞縲・/span><br>
+          縺昴ｌ縺縺代・        </p>
+        <div style="background:rgba(240,169,68,0.07); border:1px solid rgba(240,169,68,0.22); border-radius:11px; padding:1rem 1.2rem; margin-bottom:0.8rem;" class="a d4">
+          <p style="font-size:0.6rem; letter-spacing:0.15em; color:var(--amber); margin-bottom:0.7rem;">繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ縺ｮ豢ｻ蜍・/p>
+          <div style="display:flex; flex-direction:column; gap:0.55rem;">
+            <div style="display:flex; gap:0.6rem; align-items:center;"><span style="font-size:0.78rem;">答</span><p style="font-size:0.74rem; color:rgba(255,255,255,0.75);">譛ｬ繝ｻ繧｢繝九Γ繝ｻ貍ｫ逕ｻ繝ｻ譏逕ｻ縺ｮ<span class="hla">邏ｹ莉九リ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ</span></p></div>
+            <div style="display:flex; gap:0.6rem; align-items:center;"><span style="font-size:0.78rem;">児</span><p style="font-size:0.74rem; color:rgba(255,255,255,0.75);">蜿ｰ譛ｬ縺ｯ蜈ｨ驛ｨ<span class="hla">譛咲欧縺梧嶌縺・/span>縲ゅ″縺ｿ縺ｯ隱ｭ繧縺縺・/p></div>
+            <div style="display:flex; gap:0.6rem; align-items:center;"><span style="font-size:0.78rem;">銅</span><p style="font-size:0.74rem; color:rgba(255,255,255,0.75);">YouTube縺ｫ荳翫￡繧九・span class="hla">繧ｯ繧ｪ繝ｪ繝・ぅ縺ｯYoutube繧ｯ繧ｪ繝ｪ繝・ぅ</span>縺ｧ縺・＞</p></div>
+            <div style="display:flex; gap:0.6rem; align-items:center;"><span style="font-size:0.78rem;">笨ゑｸ・/span><p style="font-size:0.74rem; color:rgba(255,255,255,0.75);">邱ｨ髮・・譛咲欧縺後ｄ繧九ゅ″縺ｿ縺ｯ骭ｲ縺｣縺ｦ騾√ｋ縺縺・/p></div>
+          </div>
+        </div>
+        <div class="a d5" style="padding:0.65rem 1rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:9px;">
+          <p style="font-size:0.67rem; color:var(--dim); line-height:1.8;">
+            <span class="hl">繝壹・繧ｹ・・/span>逶ｸ隲・＠縺ｦ豎ｺ繧√ｋ縲・            <span style="margin:0 0.5rem; opacity:0.3;">|</span>
+            <span class="hl">讖滓攝・・/span>Mac縺ｧ蟇ｾ蠢懷庄縲・            <span style="margin:0 0.5rem; opacity:0.3;">|</span>
+            <span class="hl">鬘泌・縺暦ｼ・/span>荳崎ｦ√・          </p>
+        </div>
+      </div>
+      <div class="cover-img-right a d1">
+        <img src="alldog-imgs/alldog-vroid-2.png" alt="繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ" onerror="this.src='alldog-imgs/alldog-vroid-1.png'" />
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: 繝｡繝ｪ繝・ヨ + 譚｡莉ｶ 窶・逕ｻ蜒丞ｷｦ -->
+  <div class="slide" id="s5" style="padding:0; overflow:hidden;">
+    <div class="cover-wrap">
+      <div class="cover-img-side a d1">
+        <img src="alldog-imgs/alldog-frog.png" alt="繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ" onerror="this.src='alldog-imgs/alldog-vroid-3.png'" />
+      </div>
+      <div class="cover-text a d4">
+        <p class="eyebrow a d1">Mutual Benefit</p>
+        <h2 class="a d2">縺阪∩縺ｫ縺ｨ縺｣縺ｦ縺ｮ<span class="hlg">繝｡繝ｪ繝・ヨ</span></h2>
+        <div class="rule a d3"></div>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;" class="a d4">
+          <div style="background:rgba(244,114,182,0.06); border:1px solid rgba(244,114,182,0.2); border-radius:11px; padding:1rem 1.2rem;">
+            <p style="font-size:0.6rem; letter-spacing:0.18em; color:var(--rose); margin-bottom:0.7rem;">縺阪∩縺ｫ縺ｨ縺｣縺ｦ縺ｮ萓｡蛟､</p>
+            <div style="display:flex; flex-direction:column; gap:0.45rem;">
+              <div style="display:flex; gap:0.5rem; align-items:flex-start;"><span style="width:4px; height:4px; border-radius:50%; background:var(--rose); flex-shrink:0; margin-top:0.45rem;"></span><p style="font-size:0.72rem; color:rgba(255,255,255,0.72); line-height:1.65;"><span style="color:var(--rose);">螢ｰ蜆ｪ縺ｮ邱ｴ鄙・/span>縺ｫ縺ｪ繧九ょ床譛ｬ縺後≠繧九°繧峨∵─諠・ｒ霎ｼ繧√ｋ邱ｴ鄙偵′縺ｧ縺阪ｋ</p></div>
+              <div style="display:flex; gap:0.5rem; align-items:flex-start;"><span style="width:4px; height:4px; border-radius:50%; background:var(--rose); flex-shrink:0; margin-top:0.45rem;"></span><p style="font-size:0.72rem; color:rgba(255,255,255,0.72); line-height:1.65;">YouTube繧ｯ繧ｪ繝ｪ繝・ぅ縺ｧ縺・＞縺ｮ縺ｧ<span style="color:var(--rose);">繝励Ξ繝・す繝｣繝ｼ縺ｪ縺・/span></p></div>
+              <div style="display:flex; gap:0.5rem; align-items:flex-start;"><span style="width:4px; height:4px; border-radius:50%; background:var(--rose); flex-shrink:0; margin-top:0.45rem;"></span><p style="font-size:0.72rem; color:rgba(255,255,255,0.72); line-height:1.65;">譛咲欧縺・span style="color:var(--rose);">閨ｴ縺・※繝輔ぅ繝ｼ繝峨ヰ繝・け</span>縺吶ｋ縲ゆｸ邱偵↓菴懊ｋ諢溯ｦ・/p></div>
+              <div style="display:flex; gap:0.5rem; align-items:flex-start;"><span style="width:4px; height:4px; border-radius:50%; background:var(--rose); flex-shrink:0; margin-top:0.45rem;"></span><p style="font-size:0.72rem; color:rgba(255,255,255,0.72); line-height:1.65;">螂ｽ縺阪↑菴懷刀・医い繝九Γ繝ｻ譛ｬ繝ｻ貍ｫ逕ｻ・峨ｒ邏ｹ莉九☆繧倶ｻ穂ｺ九↑縺ｮ縺ｧ<span style="color:var(--rose);">讌ｽ縺励ａ繧・/span></p></div>
+            </div>
+          </div>
+          <div style="background:rgba(74,222,128,0.04); border:1px solid rgba(74,222,128,0.18); border-radius:10px; padding:0.7rem 1.1rem;">
+            <p style="font-size:0.7rem; color:rgba(255,255,255,0.5); line-height:1.8;">
+              蜿ｰ譛ｬ・・span style="color:rgba(74,222,128,0.8);">蜈ｨ驛ｨ縺薙■繧峨〒譖ｸ縺・/span>縲・上邱ｨ髮・ｼ・span style="color:rgba(74,222,128,0.8);">縺薙■繧峨〒繧・ｋ</span>縲・上縺阪∩縺ｯ<span style="color:rgba(74,222,128,0.8);">隱ｭ繧薙〒騾√ｋ縺縺・/span>
+            </p>
+          </div>
+        </div>
+        <div class="a d5" style="margin-top:0.8rem; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:0.75rem 1.1rem;">
+          <p style="font-size:0.58rem; letter-spacing:0.18em; color:var(--faint); margin-bottom:0.4rem; text-transform:uppercase;">譚｡莉ｶ</p>
+          <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:0.35rem;"><span>笨・/span><p style="font-size:0.7rem; color:rgba(255,255,255,0.6);">繧ｭ繝｣繝ｩ縺ｮ蛻ｩ逕ｨ縺ｯ<span class="hlg">螳悟・縺ｫ閾ｪ逕ｱ</span></p></div>
+            <div style="display:flex; align-items:center; gap:0.35rem;"><span>笨・/span><p style="font-size:0.7rem; color:rgba(255,255,255,0.6);">R18繧・span class="hlg">蜿ｯ</span></p></div>
+            <div style="display:flex; align-items:center; gap:0.35rem;"><span>笞・・/span><p style="font-size:0.7rem; color:rgba(255,255,255,0.6);">蛟倶ｺｺ諠・ｱ縺ｮ縺ｿ<span class="hla">豕ｨ諢・/span></p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: 繧ｯ繝ｭ繝ｼ繧ｸ繝ｳ繧ｰ 窶・逕ｻ蜒丞承 -->
+  <div class="slide" id="s6" style="padding:0; overflow:hidden;">
+    <div class="cover-wrap">
+      <div class="cover-text rpad a d4">
+        <p class="eyebrow a d1">The ask</p>
+        <h2 class="a d2">R13莠句漁謇窶披・br><span class="hlv">1譛溽函縺ｨ縺励※蜿ょ刈縺励※縺ｻ縺励＞縲・/span></h2>
+        <div class="rule a d3"></div>
+        <p class="a d4" style="font-size:0.88rem; color:rgba(255,255,255,0.65); line-height:2.1; margin-bottom:1.4rem;">
+          蜿ｰ譛ｬ繧堤畑諢上☆繧九°繧峨∬ｪｭ繧薙〒縺ｻ縺励＞縲・br>
+          螢ｰ蜆ｪ縺ｮ邱ｴ鄙偵↓縺ｪ繧九らｧ√′閨ｴ縺・※縲∽ｸ邱偵↓菴懊ｋ縲・br>
+          <br>
+          <span class="hl">縺昴ｌ縺縺代〒縲√ｂ縺・ｧ九ａ繧峨ｌ繧九・/span>
+        </p>
+        <div class="a d5" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <span style="font-size:0.62rem; padding:0.3rem 0.85rem; border-radius:999px; background:rgba(58,111,201,0.1); border:1px solid rgba(58,111,201,0.3); color:rgba(58,111,201,0.8); letter-spacing:0.1em;">RAINYBRAIN R13</span>
+          <span style="font-size:0.62rem; padding:0.3rem 0.85rem; border-radius:999px; background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.3); color:var(--amber); letter-spacing:0.1em;">繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ 諡・ｽ・/span>
+          <span style="font-size:0.62rem; padding:0.3rem 0.85rem; border-radius:999px; background:rgba(244,114,182,0.1); border:1px solid rgba(244,114,182,0.3); color:var(--rose); letter-spacing:0.1em;">1譛溽函 No.01</span>
+        </div>
+        <p class="a d6" style="margin-top:2rem; font-size:0.55rem; letter-spacing:0.2em; color:var(--faint); text-transform:uppercase;">Drｦ・/ 譛咲欧遐皮ｩｶ謇 窶・RAINYBRAIN R13 窶・2026</p>
+      </div>
+      <div class="cover-img-right a d1">
+        <img src="alldog-imgs/alldog-samune.png" alt="繧ｪ繝ｼ繝ｫ繝峨ャ繧ｰ縺｡繧・ｓ" onerror="this.src='alldog-imgs/alldog-vroid-1.png'" />
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="nav">
+  <button class="nbtn" id="prev">竊・/button>
+  <div id="pager"></div>
+  <button class="nbtn" id="next">竊・/button>
+</div>
+
+<script>
+const cv = document.getElementById('rain'), cx = cv.getContext('2d')
+let dr = []
+function ir() {
+  cv.width = innerWidth; cv.height = innerHeight
+  dr = Array.from({length:90}, () => ({
+    x: Math.random()*cv.width, y: Math.random()*cv.height,
+    l: 7+Math.random()*16, s: 1.6+Math.random()*2.6, o: 0.12+Math.random()*0.38
+  }))
+}
+function rain() {
+  cx.clearRect(0,0,cv.width,cv.height)
+  dr.forEach(d => {
+    cx.beginPath(); cx.moveTo(d.x,d.y); cx.lineTo(d.x-0.7,d.y+d.l)
+    cx.strokeStyle=`rgba(240,169,68,${d.o})`; cx.lineWidth=0.5; cx.stroke()
+    d.y+=d.s; if(d.y>cv.height){d.y=-d.l;d.x=Math.random()*cv.width}
+  })
+  requestAnimationFrame(rain)
+}
+ir(); rain(); addEventListener('resize', ir)
+
+const slides = document.querySelectorAll('.slide')
+const pg = document.getElementById('pager')
+let cur = 0
+
+slides.forEach((_,i) => {
+  const d = document.createElement('div')
+  d.className = 'dot' + (i===0?' on':'')
+  d.onclick = () => go(i)
+  pg.appendChild(d)
+})
+
+function go(n) {
+  const p = slides[cur]
+  p.classList.remove('active'); p.classList.add('exit')
+  setTimeout(() => p.classList.remove('exit'), 500)
+  cur = Math.max(0, Math.min(slides.length-1, n))
+  slides[cur].classList.add('active')
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur))
+}
+
+document.getElementById('next').onclick = () => go(cur+1)
+document.getElementById('prev').onclick = () => go(cur-1)
+addEventListener('keydown', e => {
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();go(cur+1)}
+  if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+})
+let tx=0
+addEventListener('touchstart', e => tx=e.touches[0].clientX)
+addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
+</script>
+</body>
+</html>
+
