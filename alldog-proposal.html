@@ -116,11 +116,50 @@
 
   <!-- S1: カバー -->
   <div class="slide active" id="s1">
-    <!-- 右側: 正面画像 (mix-blend-mode:multiplyで白抜き) -->
-    <div class="a d2" style="position:absolute; right:0; top:0; width:clamp(200px,32vw,420px); height:100%; overflow:hidden; pointer-events:none; display:flex; align-items:center; justify-content:center;">
-      <img src="alldog-imgs/alldog-front.png" style="width:85%; object-fit:contain; object-position:top center; mix-blend-mode:multiply; display:block;"
-        onerror="this.style.display='none'" />
-      <div style="position:absolute; inset:0; background:linear-gradient(to right, var(--bg) 0%, transparent 30%, transparent 70%, var(--bg) 100%);"></div>
+    <!-- 右側: キャラクタープロフィールカード -->
+    <div class="a d2" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(160px,28vw,280px); pointer-events:none; z-index:2;">
+      <div style="background:rgba(10,10,24,0.88); border:1px solid rgba(240,169,68,0.3); border-radius:16px; overflow:hidden; backdrop-filter:blur(12px); box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+        <!-- キャラ画像 -->
+        <div style="position:relative; height:clamp(140px,22vw,220px); overflow:hidden; background:linear-gradient(160deg,#0a0a1a,#060610);">
+          <img src="alldog-imgs/alldog-samune.png" style="width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.9;"
+            onerror="this.src='alldog-imgs/alldog-front.png'" />
+          <div style="position:absolute; inset:0; background:linear-gradient(to bottom,transparent 55%,rgba(10,10,24,0.95) 100%);"></div>
+          <div style="position:absolute; bottom:0.6rem; left:0.8rem;">
+            <p style="font-size:0.45rem; letter-spacing:0.25em; color:rgba(240,169,68,0.7); text-transform:uppercase; margin-bottom:0.15rem;">R13 CHARACTER</p>
+            <p style="font-family:'Cormorant Garamond',serif; font-size:clamp(0.85rem,1.8vw,1.1rem); color:rgba(255,255,255,0.92); font-weight:300; letter-spacing:0.05em;">オールドッグちゃん</p>
+          </div>
+        </div>
+        <!-- プロフィール情報 -->
+        <div style="padding:0.8rem 0.9rem; display:flex; flex-direction:column; gap:0.45rem;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.4rem;">
+            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">読み</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">おーるどっぐちゃん</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">英表記</span>
+            <span style="font-family:'Cormorant Garamond',serif; font-size:0.68rem; color:rgba(240,169,68,0.75); letter-spacing:0.08em;">ALL DOG / GODLLA</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">種族</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">黒い狼犬</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">特徴</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">日本列島の金の紋様</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">活動</span>
+            <span style="font-size:0.62rem; color:rgba(155,114,247,0.85);">紹介系VTuber</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">所属</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">R13 / RAINYBRAIN</span>
+          </div>
+          <div style="margin-top:0.3rem; padding:0.35rem 0.6rem; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.25); border-radius:6px; text-align:center;">
+            <span style="font-size:0.52rem; color:rgba(74,222,128,0.85); letter-spacing:0.1em;">✓ VTuberモデル作成完了済み</span>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="cover-wrap">
       <div class="cover-img-side a d1">
