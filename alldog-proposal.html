@@ -67,6 +67,13 @@
     pointer-events:none; white-space:nowrap; transition:opacity 1.2s ease; z-index:100; }
   #nav-hint.hidden { opacity:0; }
 
+  /* Fullscreen button */
+  #fs-btn { position:fixed; top:0.9rem; right:1rem; z-index:200;
+    font-size:0.6rem; letter-spacing:0.1em; color:rgba(255,255,255,0.25);
+    background:none; border:none; cursor:pointer; padding:0.3rem 0.5rem;
+    transition:color 0.2s; font-family:'Cormorant Garamond',serif; }
+  #fs-btn:hover { color:rgba(255,255,255,0.6); }
+
   /* Restart button */
   #restart-btn { position:fixed; bottom:4.8rem; left:50%; transform:translateX(-50%);
     font-size:0.58rem; letter-spacing:0.18em; color:var(--violet); background:rgba(155,114,247,0.1);
@@ -168,6 +175,7 @@
 </head>
 <body>
 <div id="progress-bar"></div>
+<button id="fs-btn" title="フルスクリーン (F)">⛶</button>
 <div id="glow"></div>
 <canvas id="rain"></canvas>
 <div id="deck">
@@ -546,7 +554,22 @@ addEventListener('keydown', e => {
   if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();go(cur-1)}
   const n = parseInt(e.key)
   if(n >= 1 && n <= slides.length){e.preventDefault();go(n-1)}
+  if(e.key === 'f' || e.key === 'F'){toggleFS()}
 })
+
+const fsBtn = document.getElementById('fs-btn')
+function toggleFS() {
+  if(!document.fullscreenElement) {
+    document.documentElement.requestFullscreen()
+    fsBtn.textContent = '✕'
+    fsBtn.title = '終了 (F)'
+  } else {
+    document.exitFullscreen()
+    fsBtn.textContent = '⛶'
+    fsBtn.title = 'フルスクリーン (F)'
+  }
+}
+fsBtn.onclick = toggleFS
 let tx=0
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
 addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
