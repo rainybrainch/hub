@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>R13 台本AI — オールドッグちゃん</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --gold: #F5C842;
+      --gold-dark: #D4A017;
+      --white: #FFFFFF;
+      --muted: rgba(255,255,255,0.45);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      padding: 48px 20px 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 560px; margin: 0 auto; }
+
+    .header { text-align: center; margin-bottom: 40px; }
+    .header-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+    }
+    .header-title {
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: clamp(28px, 8vw, 48px);
+      line-height: 1; letter-spacing: -1px;
+      color: var(--white);
+      text-shadow: 3px 3px 0 var(--gold-dark);
+      margin-bottom: 10px;
+    }
+    .header-sub { font-size: 12px; color: var(--muted); letter-spacing: 0.12em; }
+
+    .cards { display: flex; flex-direction: column; gap: 12px; }
+
+    .card {
+      display: flex; align-items: center; gap: 16px;
+      padding: 18px 20px;
+      background: rgba(255,253,245,0.93);
+      border: 3px solid #0d1117;
+      border-radius: 18px;
+      text-decoration: none;
+      color: #0d1117;
+      transition: transform 0.12s, box-shadow 0.12s;
+      position: relative;
+    }
+    .card:hover { transform: translate(-2px, -2px); }
+
+    .card-anime  { box-shadow: 4px 4px 0 #a78bfa; }
+    .card-movie  { box-shadow: 4px 4px 0 #fb7185; }
+    .card-manga  { box-shadow: 4px 4px 0 #fb923c; }
+    .card-book   { box-shadow: 4px 4px 0 #f59e0b; }
+    .card-drama  { box-shadow: 4px 4px 0 #34d399; }
+
+    .card-anime:hover  { box-shadow: 6px 6px 0 #a78bfa; }
+    .card-movie:hover  { box-shadow: 6px 6px 0 #fb7185; }
+    .card-manga:hover  { box-shadow: 6px 6px 0 #fb923c; }
+    .card-book:hover   { box-shadow: 6px 6px 0 #f59e0b; }
+    .card-drama:hover  { box-shadow: 6px 6px 0 #34d399; }
+
+    .card-icon { font-size: 32px; flex-shrink: 0; line-height: 1; }
+    .card-body { flex: 1; }
+    .card-title { font-size: 15px; font-weight: 900; margin-bottom: 3px; }
+    .card-desc  { font-size: 11px; color: #555; line-height: 1.5; }
+    .card-arrow { font-size: 18px; color: #aaa; flex-shrink: 0; }
+
+    .back { display: block; text-align: center; margin-top: 36px; font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.1em; }
+    .back:hover { color: var(--gold); }
+
+    footer { text-align: center; margin-top: 48px; font-size: 11px; color: rgba(255,255,255,0.15); letter-spacing: 0.2em; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <p class="header-eyebrow">R13 / オールドッグちゃん</p>
+    <h1 class="header-title">台本AI</h1>
+    <p class="header-sub">ジャンルを選んで台本を作る</p>
+  </header>
+
+  <div class="cards">
+
+    <a class="card card-anime" href="https://chatgpt.com/g/g-6a27dca0c944819184b7cf3ac9f88227-r13animeyong" target="_blank" rel="noopener">
+      <div class="card-icon">✨</div>
+      <div class="card-body">
+        <div class="card-title">アニメ紹介 台本</div>
+        <div class="card-desc">アニメ作品の紹介ナレーション台本を生成</div>
+      </div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+    <a class="card card-movie" href="https://chatgpt.com/g/g-6a27ddac0a108191844d5e6db38fa312-r13ying-hua" target="_blank" rel="noopener">
+      <div class="card-icon">🎬</div>
+      <div class="card-body">
+        <div class="card-title">映画紹介 台本</div>
+        <div class="card-desc">映画作品の紹介ナレーション台本を生成</div>
+      </div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+    <a class="card card-manga" href="https://chatgpt.com/g/g-6a27de1a43308191878420e69f3022ef-r13man-hua" target="_blank" rel="noopener">
+      <div class="card-icon">🗺</div>
+      <div class="card-body">
+        <div class="card-title">漫画紹介 台本</div>
+        <div class="card-desc">漫画作品の紹介ナレーション台本を生成</div>
+      </div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+    <a class="card card-book" href="https://chatgpt.com/g/g-6a27deb987b48191b3ae4896243c9382-r13ben-shao-jie" target="_blank" rel="noopener">
+      <div class="card-icon">📚</div>
+      <div class="card-body">
+        <div class="card-title">本紹介 台本</div>
+        <div class="card-desc">書籍の紹介ナレーション台本を生成</div>
+      </div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+    <a class="card card-drama" href="https://chatgpt.com/g/g-6a27df0372d88191999a9f1b962ca299-r13torama" target="_blank" rel="noopener">
+      <div class="card-icon">📺</div>
+      <div class="card-body">
+        <div class="card-title">ドラマ紹介 台本</div>
+        <div class="card-desc">ドラマ作品の紹介ナレーション台本を生成</div>
+      </div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+  </div>
+
+  <a class="back" href="index.html">← Hub に戻る</a>
+
+  <footer>RAINYBRAIN R13 · 2026</footer>
+
+</div>
+</body>
+</html>
