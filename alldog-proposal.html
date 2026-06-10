@@ -73,6 +73,14 @@
     pointer-events:none; white-space:nowrap; transition:opacity 1.2s ease; z-index:100; }
   #nav-hint.hidden { opacity:0; }
 
+  /* Chapter toast */
+  #chapter-toast { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2.5vw,1.4rem);
+    letter-spacing:0.3em; color:rgba(255,255,255,0.12); pointer-events:none;
+    z-index:50; white-space:nowrap; opacity:0; transition:opacity 0.4s ease; }
+  #chapter-toast.flash { animation:chFlash 1.2s ease forwards; }
+  @keyframes chFlash { 0%{opacity:0} 20%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
+
   /* Clock */
   #clock { position:fixed; bottom:1.5rem; right:1.2rem; z-index:200;
     font-family:'Cormorant Garamond',serif; font-size:0.6rem; letter-spacing:0.18em;
@@ -190,6 +198,7 @@
 <body>
 <div id="progress-bar"></div>
 <button id="fs-btn" title="フルスクリーン (F)">⛶</button>
+<div id="chapter-toast"></div>
 <div id="clock"></div>
 <div id="glow"></div>
 <canvas id="rain"></canvas>
@@ -547,6 +556,11 @@ function updateSlideInfo() {
   void pb.offsetWidth
   pb.classList.add('shimmer')
   glowEl.style.background = slideGlows[cur] || ''
+  const toast = document.getElementById('chapter-toast')
+  toast.textContent = slideLabels[cur] || ''
+  toast.classList.remove('flash')
+  void toast.offsetWidth
+  toast.classList.add('flash')
   const isLast = cur === slides.length - 1
   document.getElementById('restart-btn').classList.toggle('show', isLast)
 }
