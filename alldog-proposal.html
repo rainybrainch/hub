@@ -890,7 +890,10 @@ function updateClock() {
 }
 updateClock()
 setInterval(updateClock, 10000)
-let tx=0
+let tx=0, mx=0, mDown=false
+addEventListener('mousedown',  e => { mx=e.clientX; mDown=true })
+addEventListener('mouseup',    e => { if(!mDown)return; const d=e.clientX-mx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)); mDown=false })
+addEventListener('mouseleave', () => mDown=false)
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
 addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
 
