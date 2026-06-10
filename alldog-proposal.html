@@ -65,6 +65,15 @@
     pointer-events:none; white-space:nowrap; transition:opacity 1.2s ease; z-index:100; }
   #nav-hint.hidden { opacity:0; }
 
+  /* Restart button */
+  #restart-btn { position:fixed; bottom:4.8rem; left:50%; transform:translateX(-50%);
+    font-size:0.58rem; letter-spacing:0.18em; color:var(--violet); background:rgba(155,114,247,0.1);
+    border:1px solid rgba(155,114,247,0.3); border-radius:999px; padding:0.35rem 1.1rem;
+    cursor:pointer; white-space:nowrap; z-index:100; opacity:0; pointer-events:none;
+    transition:opacity 0.6s ease; font-family:'Cormorant Garamond',serif; }
+  #restart-btn:hover { background:rgba(155,114,247,0.2); }
+  #restart-btn.show { opacity:1; pointer-events:auto; }
+
   /* Nav */
   #nav { position:fixed; bottom:1.6rem; left:50%; transform:translateX(-50%);
     z-index:100; display:flex; align-items:center; gap:0.8rem; }
@@ -447,6 +456,7 @@
 </div>
 
 <div id="nav-hint">← スワイプ / 矢印キー →</div>
+<button id="restart-btn">↺ 最初から</button>
 <div id="nav">
   <button class="nbtn" id="prev">←</button>
   <div id="pager"></div>
@@ -495,6 +505,8 @@ function updateSlideInfo() {
   document.getElementById('slide-counter').textContent = (cur+1) + '/' + slides.length
   document.getElementById('slide-label').textContent = slideLabels[cur] || ''
   document.getElementById('progress-bar').style.width = ((cur+1)/slides.length*100) + '%'
+  const isLast = cur === slides.length - 1
+  document.getElementById('restart-btn').classList.toggle('show', isLast)
 }
 
 function go(n) {
@@ -510,6 +522,7 @@ updateSlideInfo()
 
 const hint = document.getElementById('nav-hint')
 setTimeout(() => hint.classList.add('hidden'), 3200)
+document.getElementById('restart-btn').onclick = () => go(0)
 
 document.getElementById('next').onclick = () => go(cur+1)
 document.getElementById('prev').onclick = () => go(cur-1)
