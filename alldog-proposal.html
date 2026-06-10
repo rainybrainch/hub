@@ -300,8 +300,8 @@
   <div class="slide active" id="s1">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">01</div>
     <!-- 右側: キャラクタープロフィールカード -->
-    <div class="a d2" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(200px,30vw,300px); z-index:2;">
-      <div style="background:rgba(8,8,20,0.92); border:1px solid rgba(240,169,68,0.35); border-radius:16px; overflow:hidden; backdrop-filter:blur(16px); box-shadow:0 12px 40px rgba(0,0,0,0.6); animation:cardGlow 3s ease-in-out infinite;">
+    <div class="a d2" id="profile-card-wrap" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(200px,30vw,300px); z-index:2; perspective:800px;">
+      <div id="profile-card-inner" style="background:rgba(8,8,20,0.92); border:1px solid rgba(240,169,68,0.35); border-radius:16px; overflow:hidden; backdrop-filter:blur(16px); box-shadow:0 12px 40px rgba(0,0,0,0.6); animation:cardGlow 3s ease-in-out infinite; transition:transform 0.12s ease, box-shadow 0.12s ease; transform-style:preserve-3d; will-change:transform;">
         <!-- キャラ画像 -->
         <div style="position:relative; height:clamp(160px,24vw,240px); overflow:hidden; background:linear-gradient(160deg,#0c0c22,#07070e);">
           <img src="alldog-imgs/alldog-front.png" style="width:100%; height:100%; object-fit:contain; object-position:top center; display:block; opacity:1;"
@@ -846,6 +846,25 @@ const lbImg   = document.getElementById('lb-img')
 const lbTitle = document.getElementById('lb-title')
 const lbDots  = document.getElementById('lb-dots')
 let lbCur = 0, lbAuto, lbTx = 0
+
+// S1 profile card 3D tilt
+const pcWrap = document.getElementById('profile-card-wrap')
+const pcInner = document.getElementById('profile-card-inner')
+if (pcWrap && pcInner) {
+  pcWrap.addEventListener('mousemove', e => {
+    const r = pcWrap.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width  - 0.5
+    const y = (e.clientY - r.top)  / r.height - 0.5
+    pcInner.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 10}deg) scale(1.03)`
+    pcInner.style.boxShadow = `${-x*16}px ${y*12}px 40px rgba(0,0,0,0.7), 0 0 28px rgba(240,169,68,${0.12 + Math.abs(x)*0.18})`
+    pcInner.style.animation = 'none'
+  }, { passive: true })
+  pcWrap.addEventListener('mouseleave', () => {
+    pcInner.style.transform = ''
+    pcInner.style.boxShadow = ''
+    pcInner.style.animation = ''
+  })
+}
 
 songs.forEach((_,i) => {
   const d = document.createElement('div')
