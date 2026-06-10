@@ -221,46 +221,59 @@
   <div class="slide active" id="s1">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">01</div>
     <!-- 右側: キャラクタープロフィールカード -->
-    <div class="a d2" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(160px,28vw,280px); z-index:2;">
-      <div style="background:rgba(10,10,24,0.88); border:1px solid rgba(240,169,68,0.3); border-radius:16px; overflow:hidden; backdrop-filter:blur(12px); box-shadow:0 8px 32px rgba(0,0,0,0.5); animation:cardGlow 3s ease-in-out infinite;">
+    <div class="a d2" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(200px,30vw,300px); z-index:2;">
+      <div style="background:rgba(8,8,20,0.92); border:1px solid rgba(240,169,68,0.35); border-radius:16px; overflow:hidden; backdrop-filter:blur(16px); box-shadow:0 12px 40px rgba(0,0,0,0.6); animation:cardGlow 3s ease-in-out infinite;">
         <!-- キャラ画像 -->
-        <div style="position:relative; height:clamp(140px,22vw,220px); overflow:hidden; background:linear-gradient(160deg,#0a0a1a,#060610);">
-          <img src="alldog-imgs/alldog-front.png" style="width:100%; height:100%; object-fit:contain; object-position:top center; display:block; opacity:0.95; mix-blend-mode:multiply;"
+        <div style="position:relative; height:clamp(160px,24vw,240px); overflow:hidden; background:linear-gradient(160deg,#0c0c22,#07070e);">
+          <img src="alldog-imgs/alldog-front.png" style="width:100%; height:100%; object-fit:contain; object-position:top center; display:block; opacity:1;"
             onerror="this.src='alldog-imgs/alldog-samune.png'" />
-          <div style="position:absolute; inset:0; background:linear-gradient(to bottom,transparent 55%,rgba(10,10,24,0.95) 100%);"></div>
-          <div style="position:absolute; bottom:0.6rem; left:0.8rem;">
-            <p style="font-size:0.45rem; letter-spacing:0.25em; color:rgba(240,169,68,0.7); text-transform:uppercase; margin-bottom:0.15rem;">RBフォレスト CHARACTER</p>
-            <p style="font-family:'Cormorant Garamond',serif; font-size:clamp(0.85rem,1.8vw,1.1rem); color:rgba(255,255,255,0.92); font-weight:300; letter-spacing:0.05em;">雨森子犬</p>
+          <div style="position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(8,8,20,0.98) 100%);"></div>
+          <!-- 左上バッジ -->
+          <div style="position:absolute; top:0.55rem; left:0.7rem; background:rgba(240,169,68,0.15); border:1px solid rgba(240,169,68,0.4); border-radius:4px; padding:0.15rem 0.5rem;">
+            <span style="font-size:0.42rem; letter-spacing:0.2em; color:var(--amber); text-transform:uppercase;">No. 03</span>
+          </div>
+          <div style="position:absolute; bottom:0.7rem; left:0.85rem;">
+            <p style="font-size:0.42rem; letter-spacing:0.25em; color:rgba(240,169,68,0.6); text-transform:uppercase; margin-bottom:0.2rem;">RBフォレスト CHARACTER</p>
+            <p style="font-family:'Cormorant Garamond',serif; font-size:clamp(0.9rem,1.9vw,1.15rem); color:rgba(255,255,255,0.95); font-weight:300; letter-spacing:0.05em;">雨森子犬</p>
+            <p style="font-family:'Cormorant Garamond',serif; font-size:0.6rem; color:rgba(240,169,68,0.55); letter-spacing:0.12em; margin-top:0.1rem;">Amamori Coinu</p>
           </div>
         </div>
+        <!-- 区切り線 -->
+        <div style="height:1px; background:linear-gradient(90deg,transparent,rgba(240,169,68,0.3),transparent);"></div>
         <!-- プロフィール情報 -->
-        <div style="padding:0.8rem 0.9rem; display:flex; flex-direction:column; gap:0.45rem;">
-          <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.4rem;">
-            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">読み</span>
-            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">あめもりこいぬ</span>
+        <div style="padding:0.85rem 1rem; display:flex; flex-direction:column; gap:0.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; padding-bottom:0.45rem; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">読み</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.7);">あめもりこいぬ</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">英表記</span>
-            <span style="font-family:'Cormorant Garamond',serif; font-size:0.68rem; color:rgba(240,169,68,0.75); letter-spacing:0.08em;">Amamori Coinu</span>
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">種族</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">黒い狼犬（ウルフドッグ）</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem;">
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">特徴</span>
+            <span style="font-size:0.6rem; color:rgba(255,255,255,0.6); text-align:right; line-height:1.5;">左半身に金の<br>日本列島の紋様</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">種族</span>
-            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">黒い狼犬</span>
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">性格</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">穏やか・忠実・好奇心旺盛</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">特徴</span>
-            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">日本列島の金の紋様</span>
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">活動</span>
+            <span style="font-size:0.62rem; color:rgba(155,114,247,0.9);">紹介系 VTuber</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">活動</span>
-            <span style="font-size:0.62rem; color:rgba(155,114,247,0.85);">紹介系VTuber</span>
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">担当</span>
+            <span style="font-size:0.62rem; color:rgba(255,255,255,0.5);">服牢（ふくろう・1号）</span>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:0.5rem; letter-spacing:0.15em; color:rgba(255,255,255,0.3); text-transform:uppercase;">所属</span>
-            <span style="font-size:0.62rem; color:rgba(255,255,255,0.65);">RBフォレスト <span style="color:var(--amber);">3号</span> / RAINYBRAIN</span>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; padding-bottom:0.45rem; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">声優</span>
+            <span style="font-size:0.62rem; color:rgba(244,114,182,0.85);">募集中</span>
           </div>
-          <div style="margin-top:0.3rem; padding:0.35rem 0.6rem; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.25); border-radius:6px; text-align:center;">
-            <span style="font-size:0.52rem; color:rgba(74,222,128,0.85); letter-spacing:0.1em;">✓ VTuberモデル作成完了済み</span>
+          <!-- ステータスバッジ -->
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.1rem;">
+            <span style="font-size:0.48rem; padding:0.25rem 0.6rem; border-radius:999px; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.28); color:rgba(74,222,128,0.85); letter-spacing:0.08em;">✓ モデル完成</span>
+            <span style="font-size:0.48rem; padding:0.25rem 0.6rem; border-radius:999px; background:rgba(240,169,68,0.08); border:1px solid rgba(240,169,68,0.28); color:rgba(240,169,68,0.85); letter-spacing:0.08em;">✓ 台本準備中</span>
           </div>
         </div>
       </div>
