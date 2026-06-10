@@ -89,6 +89,19 @@
   body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
     background:radial-gradient(ellipse 85% 85% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%); }
 
+  /* Film grain */
+  #grain { position:fixed; inset:0; pointer-events:none; z-index:2; opacity:0.028;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:180px 180px;
+    animation:grainShift 0.15s steps(1) infinite; }
+  @keyframes grainShift {
+    0%   { background-position:   0px   0px; }
+    25%  { background-position: -40px  20px; }
+    50%  { background-position:  20px -30px; }
+    75%  { background-position: -20px  40px; }
+    100% { background-position:  10px -10px; }
+  }
+
   /* Chapter toast */
   #chapter-toast { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
     font-family:'Cormorant Garamond',serif; font-size:clamp(1rem,2.5vw,1.4rem);
@@ -243,6 +256,7 @@
 </style>
 </head>
 <body>
+<div id="grain"></div>
 <div id="intro">
   <div class="intro-label">RBフォレスト</div>
   <div class="intro-title">雨森子犬</div>
