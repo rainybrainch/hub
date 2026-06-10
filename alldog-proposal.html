@@ -138,6 +138,20 @@
     font-family:'Cormorant Garamond',serif; font-size:0.6rem; letter-spacing:0.18em;
     color:rgba(255,255,255,0.2); pointer-events:none; }
 
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .hla,.hlv,.hlr,.hlg,.hlb { animation:none; }
+    #grain { animation:none; }
+    .ghost-num { animation:none; opacity:0.6; }
+    .cover-img-side img, .cover-img-right img { transform:scale(1) !important; transition:none; }
+    #profile-card-inner { animation:none !important; }
+    #intro, #intro .intro-label, #intro .intro-title, #intro .intro-sub { animation:none; opacity:0; }
+    .active .a { animation:none; opacity:1; transform:none; }
+    .dot { animation:none; }
+    .slide { transition:opacity 0.2s ease; transform:none !important; }
+    .slide.active { transform:none !important; }
+  }
+
   /* Fullscreen button */
   #fs-btn { position:fixed; top:0.9rem; right:1rem; z-index:200;
     font-size:0.6rem; letter-spacing:0.1em; color:rgba(255,255,255,0.25);
