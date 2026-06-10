@@ -59,7 +59,13 @@
   /* Progress bar */
   #progress-bar { position:fixed; top:0; left:0; height:2px; z-index:200;
     background:linear-gradient(90deg, var(--violet), var(--amber));
-    transition:width 0.4s ease; box-shadow:0 0 8px rgba(155,114,247,0.5); }
+    transition:width 0.4s ease; box-shadow:0 0 8px rgba(155,114,247,0.5);
+    overflow:hidden; }
+  #progress-bar::after { content:''; position:absolute; top:0; left:-40%; width:30%;
+    height:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation:none; }
+  #progress-bar.shimmer::after { animation:pbShimmer 0.5s ease forwards; }
+  @keyframes pbShimmer { from{left:-40%} to{left:120%} }
 
   /* Nav hint */
   #nav-hint { position:fixed; bottom:4.8rem; left:50%; transform:translateX(-50%);
@@ -535,7 +541,11 @@ slides.forEach((_,i) => {
 function updateSlideInfo() {
   document.getElementById('slide-counter').textContent = (cur+1) + '/' + slides.length
   document.getElementById('slide-label').textContent = slideLabels[cur] || ''
-  document.getElementById('progress-bar').style.width = ((cur+1)/slides.length*100) + '%'
+  const pb = document.getElementById('progress-bar')
+  pb.style.width = ((cur+1)/slides.length*100) + '%'
+  pb.classList.remove('shimmer')
+  void pb.offsetWidth
+  pb.classList.add('shimmer')
   glowEl.style.background = slideGlows[cur] || ''
   const isLast = cur === slides.length - 1
   document.getElementById('restart-btn').classList.toggle('show', isLast)
