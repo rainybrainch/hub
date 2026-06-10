@@ -107,7 +107,39 @@
     .cover-img-side { display:none; }
     .cover-text { padding:2rem; }
     .g2,.g4 { grid-template-columns:1fr; }
+    #songGrid { grid-template-columns:repeat(3,1fr) !important; }
   }
+
+  /* サムネグリッド */
+  .sthumb { display:flex; flex-direction:column; gap:0.4rem; cursor:pointer; }
+  .sthumb-img {
+    aspect-ratio:16/9; border-radius:9px; overflow:hidden;
+    border:1px solid rgba(255,255,255,0.08);
+    transition:transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .sthumb:hover .sthumb-img {
+    transform:scale(1.04) translateY(-3px);
+    box-shadow:0 12px 32px rgba(0,0,0,0.55);
+    border-color:rgba(155,114,247,0.5);
+  }
+  .sthumb-img img { width:100%; height:100%; object-fit:cover; display:block; transition:filter 0.18s; }
+  .sthumb:hover .sthumb-img img { filter:brightness(1.08); }
+  .sthumb-title {
+    font-size:0.55rem; text-align:center;
+    color:rgba(255,255,255,0.4); letter-spacing:0.06em;
+    transition:color 0.18s;
+  }
+  .sthumb:hover .sthumb-title { color:rgba(155,114,247,0.85); }
+  .sthumb.active-thumb .sthumb-img { border-color:rgba(155,114,247,0.7); box-shadow:0 0 0 2px rgba(155,114,247,0.35); }
+
+  /* ライトボックス */
+  #lb { cursor:default; }
+  #lb.open { display:flex !important; animation:lbIn 0.22s ease; }
+  @keyframes lbIn { from { opacity:0 } to { opacity:1 } }
+  #lb-prev:hover, #lb-next:hover { background:rgba(155,114,247,0.2); border-color:rgba(155,114,247,0.4); color:#fff; }
+  #lb-close:hover { color:#fff; }
+  .lb-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.25); transition:all 0.2s; cursor:pointer; }
+  .lb-dot.on { background:var(--violet); width:16px; border-radius:3px; }
 </style>
 </head>
 <body>
@@ -327,45 +359,47 @@
 
   <!-- S6: 歌ってみた参考サムネ一覧 -->
   <div class="slide" id="s6" style="padding:3vw 5vw;">
-    <div style="width:100%; max-width:860px;">
+    <div style="width:100%; max-width:900px;">
       <p class="eyebrow a d1">Song Reference</p>
       <h2 class="a d2">歌ってみた——<span class="hlv">サムネイルイメージ</span></h2>
       <div class="rule a d3"></div>
-      <p class="a d3" style="font-size:0.78rem; color:rgba(255,255,255,0.5); margin-bottom:1.2rem; line-height:1.8;">
-        雨森子犬のビジュアルイメージ。歌ってみた・ナレーション動画のサムネとして使える。
+      <p class="a d3" style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-bottom:1.4rem; line-height:1.8;">
+        雨森子犬のビジュアルイメージ。タップで拡大。
       </p>
-      <div class="a d4" style="display:grid; grid-template-columns:repeat(5,1fr); gap:0.6rem;">
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="aspect-ratio:16/9; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-            <img src="alldog-imgs/song-iris-out.jpg" style="width:100%; height:100%; object-fit:cover; display:block;" />
-          </div>
-          <p style="font-size:0.55rem; text-align:center; color:rgba(255,255,255,0.45); letter-spacing:0.05em;">IRIS OUT</p>
+      <div class="a d4" id="songGrid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:0.7rem;">
+        <div class="sthumb" data-idx="0">
+          <div class="sthumb-img"><img src="alldog-imgs/song-iris-out.jpg" /></div>
+          <p class="sthumb-title">IRIS OUT</p>
         </div>
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="aspect-ratio:16/9; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-            <img src="alldog-imgs/song-donut-hole.jpg" style="width:100%; height:100%; object-fit:cover; display:block;" />
-          </div>
-          <p style="font-size:0.55rem; text-align:center; color:rgba(255,255,255,0.45); letter-spacing:0.05em;">ドーナツホール</p>
+        <div class="sthumb" data-idx="1">
+          <div class="sthumb-img"><img src="alldog-imgs/song-donut-hole.jpg" /></div>
+          <p class="sthumb-title">ドーナツホール</p>
         </div>
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="aspect-ratio:16/9; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-            <img src="alldog-imgs/song-phonii.jpg" style="width:100%; height:100%; object-fit:cover; display:block;" />
-          </div>
-          <p style="font-size:0.55rem; text-align:center; color:rgba(255,255,255,0.45); letter-spacing:0.05em;">フォニイ</p>
+        <div class="sthumb" data-idx="2">
+          <div class="sthumb-img"><img src="alldog-imgs/song-phonii.jpg" /></div>
+          <p class="sthumb-title">フォニイ</p>
         </div>
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="aspect-ratio:16/9; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-            <img src="alldog-imgs/song-ragtrain.jpg" style="width:100%; height:100%; object-fit:cover; display:block;" />
-          </div>
-          <p style="font-size:0.55rem; text-align:center; color:rgba(255,255,255,0.45); letter-spacing:0.05em;">ラグトレイン</p>
+        <div class="sthumb" data-idx="3">
+          <div class="sthumb-img"><img src="alldog-imgs/song-ragtrain.jpg" /></div>
+          <p class="sthumb-title">ラグトレイン</p>
         </div>
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <div style="aspect-ratio:16/9; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
-            <img src="alldog-imgs/song-kamippoi.jpg" style="width:100%; height:100%; object-fit:cover; display:block;" />
-          </div>
-          <p style="font-size:0.55rem; text-align:center; color:rgba(255,255,255,0.45); letter-spacing:0.05em;">神っぽいな</p>
+        <div class="sthumb" data-idx="4">
+          <div class="sthumb-img"><img src="alldog-imgs/song-kamippoi.jpg" /></div>
+          <p class="sthumb-title">神っぽいな</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ライトボックス -->
+  <div id="lb" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.92); backdrop-filter:blur(12px); align-items:center; justify-content:center; flex-direction:column;">
+    <button id="lb-close" style="position:absolute; top:1.2rem; right:1.4rem; background:none; border:none; color:rgba(255,255,255,0.6); font-size:1.8rem; cursor:pointer; line-height:1; padding:0.3rem 0.6rem;">✕</button>
+    <button id="lb-prev" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); color:rgba(255,255,255,0.7); font-size:1.4rem; cursor:pointer; border-radius:50%; width:3rem; height:3rem; display:flex; align-items:center; justify-content:center; transition:all 0.15s;">‹</button>
+    <button id="lb-next" style="position:absolute; right:1rem; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); color:rgba(255,255,255,0.7); font-size:1.4rem; cursor:pointer; border-radius:50%; width:3rem; height:3rem; display:flex; align-items:center; justify-content:center; transition:all 0.15s;">›</button>
+    <img id="lb-img" style="max-width:90vw; max-height:80vh; border-radius:12px; object-fit:contain; box-shadow:0 24px 80px rgba(0,0,0,0.6); transition:opacity 0.2s;" />
+    <div style="margin-top:1rem; display:flex; flex-direction:column; align-items:center; gap:0.4rem;">
+      <p id="lb-title" style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:rgba(255,255,255,0.85); letter-spacing:0.12em;"></p>
+      <div id="lb-dots" style="display:flex; gap:0.35rem; align-items:center;"></div>
     </div>
   </div>
 
@@ -453,6 +487,86 @@ addEventListener('keydown', e => {
 let tx=0
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
 addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
+
+// ── ライトボックス ──────────────────────────────
+const songs = [
+  { src:'alldog-imgs/song-iris-out.jpg',   title:'IRIS OUT' },
+  { src:'alldog-imgs/song-donut-hole.jpg', title:'ドーナツホール' },
+  { src:'alldog-imgs/song-phonii.jpg',     title:'フォニイ' },
+  { src:'alldog-imgs/song-ragtrain.jpg',   title:'ラグトレイン' },
+  { src:'alldog-imgs/song-kamippoi.jpg',   title:'神っぽいな' },
+]
+const lb      = document.getElementById('lb')
+const lbImg   = document.getElementById('lb-img')
+const lbTitle = document.getElementById('lb-title')
+const lbDots  = document.getElementById('lb-dots')
+let lbCur = 0, lbAuto, lbTx = 0
+
+songs.forEach((_,i) => {
+  const d = document.createElement('div')
+  d.className = 'lb-dot' + (i===0?' on':'')
+  d.onclick = () => lbGo(i)
+  lbDots.appendChild(d)
+})
+
+function lbOpen(i) {
+  lbCur = i
+  lb.classList.add('open')
+  lbUpdate()
+  lbStartAuto()
+  document.querySelectorAll('.sthumb').forEach((t,j) => t.classList.toggle('active-thumb', j===i))
+}
+function lbClose() {
+  lb.classList.remove('open')
+  lb.style.display = 'none'
+  clearInterval(lbAuto)
+  document.querySelectorAll('.sthumb').forEach(t => t.classList.remove('active-thumb'))
+  setTimeout(() => { if(!lb.classList.contains('open')) lb.style.display='none' }, 10)
+}
+function lbGo(i) {
+  lbCur = (i + songs.length) % songs.length
+  lbUpdate()
+  lbStartAuto()
+}
+function lbUpdate() {
+  lbImg.style.opacity = '0'
+  setTimeout(() => {
+    lbImg.src = songs[lbCur].src
+    lbTitle.textContent = songs[lbCur].title
+    lbImg.style.opacity = '1'
+    document.querySelectorAll('.lb-dot').forEach((d,i) => d.classList.toggle('on', i===lbCur))
+    document.querySelectorAll('.sthumb').forEach((t,i) => t.classList.toggle('active-thumb', i===lbCur))
+  }, 120)
+}
+function lbStartAuto() {
+  clearInterval(lbAuto)
+  lbAuto = setInterval(() => lbGo(lbCur + 1), 60000)
+}
+
+document.querySelectorAll('.sthumb').forEach(t => {
+  t.addEventListener('click', () => {
+    lb.style.display = 'flex'
+    requestAnimationFrame(() => lbOpen(+t.dataset.idx))
+  })
+})
+document.getElementById('lb-close').onclick = lbClose
+document.getElementById('lb-prev').onclick  = () => lbGo(lbCur - 1)
+document.getElementById('lb-next').onclick  = () => lbGo(lbCur + 1)
+lb.addEventListener('click', e => { if(e.target === lb) lbClose() })
+
+// ライトボックス内スワイプ
+lb.addEventListener('touchstart', e => lbTx = e.touches[0].clientX)
+lb.addEventListener('touchend',   e => {
+  const d = e.changedTouches[0].clientX - lbTx
+  if(Math.abs(d) > 40) lbGo(lbCur + (d < 0 ? 1 : -1))
+})
+// ライトボックス内キーボード
+addEventListener('keydown', e => {
+  if(!lb.classList.contains('open')) return
+  if(e.key === 'ArrowRight') lbGo(lbCur + 1)
+  if(e.key === 'ArrowLeft')  lbGo(lbCur - 1)
+  if(e.key === 'Escape')     lbClose()
+})
 </script>
 </body>
 </html>
