@@ -59,8 +59,13 @@
   p { font-size:clamp(0.76rem,1.3vw,0.92rem); line-height:1.9; color:var(--dim); }
   .rule { width:36px; height:1px; background:var(--violet); opacity:0.5; margin:1rem 0; }
   .rule.c { margin-left:auto; margin-right:auto; }
-  .hla { color:var(--amber); } .hlv { color:var(--violet); } .hlr { color:var(--rose); }
-  .hlg { color:var(--green); } .hlb { color:var(--blue); } .hl { color:var(--text); font-weight:400; }
+  .hla { background:linear-gradient(90deg,#f0a944,#ffd580,#f0a944); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:hlShimmer 4s linear infinite; }
+  .hlv { background:linear-gradient(90deg,#9b72f7,#c8aaff,#9b72f7); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:hlShimmer 4s linear infinite; }
+  .hlr { background:linear-gradient(90deg,#f472b6,#ffaadd,#f472b6); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:hlShimmer 4s linear infinite; }
+  .hlg { background:linear-gradient(90deg,#4ade80,#a0f5c0,#4ade80); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:hlShimmer 4s linear infinite; }
+  .hlb { background:linear-gradient(90deg,#3a6fc9,#7aaeff,#3a6fc9); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:hlShimmer 4s linear infinite; }
+  .hl  { color:var(--text); font-weight:400; }
+  @keyframes hlShimmer { to { background-position:200% center; } }
 
   .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; overflow:hidden; }
   .card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px;
