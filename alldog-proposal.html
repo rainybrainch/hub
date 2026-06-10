@@ -67,6 +67,11 @@
     pointer-events:none; white-space:nowrap; transition:opacity 1.2s ease; z-index:100; }
   #nav-hint.hidden { opacity:0; }
 
+  /* Clock */
+  #clock { position:fixed; bottom:1.5rem; right:1.2rem; z-index:200;
+    font-family:'Cormorant Garamond',serif; font-size:0.6rem; letter-spacing:0.18em;
+    color:rgba(255,255,255,0.2); pointer-events:none; }
+
   /* Fullscreen button */
   #fs-btn { position:fixed; top:0.9rem; right:1rem; z-index:200;
     font-size:0.6rem; letter-spacing:0.1em; color:rgba(255,255,255,0.25);
@@ -179,6 +184,7 @@
 <body>
 <div id="progress-bar"></div>
 <button id="fs-btn" title="フルスクリーン (F)">⛶</button>
+<div id="clock"></div>
 <div id="glow"></div>
 <canvas id="rain"></canvas>
 <div id="deck">
@@ -573,6 +579,14 @@ function toggleFS() {
   }
 }
 fsBtn.onclick = toggleFS
+
+const clockEl = document.getElementById('clock')
+function updateClock() {
+  const now = new Date()
+  clockEl.textContent = now.toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'})
+}
+updateClock()
+setInterval(updateClock, 10000)
 let tx=0
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
 addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
