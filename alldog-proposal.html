@@ -59,6 +59,12 @@
     background:linear-gradient(90deg, var(--violet), var(--amber));
     transition:width 0.4s ease; box-shadow:0 0 8px rgba(155,114,247,0.5); }
 
+  /* Nav hint */
+  #nav-hint { position:fixed; bottom:4.8rem; left:50%; transform:translateX(-50%);
+    font-size:0.55rem; letter-spacing:0.18em; color:rgba(255,255,255,0.3);
+    pointer-events:none; white-space:nowrap; transition:opacity 1.2s ease; z-index:100; }
+  #nav-hint.hidden { opacity:0; }
+
   /* Nav */
   #nav { position:fixed; bottom:1.6rem; left:50%; transform:translateX(-50%);
     z-index:100; display:flex; align-items:center; gap:0.8rem; }
@@ -440,6 +446,7 @@
 
 </div>
 
+<div id="nav-hint">← スワイプ / 矢印キー →</div>
 <div id="nav">
   <button class="nbtn" id="prev">←</button>
   <div id="pager"></div>
@@ -491,6 +498,9 @@ function go(n) {
 }
 document.getElementById('slide-num').textContent = '1/' + slides.length
 document.getElementById('progress-bar').style.width = (1/slides.length*100) + '%'
+
+const hint = document.getElementById('nav-hint')
+setTimeout(() => hint.classList.add('hidden'), 3200)
 
 document.getElementById('next').onclick = () => go(cur+1)
 document.getElementById('prev').onclick = () => go(cur-1)
