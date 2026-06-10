@@ -592,6 +592,7 @@ addEventListener('keydown', e => {
   const n = parseInt(e.key)
   if(n >= 1 && n <= slides.length){e.preventDefault();go(n-1)}
   if(e.key === 'f' || e.key === 'F'){toggleFS()}
+  if(e.key === 'h' || e.key === 'H'){toggleChrome()}
 })
 
 const fsBtn = document.getElementById('fs-btn')
@@ -607,6 +608,13 @@ function toggleFS() {
   }
 }
 fsBtn.onclick = toggleFS
+
+let chromeHidden = false
+const chromeEls = ['nav','progress-bar','clock','fs-btn','nav-hint','restart-btn','chapter-toast'].map(id => document.getElementById(id))
+function toggleChrome() {
+  chromeHidden = !chromeHidden
+  chromeEls.forEach(el => { if(el) el.style.opacity = chromeHidden ? '0' : '' })
+}
 
 const clockEl = document.getElementById('clock')
 function updateClock() {
