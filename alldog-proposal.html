@@ -66,6 +66,10 @@
   .hlb { background:linear-gradient(90deg,#3a6fc9,#7aaeff,#3a6fc9); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:hlShimmer 4s linear infinite; }
   .hl  { color:var(--text); font-weight:400; }
   @keyframes hlShimmer { to { background-position:200% center; } }
+  #s4-cur { display:inline-block; width:2px; height:0.9em; background:var(--amber); vertical-align:middle;
+    margin-left:1px; opacity:0; animation:none; }
+  #s4-cur.typing { opacity:1; animation:cursorBlink 0.7s step-end infinite; }
+  @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 
   .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; overflow:hidden; }
   .card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px;
@@ -497,7 +501,7 @@
         <h2 class="a d2">やること、<span class="hlv">一言で言う。</span></h2>
         <div class="rule a d3"></div>
         <p class="a d3" style="font-size:1.05rem; color:rgba(255,255,255,0.85); line-height:2; margin-bottom:1.2rem;">
-          <span class="hla">台本を用意するので、読んでほしい。</span><br>
+          <span class="hla" id="s4-qt">台本を用意するので、読んでほしい。</span><span id="s4-cur"></span><br>
           それだけ。
         </p>
         <div style="background:rgba(240,169,68,0.07); border:1px solid rgba(240,169,68,0.22); border-radius:11px; padding:1rem 1.2rem; margin-bottom:0.8rem;" class="a d4">
@@ -735,6 +739,26 @@ function updateSlideInfo() {
   document.getElementById('restart-btn').classList.toggle('show', isLast)
 }
 
+const s4FullText = '台本を用意するので、読んでほしい。'
+const s4Qt = document.getElementById('s4-qt')
+const s4Cur = document.getElementById('s4-cur')
+let s4Timer = null
+function startS4Typing() {
+  if(s4Timer) clearTimeout(s4Timer)
+  s4Qt.textContent = ''
+  s4Cur.classList.add('typing')
+  let i = 0
+  function type() {
+    if(i < s4FullText.length) {
+      s4Qt.textContent += s4FullText[i++]
+      s4Timer = setTimeout(type, 75)
+    } else {
+      s4Cur.classList.remove('typing')
+    }
+  }
+  s4Timer = setTimeout(type, 700)
+}
+
 function go(n) {
   const p = slides[cur]
   p.classList.remove('active'); p.classList.add('exit')
@@ -743,6 +767,8 @@ function go(n) {
   slides[cur].classList.add('active')
   document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur))
   updateSlideInfo()
+  if(cur === 3) startS4Typing()
+  else if(s4Qt) s4Qt.textContent = s4FullText
 }
 updateSlideInfo()
 
