@@ -746,7 +746,22 @@ deck.addEventListener('mousemove', e => {
   const x = e.clientX / window.innerWidth
   deck.style.cursor = x > 0.35 ? 'e-resize' : 'w-resize'
 })
-deck.addEventListener('mouseleave', () => { deck.style.cursor = '' })
+deck.addEventListener('mouseleave', () => {
+  deck.style.cursor = ''
+  document.querySelectorAll('.cover-img-side img, .cover-img-right img').forEach(img => {
+    img.style.transform = ''
+  })
+})
+
+deck.addEventListener('mousemove', e => {
+  const cx = (e.clientX / window.innerWidth - 0.5) * 2
+  const cy = (e.clientY / window.innerHeight - 0.5) * 2
+  document.querySelectorAll('.cover-img-side img, .cover-img-right img').forEach(img => {
+    const s = img.closest('.slide')
+    if(!s || !s.classList.contains('active')) return
+    img.style.transform = `scale(1) translate(${cx * -5}px, ${cy * -4}px)`
+  })
+}, {passive:true})
 
 function spawnRipple(x, y) {
   const r = document.createElement('div')
