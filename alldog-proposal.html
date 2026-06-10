@@ -25,8 +25,17 @@
     font-family:'Noto Sans JP',sans-serif; font-weight:300; overflow:hidden; user-select:none; }
   #rain { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.1; }
   #intro { position:fixed; inset:0; z-index:999; background:#07070e; pointer-events:none;
-    animation:introFade 1.6s ease forwards; }
-  @keyframes introFade { 0%{opacity:1} 60%{opacity:1} 100%{opacity:0} }
+    animation:introFade 1.8s ease forwards;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.6rem; }
+  #intro .intro-label { font-size:0.52rem; letter-spacing:0.4em; color:rgba(240,169,68,0.5);
+    text-transform:uppercase; animation:introText 1.8s ease forwards; }
+  #intro .intro-title { font-family:'Cormorant Garamond',serif; font-size:clamp(1.4rem,4vw,2.4rem);
+    font-weight:300; letter-spacing:0.2em; color:rgba(255,255,255,0.85);
+    animation:introText 1.8s ease forwards; }
+  #intro .intro-sub { font-size:0.5rem; letter-spacing:0.3em; color:rgba(255,255,255,0.2);
+    text-transform:uppercase; animation:introText 1.8s ease forwards; animation-delay:0.15s; }
+  @keyframes introFade { 0%{opacity:1} 55%{opacity:1} 100%{opacity:0} }
+  @keyframes introText { 0%{opacity:0;transform:translateY(6px)} 30%{opacity:1;transform:none} 75%{opacity:1} 100%{opacity:0} }
   #deck { position:fixed; inset:0; z-index:1; }
   #glow { position:fixed; inset:0; pointer-events:none; z-index:0;
     transition:background 1.2s ease; }
@@ -234,7 +243,11 @@
 </style>
 </head>
 <body>
-<div id="intro"></div>
+<div id="intro">
+  <div class="intro-label">RBフォレスト</div>
+  <div class="intro-title">雨森子犬</div>
+  <div class="intro-sub">Amamori Coinu · No.3</div>
+</div>
 <div id="progress-bar"></div>
 <button id="fs-btn" title="フルスクリーン (F)">⛶</button>
 <div id="chapter-toast"></div>
