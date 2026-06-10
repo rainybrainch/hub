@@ -25,6 +25,8 @@
     font-family:'Noto Sans JP',sans-serif; font-weight:300; overflow:hidden; user-select:none; }
   #rain { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.1; }
   #deck { position:fixed; inset:0; z-index:1; }
+  #glow { position:fixed; inset:0; pointer-events:none; z-index:0;
+    transition:background 1.2s ease; }
 
   .slide {
     position:absolute; inset:0;
@@ -166,6 +168,7 @@
 </head>
 <body>
 <div id="progress-bar"></div>
+<div id="glow"></div>
 <canvas id="rain"></canvas>
 <div id="deck">
 
@@ -493,6 +496,16 @@ const pg = document.getElementById('pager')
 let cur = 0
 
 const slideLabels = ['カバー','RBフォレスト','雨森子犬','活動内容','メリット','歌ってみた','メッセージ']
+const slideGlows = [
+  'radial-gradient(ellipse 60% 50% at 70% 50%, rgba(240,169,68,0.07) 0%, transparent 70%)',
+  'radial-gradient(ellipse 60% 50% at 30% 50%, rgba(155,114,247,0.08) 0%, transparent 70%)',
+  'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(244,114,182,0.07) 0%, transparent 70%)',
+  'radial-gradient(ellipse 60% 50% at 40% 50%, rgba(58,111,201,0.07) 0%, transparent 70%)',
+  'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(74,222,128,0.06) 0%, transparent 70%)',
+  'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(155,114,247,0.08) 0%, transparent 70%)',
+  'radial-gradient(ellipse 60% 50% at 30% 50%, rgba(240,169,68,0.08) 0%, transparent 70%)',
+]
+const glowEl = document.getElementById('glow')
 
 slides.forEach((_,i) => {
   const d = document.createElement('div')
@@ -506,6 +519,7 @@ function updateSlideInfo() {
   document.getElementById('slide-counter').textContent = (cur+1) + '/' + slides.length
   document.getElementById('slide-label').textContent = slideLabels[cur] || ''
   document.getElementById('progress-bar').style.width = ((cur+1)/slides.length*100) + '%'
+  glowEl.style.background = slideGlows[cur] || ''
   const isLast = cur === slides.length - 1
   document.getElementById('restart-btn').classList.toggle('show', isLast)
 }
