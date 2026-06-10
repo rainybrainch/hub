@@ -555,7 +555,7 @@ function rain() {
   cx.clearRect(0,0,cv.width,cv.height)
   dr.forEach(d => {
     cx.beginPath(); cx.moveTo(d.x,d.y); cx.lineTo(d.x-0.7,d.y+d.l)
-    cx.strokeStyle=`rgba(240,169,68,${d.o})`; cx.lineWidth=0.5; cx.stroke()
+    cx.strokeStyle=`rgba(${rainRGB},${d.o})`; cx.lineWidth=0.5; cx.stroke()
     d.y+=d.s; if(d.y>cv.height){d.y=-d.l;d.x=Math.random()*cv.width}
   })
   requestAnimationFrame(rain)
@@ -567,6 +567,8 @@ const pg = document.getElementById('pager')
 let cur = 0
 
 const slideLabels = ['カバー','RBフォレスト','雨森子犬','活動内容','メリット','歌ってみた','メッセージ']
+const slideRainRGB = ['240,169,68','155,114,247','244,114,182','58,111,201','74,222,128','155,114,247','240,169,68']
+let rainRGB = slideRainRGB[0]
 const slideGlows = [
   'radial-gradient(ellipse 60% 50% at 70% 50%, rgba(240,169,68,0.07) 0%, transparent 70%)',
   'radial-gradient(ellipse 60% 50% at 30% 50%, rgba(155,114,247,0.08) 0%, transparent 70%)',
@@ -595,6 +597,7 @@ function updateSlideInfo() {
   void pb.offsetWidth
   pb.classList.add('shimmer')
   glowEl.style.background = slideGlows[cur] || ''
+  rainRGB = slideRainRGB[cur] || slideRainRGB[0]
   document.getElementById('prev').disabled = cur === 0
   document.getElementById('next').disabled = cur === slides.length - 1
   const toast = document.getElementById('chapter-toast')
