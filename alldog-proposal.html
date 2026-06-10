@@ -627,13 +627,20 @@ let tx=0
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
 addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
 
-document.getElementById('deck').addEventListener('click', e => {
+const deck = document.getElementById('deck')
+deck.addEventListener('click', e => {
   const tag = e.target.tagName
   if(['BUTTON','A','INPUT'].includes(tag)) return
   if(e.target.closest('#lb')) return
   const x = e.clientX / window.innerWidth
   go(x > 0.35 ? cur+1 : cur-1)
 })
+deck.addEventListener('mousemove', e => {
+  if(e.target.closest('#lb')) return
+  const x = e.clientX / window.innerWidth
+  deck.style.cursor = x > 0.35 ? 'e-resize' : 'w-resize'
+})
+deck.addEventListener('mouseleave', () => { deck.style.cursor = '' })
 
 // ── ライトボックス ──────────────────────────────
 const songs = [
