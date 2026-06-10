@@ -54,6 +54,11 @@
   .g2 { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
   .g4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0.8rem; }
 
+  /* Progress bar */
+  #progress-bar { position:fixed; top:0; left:0; height:2px; z-index:200;
+    background:linear-gradient(90deg, var(--violet), var(--amber));
+    transition:width 0.4s ease; box-shadow:0 0 8px rgba(155,114,247,0.5); }
+
   /* Nav */
   #nav { position:fixed; bottom:1.6rem; left:50%; transform:translateX(-50%);
     z-index:100; display:flex; align-items:center; gap:0.8rem; }
@@ -145,6 +150,7 @@
 </style>
 </head>
 <body>
+<div id="progress-bar"></div>
 <canvas id="rain"></canvas>
 <div id="deck">
 
@@ -481,8 +487,10 @@ function go(n) {
   slides[cur].classList.add('active')
   document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur))
   document.getElementById('slide-num').textContent = (cur+1) + '/' + slides.length
+  document.getElementById('progress-bar').style.width = ((cur+1)/slides.length*100) + '%'
 }
 document.getElementById('slide-num').textContent = '1/' + slides.length
+document.getElementById('progress-bar').style.width = (1/slides.length*100) + '%'
 
 document.getElementById('next').onclick = () => go(cur+1)
 document.getElementById('prev').onclick = () => go(cur-1)
