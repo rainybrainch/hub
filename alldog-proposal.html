@@ -115,6 +115,7 @@
     display:flex; align-items:center; justify-content:center;
     transition:all 0.2s; backdrop-filter:blur(8px); }
   .nbtn:hover { background:rgba(155,114,247,0.14); color:var(--violet); border-color:rgba(155,114,247,0.35); }
+  .nbtn:disabled { opacity:0.2; cursor:default; pointer-events:none; }
   #pager { display:flex; gap:0.3rem; align-items:center; }
   .dot { width:5px; height:5px; border-radius:50%; background:var(--faint); transition:all 0.3s; cursor:pointer; position:relative; }
   .dot.on { background:var(--violet); width:14px; border-radius:3px; }
@@ -560,6 +561,8 @@ function updateSlideInfo() {
   void pb.offsetWidth
   pb.classList.add('shimmer')
   glowEl.style.background = slideGlows[cur] || ''
+  document.getElementById('prev').disabled = cur === 0
+  document.getElementById('next').disabled = cur === slides.length - 1
   const toast = document.getElementById('chapter-toast')
   toast.textContent = slideLabels[cur] || ''
   toast.classList.remove('flash')
