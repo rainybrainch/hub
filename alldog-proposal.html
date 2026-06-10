@@ -142,6 +142,28 @@
     font-family:'Cormorant Garamond',serif; font-size:0.6rem; letter-spacing:0.18em;
     color:rgba(255,255,255,0.2); pointer-events:none; }
 
+  /* Print / PDF */
+  @media print {
+    canvas, #grain, #nav, #progress-bar, #fs-btn, #help-btn, #clock,
+    #nav-hint, #restart-btn, #chapter-toast, #shortcut-help { display:none !important; }
+    html, body { background:#fff !important; color:#111 !important;
+      overflow:visible !important; height:auto !important; }
+    #glow { display:none; }
+    #deck { position:static !important; height:auto !important; }
+    .slide { position:static !important; opacity:1 !important; transform:none !important;
+      display:flex !important; pointer-events:auto !important;
+      page-break-after:always; min-height:96vh; padding:6vw 8vw !important;
+      border-bottom:1px solid #ddd; }
+    .slide:last-child { page-break-after:avoid; }
+    .ghost-num { display:none !important; }
+    .hla,.hlv,.hlr,.hlg,.hlb { -webkit-text-fill-color:unset !important;
+      background:none !important; animation:none !important; }
+    .hla { color:#c47a00 !important; } .hlv { color:#6b3fd4 !important; }
+    .hlr { color:#c0287a !important; } .hlg { color:#1a8c4a !important; }
+    .cover-img-side, .cover-img-right { opacity:0.85; }
+    #profile-card-inner { box-shadow:none !important; animation:none !important; }
+  }
+
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .hla,.hlv,.hlr,.hlg,.hlb { animation:none; }
