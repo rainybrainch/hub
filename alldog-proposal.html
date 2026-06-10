@@ -437,6 +437,7 @@
 <div id="nav">
   <button class="nbtn" id="prev">←</button>
   <div id="pager"></div>
+  <span id="slide-num" style="font-size:0.58rem; font-family:'Cormorant Garamond',serif; color:var(--faint); letter-spacing:0.12em; min-width:2.2rem; text-align:center;"></span>
   <button class="nbtn" id="next">→</button>
 </div>
 
@@ -479,7 +480,9 @@ function go(n) {
   cur = Math.max(0, Math.min(slides.length-1, n))
   slides[cur].classList.add('active')
   document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur))
+  document.getElementById('slide-num').textContent = (cur+1) + '/' + slides.length
 }
+document.getElementById('slide-num').textContent = '1/' + slides.length
 
 document.getElementById('next').onclick = () => go(cur+1)
 document.getElementById('prev').onclick = () => go(cur-1)
