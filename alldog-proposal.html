@@ -179,11 +179,23 @@
 
   @media (max-width:640px) {
     .cover-img-side { display:none; }
-    .cover-text { padding:2rem; }
+    .cover-text { padding:2rem 1.5rem; }
     .g2,.g4 { grid-template-columns:1fr; }
     #songGrid { grid-template-columns:repeat(2,1fr) !important; gap:0.8rem !important; }
     #s6 { padding:2rem 1.5rem !important; }
     #s6 h2 { font-size:1.2rem !important; }
+    /* S1 profile card: 小さくして右下に固定 */
+    #s1 .a.d2[style*="position:absolute"] {
+      position:fixed !important; right:0.5rem !important; top:auto !important;
+      bottom:5.5rem !important; transform:none !important;
+      width:clamp(140px,52vw,190px) !important;
+    }
+    #s1 .cover-ask { font-size:1.1rem !important; }
+    #s1 .cover-sub { display:none; }
+    /* ゴーストナンバーはモバイルで非表示 */
+    .ghost-num { display:none; }
+    /* nav hint モバイル調整 */
+    #nav-hint { font-size:0.5rem; bottom:5rem; }
   }
 
   /* サムネグリッド */
