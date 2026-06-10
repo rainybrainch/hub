@@ -32,11 +32,11 @@
     position:absolute; inset:0;
     display:flex; flex-direction:column; justify-content:center; align-items:center;
     padding:5vw 7vw; opacity:0; pointer-events:none;
-    transition:opacity 0.5s ease, transform 0.5s ease;
-    transform:translateY(14px);
+    transition:opacity 0.5s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1);
+    transform:translateY(14px) scale(0.98);
   }
-  .slide.active { opacity:1; pointer-events:auto; transform:translateY(0); }
-  .slide.exit   { opacity:0; transform:translateY(-14px); }
+  .slide.active { opacity:1; pointer-events:auto; transform:translateY(0) scale(1); }
+  .slide.exit   { opacity:0; transform:translateY(-14px) scale(0.99); }
 
   .eyebrow { font-family:'Cormorant Garamond',serif; font-size:clamp(0.55rem,1vw,0.66rem);
     letter-spacing:0.28em; color:var(--violet); margin-bottom:1.2rem; text-transform:uppercase; }
