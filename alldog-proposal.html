@@ -450,7 +450,10 @@
 <div id="nav">
   <button class="nbtn" id="prev">←</button>
   <div id="pager"></div>
-  <span id="slide-num" style="font-size:0.58rem; font-family:'Cormorant Garamond',serif; color:var(--faint); letter-spacing:0.12em; min-width:2.2rem; text-align:center;"></span>
+  <span id="slide-num" style="font-size:0.58rem; font-family:'Cormorant Garamond',serif; color:var(--faint); letter-spacing:0.12em; min-width:2.2rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:1px;">
+    <span id="slide-label" style="font-size:0.48rem; letter-spacing:0.2em; color:var(--violet); opacity:0.6;"></span>
+    <span id="slide-counter"></span>
+  </span>
   <button class="nbtn" id="next">→</button>
 </div>
 
@@ -486,6 +489,14 @@ slides.forEach((_,i) => {
   pg.appendChild(d)
 })
 
+const slideLabels = ['カバー','RBフォレスト','雨森子犬','活動内容','メリット','歌ってみた','メッセージ']
+
+function updateSlideInfo() {
+  document.getElementById('slide-counter').textContent = (cur+1) + '/' + slides.length
+  document.getElementById('slide-label').textContent = slideLabels[cur] || ''
+  document.getElementById('progress-bar').style.width = ((cur+1)/slides.length*100) + '%'
+}
+
 function go(n) {
   const p = slides[cur]
   p.classList.remove('active'); p.classList.add('exit')
@@ -493,11 +504,9 @@ function go(n) {
   cur = Math.max(0, Math.min(slides.length-1, n))
   slides[cur].classList.add('active')
   document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur))
-  document.getElementById('slide-num').textContent = (cur+1) + '/' + slides.length
-  document.getElementById('progress-bar').style.width = ((cur+1)/slides.length*100) + '%'
+  updateSlideInfo()
 }
-document.getElementById('slide-num').textContent = '1/' + slides.length
-document.getElementById('progress-bar').style.width = (1/slides.length*100) + '%'
+updateSlideInfo()
 
 const hint = document.getElementById('nav-hint')
 setTimeout(() => hint.classList.add('hidden'), 3200)
