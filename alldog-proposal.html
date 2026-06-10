@@ -492,14 +492,15 @@ const slides = document.querySelectorAll('.slide')
 const pg = document.getElementById('pager')
 let cur = 0
 
+const slideLabels = ['カバー','RBフォレスト','雨森子犬','活動内容','メリット','歌ってみた','メッセージ']
+
 slides.forEach((_,i) => {
   const d = document.createElement('div')
   d.className = 'dot' + (i===0?' on':'')
+  d.title = (i+1) + '. ' + (slideLabels[i] || '')
   d.onclick = () => go(i)
   pg.appendChild(d)
 })
-
-const slideLabels = ['カバー','RBフォレスト','雨森子犬','活動内容','メリット','歌ってみた','メッセージ']
 
 function updateSlideInfo() {
   document.getElementById('slide-counter').textContent = (cur+1) + '/' + slides.length
@@ -529,6 +530,8 @@ document.getElementById('prev').onclick = () => go(cur-1)
 addEventListener('keydown', e => {
   if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();go(cur+1)}
   if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();go(cur-1)}
+  const n = parseInt(e.key)
+  if(n >= 1 && n <= slides.length){e.preventDefault();go(n-1)}
 })
 let tx=0
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
