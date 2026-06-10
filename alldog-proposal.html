@@ -123,6 +123,7 @@
     border:1px solid rgba(155,114,247,0.5); animation:dotPulse 1.6s ease-out infinite; }
   @keyframes dotPulse { 0%{opacity:0.8;transform:scale(1)} 100%{opacity:0;transform:scale(2.2)} }
   @keyframes ghostBreathe { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes rippleOut { 0%{width:0;height:0;opacity:0.5} 100%{width:120px;height:120px;opacity:0} }
   .ghost-num { animation:ghostBreathe 8s ease-in-out infinite; }
 
   @keyframes fi { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
@@ -688,6 +689,21 @@ deck.addEventListener('mousemove', e => {
   deck.style.cursor = x > 0.35 ? 'e-resize' : 'w-resize'
 })
 deck.addEventListener('mouseleave', () => { deck.style.cursor = '' })
+
+function spawnRipple(x, y) {
+  const r = document.createElement('div')
+  const color = `rgb(${rainTo.join(',')})`
+  r.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:0;height:0;border-radius:50%;
+    border:1px solid ${color};opacity:0.5;transform:translate(-50%,-50%);pointer-events:none;
+    z-index:50;animation:rippleOut 0.7s ease-out forwards;`
+  document.body.appendChild(r)
+  setTimeout(() => r.remove(), 700)
+}
+deck.addEventListener('click', e => {
+  if(['BUTTON','A','INPUT'].includes(e.target.tagName)) return
+  if(e.target.closest('#lb')) return
+  spawnRipple(e.clientX, e.clientY)
+})
 
 // ── ライトボックス ──────────────────────────────
 const songs = [
