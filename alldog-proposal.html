@@ -259,8 +259,19 @@
   .sthumb-img {
     aspect-ratio:16/9; border-radius:9px; overflow:hidden;
     border:1px solid rgba(255,255,255,0.08);
+    position:relative;
     transition:transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   }
+  .sthumb-img::after {
+    content:attr(data-title);
+    position:absolute; inset:0; border-radius:8px;
+    background:linear-gradient(to top, rgba(5,5,18,0.88) 0%, rgba(5,5,18,0.3) 60%, transparent 100%);
+    color:rgba(255,255,255,0.9); font-size:0.58rem; letter-spacing:0.08em;
+    display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom:0.45rem;
+    opacity:0; transition:opacity 0.18s ease;
+  }
+  .sthumb:hover .sthumb-img::after { opacity:1; }
   .sthumb:hover .sthumb-img {
     transform:scale(1.04) translateY(-3px);
     box-shadow:0 12px 32px rgba(0,0,0,0.55);
@@ -581,23 +592,23 @@
       </p>
       <div class="a d4" id="songGrid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:0.7rem;">
         <div class="sthumb" data-idx="0">
-          <div class="sthumb-img"><img src="alldog-imgs/song-iris-out.jpg" /></div>
+          <div class="sthumb-img" data-title="IRIS OUT"><img src="alldog-imgs/song-iris-out.jpg" /></div>
           <p class="sthumb-title">IRIS OUT</p>
         </div>
         <div class="sthumb" data-idx="1">
-          <div class="sthumb-img"><img src="alldog-imgs/song-donut-hole.jpg" /></div>
+          <div class="sthumb-img" data-title="ドーナツホール"><img src="alldog-imgs/song-donut-hole.jpg" /></div>
           <p class="sthumb-title">ドーナツホール</p>
         </div>
         <div class="sthumb" data-idx="2">
-          <div class="sthumb-img"><img src="alldog-imgs/song-phonii.jpg" /></div>
+          <div class="sthumb-img" data-title="フォニイ"><img src="alldog-imgs/song-phonii.jpg" /></div>
           <p class="sthumb-title">フォニイ</p>
         </div>
         <div class="sthumb" data-idx="3">
-          <div class="sthumb-img"><img src="alldog-imgs/song-ragtrain.jpg" /></div>
+          <div class="sthumb-img" data-title="ラグトレイン"><img src="alldog-imgs/song-ragtrain.jpg" /></div>
           <p class="sthumb-title">ラグトレイン</p>
         </div>
         <div class="sthumb" data-idx="4">
-          <div class="sthumb-img"><img src="alldog-imgs/song-kamippoi.jpg" /></div>
+          <div class="sthumb-img" data-title="神っぽいな"><img src="alldog-imgs/song-kamippoi.jpg" /></div>
           <p class="sthumb-title">神っぽいな</p>
         </div>
       </div>
