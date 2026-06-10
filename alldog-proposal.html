@@ -85,6 +85,16 @@
   #chapter-toast.flash { animation:chFlash 1.2s ease forwards; }
   @keyframes chFlash { 0%{opacity:0} 20%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
 
+  /* Shortcut help */
+  #shortcut-help { position:fixed; inset:0; z-index:300; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); }
+  #shortcut-help.open { display:flex; animation:lbIn 0.2s ease; }
+  #shortcut-help .panel { background:rgba(10,10,24,0.96); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:1.6rem 2rem; min-width:260px; }
+  #shortcut-help .sh-title { font-family:'Cormorant Garamond',serif; font-size:0.75rem; letter-spacing:0.25em; color:var(--violet); margin-bottom:1rem; text-transform:uppercase; }
+  #shortcut-help .sh-row { display:flex; justify-content:space-between; gap:2rem; padding:0.3rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+  #shortcut-help .sh-key { font-family:'Cormorant Garamond',serif; font-size:0.72rem; color:var(--amber); letter-spacing:0.05em; }
+  #shortcut-help .sh-desc { font-size:0.62rem; color:rgba(255,255,255,0.45); }
+  #shortcut-help .sh-close { margin-top:1rem; text-align:center; font-size:0.55rem; color:rgba(255,255,255,0.25); letter-spacing:0.15em; }
+
   /* Clock */
   #clock { position:fixed; bottom:1.5rem; right:1.2rem; z-index:200;
     font-family:'Cormorant Garamond',serif; font-size:0.6rem; letter-spacing:0.18em;
@@ -213,6 +223,18 @@
 <button id="fs-btn" title="フルスクリーン (F)">⛶</button>
 <div id="chapter-toast"></div>
 <div id="clock"></div>
+<div id="shortcut-help">
+  <div class="panel">
+    <p class="sh-title">キーボード操作</p>
+    <div class="sh-row"><span class="sh-key">← →  /  ↑ ↓</span><span class="sh-desc">前 / 次のスライド</span></div>
+    <div class="sh-row"><span class="sh-key">Space</span><span class="sh-desc">次のスライド</span></div>
+    <div class="sh-row"><span class="sh-key">1 〜 7</span><span class="sh-desc">スライドに直接ジャンプ</span></div>
+    <div class="sh-row"><span class="sh-key">F</span><span class="sh-desc">フルスクリーン切り替え</span></div>
+    <div class="sh-row"><span class="sh-key">H</span><span class="sh-desc">UI を非表示 / 表示</span></div>
+    <div class="sh-row"><span class="sh-key">?</span><span class="sh-desc">このヘルプを表示 / 閉じる</span></div>
+    <p class="sh-close">クリック・Esc・? で閉じる</p>
+  </div>
+</div>
 <div id="glow"></div>
 <canvas id="rain"></canvas>
 <div id="deck">
@@ -659,7 +681,13 @@ addEventListener('keydown', e => {
   if(n >= 1 && n <= slides.length){e.preventDefault();go(n-1)}
   if(e.key === 'f' || e.key === 'F'){toggleFS()}
   if(e.key === 'h' || e.key === 'H'){toggleChrome()}
+  if(e.key === '?'){toggleHelp()}
+  if(e.key === 'Escape'){document.getElementById('shortcut-help').classList.remove('open')}
 })
+
+const helpEl = document.getElementById('shortcut-help')
+function toggleHelp() { helpEl.classList.toggle('open') }
+helpEl.addEventListener('click', e => { if(e.target === helpEl) helpEl.classList.remove('open') })
 
 const fsBtn = document.getElementById('fs-btn')
 function toggleFS() {
