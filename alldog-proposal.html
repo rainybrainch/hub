@@ -122,6 +122,8 @@
   .dot.on::after { content:''; position:absolute; inset:-3px; border-radius:inherit;
     border:1px solid rgba(155,114,247,0.5); animation:dotPulse 1.6s ease-out infinite; }
   @keyframes dotPulse { 0%{opacity:0.8;transform:scale(1)} 100%{opacity:0;transform:scale(2.2)} }
+  @keyframes ghostBreathe { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .ghost-num { animation:ghostBreathe 8s ease-in-out infinite; }
 
   @keyframes fi { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
   .active .a { animation:fi 0.6s ease both; }
@@ -211,7 +213,7 @@
 
   <!-- S1: カバー -->
   <div class="slide active" id="s1" style="position:relative;">
-    <div style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">01</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">01</div>
     <!-- 右側: キャラクタープロフィールカード -->
     <div class="a d2" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(160px,28vw,280px); z-index:2;">
       <div style="background:rgba(10,10,24,0.88); border:1px solid rgba(240,169,68,0.3); border-radius:16px; overflow:hidden; backdrop-filter:blur(12px); box-shadow:0 8px 32px rgba(0,0,0,0.5);">
@@ -280,7 +282,7 @@
 
   <!-- S2: RAINYBRAIN紹介 — 画像右 -->
   <div class="slide" id="s2" style="padding:0; overflow:hidden; position:relative;">
-    <div style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(155,114,247,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">02</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(155,114,247,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">02</div>
     <div class="cover-wrap">
       <div class="cover-text rpad a d4">
         <p class="eyebrow a d1">The Project</p>
@@ -317,7 +319,7 @@
 
   <!-- S3: キャラ紹介 — 画像左 -->
   <div class="slide" id="s3" style="padding:0; overflow:hidden; position:relative;">
-    <div style="position:absolute; right:-0.5rem; bottom:-1rem; font-family:'Cormorant Garamond',serif; font-size:clamp(6rem,18vw,14rem); font-weight:300; color:rgba(240,169,68,0.04); line-height:1; pointer-events:none; user-select:none; z-index:0; letter-spacing:-0.05em;">03</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">03</div>
     <div class="cover-wrap">
       <div class="cover-img-side a d1">
         <img src="alldog-imgs/alldog-vroid-10.png" alt="雨森子犬" onerror="this.src='alldog-imgs/alldog-vroid-2.png'" />
@@ -376,7 +378,7 @@
 
   <!-- S4: 活動内容 — 画像右 -->
   <div class="slide" id="s4" style="padding:0; overflow:hidden; position:relative;">
-    <div style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(58,111,201,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">04</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(58,111,201,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">04</div>
     <div class="cover-wrap">
       <div class="cover-text rpad a d4">
         <p class="eyebrow a d1">What You'd Do</p>
@@ -413,7 +415,7 @@
 
   <!-- S5: メリット + 条件 — 画像左 -->
   <div class="slide" id="s5" style="padding:0; overflow:hidden; position:relative;">
-    <div style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(74,222,128,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">05</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(74,222,128,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">05</div>
     <div class="cover-wrap">
       <div class="cover-img-side a d1">
         <img src="alldog-imgs/alldog-frog.png" alt="雨森子犬" onerror="this.src='alldog-imgs/alldog-vroid-3.png'" />
@@ -452,7 +454,7 @@
 
   <!-- S6: 歌ってみた参考サムネ一覧 -->
   <div class="slide" id="s6" style="padding:3vw 5vw; position:relative;">
-    <div style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(155,114,247,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">06</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(155,114,247,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">06</div>
     <div style="width:100%; max-width:900px;">
       <p class="eyebrow a d1">Song Reference</p>
       <h2 class="a d2">歌ってみた——<span class="hlv">サムネイルイメージ</span></h2>
@@ -500,7 +502,7 @@
 
   <!-- S7: クロージング — 画像右 -->
   <div class="slide" id="s7" style="padding:0; overflow:hidden; position:relative;">
-    <div style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">07</div>
+    <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">07</div>
     <div class="cover-wrap">
       <div class="cover-text rpad a d4">
         <p class="eyebrow a d1">The ask</p>
