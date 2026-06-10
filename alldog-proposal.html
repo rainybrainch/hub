@@ -50,7 +50,7 @@
   .hla { color:var(--amber); } .hlv { color:var(--violet); } .hlr { color:var(--rose); }
   .hlg { color:var(--green); } .hlb { color:var(--blue); } .hl { color:var(--text); font-weight:400; }
 
-  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; position:relative; overflow:hidden; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; overflow:hidden; }
   .card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px;
     background:linear-gradient(90deg,transparent,var(--c,var(--violet)),transparent); opacity:0.35; }
   .g2 { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
@@ -117,7 +117,7 @@
   .nbtn:hover { background:rgba(155,114,247,0.14); color:var(--violet); border-color:rgba(155,114,247,0.35); }
   .nbtn:disabled { opacity:0.2; cursor:default; pointer-events:none; }
   #pager { display:flex; gap:0.3rem; align-items:center; }
-  .dot { width:5px; height:5px; border-radius:50%; background:var(--faint); transition:all 0.3s; cursor:pointer; position:relative; }
+  .dot { width:5px; height:5px; border-radius:50%; background:var(--faint); transition:all 0.3s; cursor:pointer; }
   .dot.on { background:var(--violet); width:14px; border-radius:3px; }
   .dot.on::after { content:''; position:absolute; inset:-3px; border-radius:inherit;
     border:1px solid rgba(155,114,247,0.5); animation:dotPulse 1.6s ease-out infinite; }
@@ -138,7 +138,7 @@
   /* ===== S1 カバー ===== */
   #s1 { padding:0; overflow:hidden; }
   .cover-wrap { display:flex; width:100%; height:100%; align-items:stretch; }
-  .cover-img-side { flex-shrink:0; width:clamp(200px,35vw,440px); position:relative; overflow:hidden;
+  .cover-img-side { flex-shrink:0; width:clamp(200px,35vw,440px); overflow:hidden;
     background:linear-gradient(135deg,#0a0a18,#060610); }
   .cover-img-side img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.92;
     transition:transform 12s ease-out; transform:scale(1.04); }
@@ -146,7 +146,7 @@
   .cover-img-side::after { content:''; position:absolute; inset:0;
     background:linear-gradient(to right, transparent 55%, var(--bg) 100%); pointer-events:none; }
   /* 右配置用 */
-  .cover-img-right { flex-shrink:0; width:clamp(200px,35vw,440px); position:relative; overflow:hidden;
+  .cover-img-right { flex-shrink:0; width:clamp(200px,35vw,440px); overflow:hidden;
     background:linear-gradient(135deg,#0a0a18,#060610); order:2; }
   .cover-img-right img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.92;
     transition:transform 12s ease-out; transform:scale(1.04); }
@@ -217,7 +217,7 @@
 <div id="deck">
 
   <!-- S1: カバー -->
-  <div class="slide active" id="s1" style="position:relative;">
+  <div class="slide active" id="s1">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">01</div>
     <!-- 右側: キャラクタープロフィールカード -->
     <div class="a d2" style="position:absolute; right:1.2rem; top:50%; transform:translateY(-50%); width:clamp(160px,28vw,280px); z-index:2;">
@@ -286,7 +286,7 @@
   </div>
 
   <!-- S2: RAINYBRAIN紹介 — 画像右 -->
-  <div class="slide" id="s2" style="padding:0; overflow:hidden; position:relative;">
+  <div class="slide" id="s2" style="padding:0; overflow:hidden;">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(155,114,247,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">02</div>
     <div class="cover-wrap">
       <div class="cover-text rpad a d4">
@@ -323,7 +323,7 @@
   </div>
 
   <!-- S3: キャラ紹介 — 画像左 -->
-  <div class="slide" id="s3" style="padding:0; overflow:hidden; position:relative;">
+  <div class="slide" id="s3" style="padding:0; overflow:hidden;">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">03</div>
     <div class="cover-wrap">
       <div class="cover-img-side a d1">
@@ -382,7 +382,7 @@
   </div>
 
   <!-- S4: 活動内容 — 画像右 -->
-  <div class="slide" id="s4" style="padding:0; overflow:hidden; position:relative;">
+  <div class="slide" id="s4" style="padding:0; overflow:hidden;">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(58,111,201,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">04</div>
     <div class="cover-wrap">
       <div class="cover-text rpad a d4">
@@ -419,7 +419,7 @@
   </div>
 
   <!-- S5: メリット + 条件 — 画像左 -->
-  <div class="slide" id="s5" style="padding:0; overflow:hidden; position:relative;">
+  <div class="slide" id="s5" style="padding:0; overflow:hidden;">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(74,222,128,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">05</div>
     <div class="cover-wrap">
       <div class="cover-img-side a d1">
@@ -458,7 +458,7 @@
   </div>
 
   <!-- S6: 歌ってみた参考サムネ一覧 -->
-  <div class="slide" id="s6" style="padding:3vw 5vw; position:relative;">
+  <div class="slide" id="s6" style="padding:3vw 5vw;">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(155,114,247,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">06</div>
     <div style="width:100%; max-width:900px;">
       <p class="eyebrow a d1">Song Reference</p>
@@ -506,7 +506,7 @@
   </div>
 
   <!-- S7: クロージング — 画像右 -->
-  <div class="slide" id="s7" style="padding:0; overflow:hidden; position:relative;">
+  <div class="slide" id="s7" style="padding:0; overflow:hidden;">
     <div class="ghost-num" style="position:absolute;right:-0.5rem;bottom:-1rem;font-family:'Cormorant Garamond',serif;font-size:clamp(6rem,18vw,14rem);font-weight:300;color:rgba(240,169,68,0.04);line-height:1;pointer-events:none;user-select:none;z-index:0;letter-spacing:-0.05em;">07</div>
     <div class="cover-wrap">
       <div class="cover-text rpad a d4">
