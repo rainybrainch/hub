@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RBフォレスト — 全体構想</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Noto+Sans+JP:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #07070e;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --text: rgba(255,255,255,0.90);
+    --dim: rgba(255,255,255,0.45);
+    --faint: rgba(255,255,255,0.18);
+    --violet: #9b72f7;
+    --rose: #f472b6;
+    --amber: #f0a944;
+    --green: #4ade80;
+    --forest: #5eead4;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+  canvas#rain { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.08; }
+
+  .page { position:relative; z-index:1; max-width:760px; margin:0 auto; padding:4rem 2rem 6rem; }
+
+  /* Header */
+  .eyebrow { font-size:0.52rem; letter-spacing:0.4em; color:var(--forest); text-transform:uppercase; margin-bottom:0.6rem; }
+  h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(2.4rem,7vw,4rem); font-weight:300; letter-spacing:0.08em; line-height:1.1; margin-bottom:0.4rem; }
+  .subtitle { font-size:0.72rem; color:var(--dim); letter-spacing:0.2em; margin-bottom:0.5rem; }
+  .rule { height:1px; background:linear-gradient(90deg, var(--forest), transparent); margin:1.8rem 0; }
+
+  /* Overview */
+  .overview { background:rgba(94,234,212,0.05); border:1px solid rgba(94,234,212,0.2); border-radius:14px; padding:1.4rem 1.6rem; margin-bottom:2.5rem; }
+  .overview p { font-size:0.8rem; color:rgba(255,255,255,0.72); line-height:2; }
+  .overview .hl { color:var(--forest); }
+
+  /* Members grid */
+  .section-title { font-size:0.55rem; letter-spacing:0.3em; color:var(--forest); text-transform:uppercase; margin-bottom:1.2rem; }
+  .members { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1rem; margin-bottom:2.5rem; }
+
+  .member-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1.2rem 1.4rem;
+    position:relative;
+    overflow:hidden;
+    transition:border-color 0.2s;
+  }
+  .member-card:hover { border-color:rgba(255,255,255,0.16); }
+  .member-card .no {
+    font-family:'Cormorant Garamond',serif;
+    font-size:3rem;
+    font-weight:300;
+    color:rgba(255,255,255,0.04);
+    position:absolute;
+    top:0.2rem; right:0.8rem;
+    line-height:1;
+    pointer-events:none;
+  }
+  .member-card .status {
+    display:inline-block;
+    font-size:0.48rem;
+    padding:0.2rem 0.6rem;
+    border-radius:999px;
+    letter-spacing:0.1em;
+    margin-bottom:0.7rem;
+  }
+  .status-active  { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); color:rgba(74,222,128,0.9); }
+  .status-pending { background:rgba(240,169,68,0.1); border:1px solid rgba(240,169,68,0.3); color:var(--amber); }
+  .status-open    { background:rgba(155,114,247,0.1); border:1px solid rgba(155,114,247,0.3); color:var(--violet); }
+  .status-enda    { background:rgba(244,114,182,0.1); border:1px solid rgba(244,114,182,0.3); color:var(--rose); }
+
+  .member-card .name-ja { font-size:1.1rem; font-weight:400; letter-spacing:0.06em; margin-bottom:0.1rem; }
+  .member-card .name-en { font-family:'Cormorant Garamond',serif; font-size:0.75rem; color:var(--dim); letter-spacing:0.15em; margin-bottom:0.7rem; }
+  .member-card .tag { font-size:0.62rem; color:rgba(255,255,255,0.5); line-height:1.8; }
+  .member-card .model-badge {
+    display:inline-block;
+    margin-top:0.6rem;
+    font-size:0.46rem;
+    padding:0.18rem 0.55rem;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.1);
+    color:rgba(255,255,255,0.3);
+    letter-spacing:0.08em;
+  }
+  .member-card a.proposal-link {
+    display:inline-block;
+    margin-top:0.6rem;
+    font-size:0.58rem;
+    color:var(--amber);
+    text-decoration:none;
+    opacity:0.8;
+  }
+  .member-card a.proposal-link:hover { opacity:1; }
+
+  /* Models section */
+  .models { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2.5rem; }
+  @media(max-width:500px){ .models { grid-template-columns:1fr; } }
+  .model-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; }
+  .model-card .model-title { font-size:0.62rem; font-weight:700; letter-spacing:0.15em; margin-bottom:0.6rem; }
+  .model-card ul { list-style:none; display:flex; flex-direction:column; gap:0.35rem; }
+  .model-card li { font-size:0.68rem; color:var(--dim); line-height:1.6; display:flex; gap:0.4rem; }
+  .model-card li::before { content:'—'; color:rgba(255,255,255,0.15); flex-shrink:0; }
+
+  /* Vision */
+  .vision { background:rgba(155,114,247,0.05); border:1px solid rgba(155,114,247,0.18); border-radius:14px; padding:1.4rem 1.6rem; margin-bottom:2.5rem; }
+  .vision-grid { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.8rem; }
+  .vision-tag { font-size:0.62rem; padding:0.3rem 0.8rem; border-radius:999px; background:rgba(155,114,247,0.1); border:1px solid rgba(155,114,247,0.25); color:var(--violet); letter-spacing:0.08em; }
+
+  /* Back link */
+  .back { display:inline-block; margin-top:3rem; font-size:0.62rem; color:var(--faint); text-decoration:none; letter-spacing:0.1em; }
+  .back:hover { color:var(--dim); }
+</style>
+</head>
+<body>
+<canvas id="rain"></canvas>
+
+<div class="page">
+
+  <p class="eyebrow">RAINYBRAIN — VTuber事務所</p>
+  <h1>RBフォレスト</h1>
+  <p class="subtitle">RB Forest — 全体構想 2026</p>
+  <div class="rule"></div>
+
+  <div class="overview">
+    <p>
+      <span class="hl">RAINYBRAIN</span> が運営するVTuber・クリエイター事務所。<br>
+      運営：<span class="hl">えんだ</span> / <span class="hl">服牢（ふくろう）</span><br>
+      <br>
+      アバター・台本・配信環境はこちらで整える。<br>
+      声優・配信者は<span class="hl">「読むだけ」「配信するだけ」</span>でいい仕組みをつくる。<br>
+      将来的に音楽・漫画・ゲーム・アニメ制作へ展開予定。
+    </p>
+  </div>
+
+  <p class="section-title">メンバー / Members</p>
+  <div class="members">
+
+    <div class="member-card">
+      <div class="no">03</div>
+      <span class="status status-pending">声優交渉中</span>
+      <div class="name-ja">雨森子犬</div>
+      <div class="name-en">Amamori Coinu — うーこ</div>
+      <div class="tag">
+        種族：黒いウルフドッグ<br>
+        活動：おすすめ作品の紹介ナレーション<br>
+        YouTube：@AmamoriCoinuRB
+      </div>
+      <span class="model-badge">フル管理型（台本・編集：服牢）</span><br>
+      <a class="proposal-link" href="alldog-proposal.html">プロポーザルを見る →</a>
+    </div>
+
+    <div class="member-card">
+      <div class="no">04</div>
+      <span class="status status-open">構想中</span>
+      <div class="name-ja">う廻うかぷり</div>
+      <div class="name-en">Ukai Ukapuri — うーうー</div>
+      <div class="tag">
+        種族：黒羽のひよこ（月紋様）<br>
+        活動：未定（自由型）<br>
+        声優：交渉中
+      </div>
+      <span class="model-badge">自由型（環境提供・本人主導）</span>
+    </div>
+
+    <div class="member-card">
+      <div class="no">05</div>
+      <span class="status status-enda">えんだ側で進行</span>
+      <div class="name-ja">—</div>
+      <div class="name-en">TBD</div>
+      <div class="tag">
+        詳細：えんだ側で候補あり<br>
+        活動：未定
+      </div>
+      <span class="model-badge">未定</span>
+    </div>
+
+    <div class="member-card">
+      <div class="no">06</div>
+      <span class="status status-open">構想中</span>
+      <div class="name-ja">雷羊らいむう（仮）</div>
+      <div class="name-en">Raimuu — 仮名</div>
+      <div class="tag">
+        種族：黒い雷雲羊<br>
+        活動：未定（自由型）<br>
+        声優：交渉中
+      </div>
+      <span class="model-badge">自由型（環境提供・本人主導）</span>
+    </div>
+
+  </div>
+
+  <p class="section-title">運営モデル / Operation Model</p>
+  <div class="models">
+
+    <div class="model-card">
+      <div class="model-title" style="color:var(--amber);">フル管理型（3号）</div>
+      <ul>
+        <li>台本：服牢が全て書く</li>
+        <li>編集：服牢が担当</li>
+        <li>声優は録音して送るだけ</li>
+        <li>クオリティ・方向性を統一管理</li>
+      </ul>
+    </div>
+
+    <div class="model-card">
+      <div class="model-title" style="color:var(--forest);">自由型（4号・6号）</div>
+      <ul>
+        <li>配信環境・アバターを提供</li>
+        <li>台本テンプレートを共有</li>
+        <li>内容・ペースは本人に委ねる</li>
+        <li>RBブランドの最低限ルールのみ</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <p class="section-title">将来展開 / Vision</p>
+  <div class="vision">
+    <p style="font-size:0.72rem; color:var(--dim); line-height:1.9;">
+      VTuberを起点に、RBフォレストをクリエイター集団として拡張していく。
+    </p>
+    <div class="vision-grid">
+      <span class="vision-tag">🎵 音楽</span>
+      <span class="vision-tag">📖 漫画</span>
+      <span class="vision-tag">🎮 ゲーム</span>
+      <span class="vision-tag">📺 アニメ制作</span>
+      <span class="vision-tag">🎙 ポッドキャスト</span>
+      <span class="vision-tag">🌐 コラボ展開</span>
+    </div>
+  </div>
+
+  <a class="back" href="index.html">← Hub に戻る</a>
+
+</div>
+
+<script>
+const cv = document.getElementById('rain'), cx = cv.getContext('2d')
+let dr = []
+function ir() {
+  cv.width = innerWidth; cv.height = innerHeight
+  dr = Array.from({length:80}, () => ({
+    x: Math.random()*cv.width, y: Math.random()*cv.height,
+    l: 8+Math.random()*14, s: 1.4+Math.random()*2.2, o: 0.1+Math.random()*0.3
+  }))
+}
+function rain() {
+  cx.clearRect(0,0,cv.width,cv.height)
+  dr.forEach(d => {
+    cx.beginPath(); cx.moveTo(d.x,d.y); cx.lineTo(d.x-0.6,d.y+d.l)
+    cx.strokeStyle=`rgba(94,234,212,${d.o})`; cx.lineWidth=0.5; cx.stroke()
+    d.y+=d.s; if(d.y>cv.height){d.y=-d.l;d.x=Math.random()*cv.width}
+  })
+  requestAnimationFrame(rain)
+}
+ir(); rain(); addEventListener('resize', ir)
+</script>
+</body>
+</html>
