@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
-<title>RBAI 窶・繧｢繝励Μ繝ｩ繝ｳ繝√Ε繝ｼ</title>
+<title>RBAI — アプリランチャー</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@900&family=JetBrains+Mono:wght@700&display=swap');
   :root {
@@ -40,7 +40,7 @@
     opacity:.4;
   }
 
-  /* 笏笏 HEADER 笏笏 */
+  /* ── HEADER ── */
   header {
     text-align:center;
     padding: 40px 20px 24px;
@@ -54,7 +54,7 @@
   }
   .tagline { font-size:0.7rem; color:var(--muted); letter-spacing:3px; margin-top:5px; }
 
-  /* 笏笏 TABS 笏笏 */
+  /* ── TABS ── */
   .tab-inputs { display:none; }
 
   .tab-bar {
@@ -100,7 +100,7 @@
   #t-daihon:checked  ~ .panels #p-daihon  { display:block; }
   #t-meta:checked    ~ .panels #p-meta    { display:block; }
 
-  /* 笏笏 PANEL CONTENT 笏笏 */
+  /* ── PANEL CONTENT ── */
   .panel-inner {
     max-width:720px; margin:0 auto;
     padding: 28px 20px 80px;
@@ -114,7 +114,7 @@
     margin-bottom:14px;
   }
 
-  /* 笏笏 ICON GRID 笏笏 */
+  /* ── ICON GRID ── */
   .app-grid {
     display:flex; flex-wrap:wrap;
     gap:18px 16px;
@@ -181,7 +181,7 @@
   .g-client   { background:linear-gradient(135deg,#280000,#480000); }
   .g-misc     { background:linear-gradient(135deg,#0a0a0a,#1a1a1a); }
 
-  /* 笏笏 FOOTER 笏笏 */
+  /* ── FOOTER ── */
   footer {
     text-align:center; padding:20px; font-size:0.62rem;
     color:var(--muted); line-height:2;
@@ -211,93 +211,93 @@
 
 <header>
   <div class="brand">RBAI INC.</div>
-  <div class="tagline">繧｢繝励Μ繝ｩ繝ｳ繝√Ε繝ｼ 窶・譛咲欧莠募ワ縺ｮ繧ｨ繧ｳ繧ｷ繧ｹ繝・Β</div>
+  <div class="tagline">アプリランチャー — 服牢井像のエコシステム</div>
 </header>
 
 <div class="tab-bar">
-  <label for="t-forest">鹸 RB繝輔か繝ｬ繧ｹ繝・/label>
-  <label for="t-youtube">銅 YouTube</label>
-  <label for="t-manebou">腸 繝槭ロ縺ｼ縺・/label>
-  <label for="t-ichi">投 荳谺｡雉・侭</label>
-  <label for="t-daihon">統 蜿ｰ譛ｬAI</label>
-  <label for="t-meta">召 META</label>
+  <label for="t-forest">🌲 RBフォレスト</label>
+  <label for="t-youtube">📺 YouTube</label>
+  <label for="t-manebou">💰 マネぼう</label>
+  <label for="t-ichi">📊 一次資料</label>
+  <label for="t-daihon">📝 台本AI</label>
+  <label for="t-meta">🏢 META</label>
 </div>
 
 <div class="panels">
 
-  <!-- 笊絶武笊・RB繝輔か繝ｬ繧ｹ繝・笊絶武笊・-->
+  <!-- ═══ RBフォレスト ═══ -->
   <div class="tab-panel" id="p-forest">
     <div class="panel-inner">
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--forest);color:var(--forest);">繧ｹ繧ｿ繧ｸ繧ｪ</div>
+        <div class="sec-label" style="border-left-color:var(--forest);color:var(--forest);">スタジオ</div>
         <div class="app-grid">
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-forest">
-              <img src="icons/rbforest.png" onerror="this.remove()" alt="">鹸</div>
-            <div class="app-name">RB繝輔か繝ｬ繧ｹ繝・/div>
+              <img src="icons/rbforest.png" onerror="this.remove()" alt="">🌲</div>
+            <div class="app-name">RBフォレスト</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-rb">
-              <img src="icons/rb.png" onerror="this.remove()" alt="">汐</div>
+              <img src="icons/rb.png" onerror="this.remove()" alt="">🎬</div>
             <div class="app-name">RB</div>
           </a>
 
           <a class="app-item" href="VTuber/all-domedia-studio.html">
             <div class="app-tile g-forest2">
-              <img src="icons/all-domedia.png" onerror="this.remove()" alt="">鹿</div>
-            <div class="app-name">繧ｪ繝ｼ繝ｫ繝ｻ<br>繝峨Γ繝・ぅ繧｢</div>
+              <img src="icons/all-domedia.png" onerror="this.remove()" alt="">🎭</div>
+            <div class="app-name">オール・<br>ドメディア</div>
           </a>
 
         </div>
       </div>
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--forest);color:var(--forest);">繧ｭ繝｣繝ｩ繧ｯ繧ｿ繝ｼ</div>
+        <div class="sec-label" style="border-left-color:var(--forest);color:var(--forest);">キャラクター</div>
         <div class="app-grid">
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-01">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char1">
-              <img src="icons/rainy-brain.png" onerror="this.remove()" alt="">県</div>
+              <img src="icons/rainy-brain.png" onerror="this.remove()" alt="">🌧</div>
             <div class="app-name">RAINY<br>BRAIN</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-02">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char2">
-              <img src="icons/all-domedia.png" onerror="this.remove()" alt="">ｦ・/div>
+              <img src="icons/all-domedia.png" onerror="this.remove()" alt="">🦉</div>
             <div class="app-name">Owl<br>Dmedia</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-03">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char3">
-              <img src="icons/enda.png" onerror="this.remove()" alt="">蒔</div>
-            <div class="app-name">縺医ｓ縺</div>
+              <img src="icons/enda.png" onerror="this.remove()" alt="">🎪</div>
+            <div class="app-name">えんだ</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-04">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char1">
-              <img src="icons/amemori-cionu.png" onerror="this.remove()" alt="">生</div>
-            <div class="app-name">髮ｨ譽ｮ<br>蟄千堪</div>
+              <img src="icons/amemori-cionu.png" onerror="this.remove()" alt="">🐶</div>
+            <div class="app-name">雨森<br>子犬</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-05">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char4">
-              <img src="icons/ukai-ukapuri.png" onerror="this.remove()" alt="">諺</div>
-            <div class="app-name">縺・ｻｻ<br>縺・°縺ｷ繧・/div>
+              <img src="icons/ukai-ukapuri.png" onerror="this.remove()" alt="">🌿</div>
+            <div class="app-name">う廻<br>うかぷり</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-06">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char5">
-              <img src="icons/gogogo-meme.png" onerror="this.remove()" alt="">笞｡</div>
-            <div class="app-name">霓溘・br>繝｡繝｡</div>
+              <img src="icons/gogogo-meme.png" onerror="this.remove()" alt="">⚡</div>
+            <div class="app-name">轟々<br>メメ</div>
           </a>
 
-          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-07">
+          <a class="app-item" href="rbforest.html">
             <div class="app-tile g-char6">
-              <img src="icons/kouka-tokin.png" onerror="this.remove()" alt="">閥</div>
-            <div class="app-name">邏・ｦ・br>縺ｨ驥・/div>
+              <img src="icons/kouka-tokin.png" onerror="this.remove()" alt="">🔴</div>
+            <div class="app-name">紅禍<br>と金</div>
           </a>
 
         </div>
@@ -306,48 +306,48 @@
     </div>
   </div>
 
-  <!-- 笊絶武笊・YouTube 笊絶武笊・-->
+  <!-- ═══ YouTube ═══ -->
   <div class="tab-panel" id="p-youtube">
     <div class="panel-inner">
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--cyan);color:var(--cyan);">驟堺ｿ｡繝ｻ蛻ｶ菴・/div>
+        <div class="sec-label" style="border-left-color:var(--cyan);color:var(--cyan);">配信・制作</div>
         <div class="app-grid">
 
           <a class="app-item" href="streams/">
             <div class="app-tile g-stream">
-              <img src="icons/streams.png" onerror="this.remove()" alt="">銅</div>
-            <div class="app-name">Channel OS<br>繧ｹ繝医Μ繝ｼ繝</div>
+              <img src="icons/streams.png" onerror="this.remove()" alt="">📺</div>
+            <div class="app-name">Channel OS<br>ストリーム</div>
           </a>
 
           <a class="app-item" href="VTuber/">
             <div class="app-tile g-studio">
-              <img src="icons/rb-studio.png" onerror="this.remove()" alt="">汐</div>
+              <img src="icons/rb-studio.png" onerror="this.remove()" alt="">🎬</div>
             <div class="app-name">RBStudio</div>
           </a>
 
           <a class="app-item" href="VTuber/ai-comment-system.html">
             <div class="app-tile g-forest2">
-              <img src="icons/ai-comment.png" onerror="this.remove()" alt="">､・/div>
-            <div class="app-name">AI繧ｳ繝｡繧ｹ繧ｿ</div>
+              <img src="icons/ai-comment.png" onerror="this.remove()" alt="">🤖</div>
+            <div class="app-name">AIコメスタ</div>
           </a>
 
           <a class="app-item" href="radio/">
             <div class="app-tile g-stream">
-              <img src="icons/radio-duo.png" onerror="this.remove()" alt="">児</div>
-            <div class="app-name">Radio<br>驟堺ｿ｡</div>
+              <img src="icons/radio-duo.png" onerror="this.remove()" alt="">🎙</div>
+            <div class="app-name">Radio<br>配信</div>
           </a>
 
           <a class="app-item" href="#" target="_blank" rel="noopener">
             <div class="app-tile g-suno">
-              <img src="icons/suno-ai.png" onerror="this.remove()" alt="">七</div>
+              <img src="icons/suno-ai.png" onerror="this.remove()" alt="">🎵</div>
             <div class="app-name">SUNO AI</div>
           </a>
 
           <a class="app-item" href="#" target="_blank" rel="noopener">
             <div class="app-tile g-trans">
-              <img src="icons/transcription.png" onerror="this.remove()" alt="">児</div>
-            <div class="app-name">譁・ｭ苓ｵｷ縺薙＠</div>
+              <img src="icons/transcription.png" onerror="this.remove()" alt="">🎙</div>
+            <div class="app-name">文字起こし</div>
           </a>
 
         </div>
@@ -356,60 +356,60 @@
     </div>
   </div>
 
-  <!-- 笊絶武笊・繝槭ロ縺ｼ縺・笊絶武笊・-->
+  <!-- ═══ マネぼう ═══ -->
   <div class="tab-panel" id="p-manebou">
     <div class="panel-inner">
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--green);color:var(--green);">繝槭ロ縺ｼ縺・ｳｻ</div>
+        <div class="sec-label" style="border-left-color:var(--green);color:var(--green);">マネぼう系</div>
         <div class="app-grid">
 
           <a class="app-item" href="https://manebou-juku.vercel.app" target="_blank" rel="noopener">
             <div class="app-tile g-manebou">
-              <img src="icons/manebou-academy.png" onerror="this.remove()" alt="">雌</div>
-            <div class="app-name">繝槭ロ縺ｼ縺・br>繧｢繧ｫ繝・Α繝ｼ</div>
+              <img src="icons/manebou-academy.png" onerror="this.remove()" alt="">🎓</div>
+            <div class="app-name">マネぼう<br>アカデミー</div>
           </a>
 
-          <a class="app-item" href="繝槭ロ縺ｼ縺・P/">
+          <a class="app-item" href="マネぼうHP/">
             <div class="app-tile g-manoff">
-              <img src="icons/manebou-offline.png" onerror="this.remove()" alt="">匠</div>
-            <div class="app-name">繝槭ロ縺ｼ縺・｡ｾ<br>蟇ｾ髱｢迚・/div>
+              <img src="icons/manebou-offline.png" onerror="this.remove()" alt="">🏠</div>
+            <div class="app-name">マネぼう塾<br>対面版</div>
           </a>
 
-          <a class="app-item" href="譁ｰ繝槭ロ縺ｼ縺・">
+          <a class="app-item" href="新マネぼう/">
             <div class="app-tile g-manoff">
-              <img src="icons/manebou-online.png" onerror="this.remove()" alt="">倹</div>
-            <div class="app-name">繝槭ロ縺ｼ縺・｡ｾ<br>繧ｪ繝ｳ繝ｩ繧､繝ｳ</div>
+              <img src="icons/manebou-online.png" onerror="this.remove()" alt="">🌐</div>
+            <div class="app-name">マネぼう塾<br>オンライン</div>
           </a>
 
           <a class="app-item" href="#" target="_blank" rel="noopener">
             <div class="app-tile g-mannotion">
-              <img src="icons/manebou-notion.png" onerror="this.remove()" alt="">搭</div>
-            <div class="app-name">繝槭ロ縺ｼ縺・br>Notion</div>
+              <img src="icons/manebou-notion.png" onerror="this.remove()" alt="">📋</div>
+            <div class="app-name">マネぼう<br>Notion</div>
           </a>
 
-          <a class="app-item" href="繝槭ロ縺ｼ縺・い繝励Μ/">
+          <a class="app-item" href="マネぼうアプリ/">
             <div class="app-tile g-manold">
-              <img src="icons/manebou-old.png" onerror="this.remove()" alt="">導</div>
-            <div class="app-name">繝槭ロ縺ｼ縺・br>譌ｧ繧｢繝励Μ</div>
+              <img src="icons/manebou-old.png" onerror="this.remove()" alt="">📱</div>
+            <div class="app-name">マネぼう<br>旧アプリ</div>
           </a>
 
-          <a class="app-item" href="繝槭ロ縺ｼ縺・ODO/">
+          <a class="app-item" href="マネぼうTODO/">
             <div class="app-tile g-manoff">
-              <img src="icons/manebou-todo.png" onerror="this.remove()" alt="">笨・/div>
-            <div class="app-name">繝槭ロ縺ｼ縺・br>TODO</div>
+              <img src="icons/manebou-todo.png" onerror="this.remove()" alt="">✅</div>
+            <div class="app-name">マネぼう<br>TODO</div>
           </a>
 
-          <a class="app-item" href="繝槭ロ縺ｼ縺・ｨ育ｮ玲ｩ・">
+          <a class="app-item" href="マネぼう計算機/">
             <div class="app-tile g-manoff">
-              <img src="icons/manebou-calc.png" onerror="this.remove()" alt="">ｧｮ</div>
-            <div class="app-name">險育ｮ玲ｩ・/div>
+              <img src="icons/manebou-calc.png" onerror="this.remove()" alt="">🧮</div>
+            <div class="app-name">計算機</div>
           </a>
 
-          <a class="app-item" href="繝槭ロ縺ｼ縺・adio/">
+          <a class="app-item" href="マネぼうRadio/">
             <div class="app-tile g-manoff">
-              <img src="icons/manebou-radio.png" onerror="this.remove()" alt="">峠</div>
-            <div class="app-name">繝槭ロ縺ｼ縺・br>Radio</div>
+              <img src="icons/manebou-radio.png" onerror="this.remove()" alt="">📻</div>
+            <div class="app-name">マネぼう<br>Radio</div>
           </a>
 
         </div>
@@ -418,29 +418,29 @@
     </div>
   </div>
 
-  <!-- 笊絶武笊・荳谺｡雉・侭 笊絶武笊・-->
+  <!-- ═══ 一次資料 ═══ -->
   <div class="tab-panel" id="p-ichi">
     <div class="panel-inner">
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--gold);color:var(--gold);">荳谺｡雉・侭</div>
+        <div class="sec-label" style="border-left-color:var(--gold);color:var(--gold);">一次資料</div>
         <div class="app-grid">
 
           <a class="app-item" href="ASK-UP/">
             <div class="app-tile g-core">
-              <img src="icons/askup.png" onerror="this.remove()" alt="">･ｷ</div>
+              <img src="icons/askup.png" onerror="this.remove()" alt="">🥷</div>
             <div class="app-name">ASK-UP</div>
           </a>
 
           <a class="app-item" href="#">
             <div class="app-tile g-stocks">
-              <img src="icons/world-stocks.png" onerror="this.remove()" alt="">嶋</div>
-            <div class="app-name">荳也阜縺ｮ譬ｪ萓｡</div>
+              <img src="icons/world-stocks.png" onerror="this.remove()" alt="">📈</div>
+            <div class="app-name">世界の株価</div>
           </a>
 
           <a class="app-item" href="UIKI/">
             <div class="app-tile g-uiki">
-              <img src="icons/uiki.png" onerror="this.remove()" alt="">県</div>
+              <img src="icons/uiki.png" onerror="this.remove()" alt="">🌧</div>
             <div class="app-name">UIKI</div>
           </a>
 
@@ -450,56 +450,61 @@
     </div>
   </div>
 
-  <!-- 笊絶武笊・蜿ｰ譛ｬAI 笊絶武笊・-->
+  <!-- ═══ 台本AI ═══ -->
   <div class="tab-panel" id="p-daihon">
     <div class="panel-inner">
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">5繧ｸ繝｣繝ｳ繝ｫ蜿ｰ譛ｬAI</div>
+        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">5ジャンル台本AI</div>
         <div class="app-grid">
 
           <a class="app-item" href="#" target="_blank" rel="noopener">
             <div class="app-tile g-daihon">
-              <img src="icons/script-ai-5genre.png" onerror="this.remove()" alt="">統</div>
-            <div class="app-name">蜿ｰ譛ｬAI<br>5繧ｸ繝｣繝ｳ繝ｫ</div>
+              <img src="icons/script-ai-5genre.png" onerror="this.remove()" alt="">📝</div>
+            <div class="app-name">台本AI<br>5ジャンル</div>
           </a>
 
-          <a class="app-item" href="https://chatgpt.com/g/g-6a27dca0c944819184b7cf3ac9f88227-rbhuoresuto-anime" target="_blank" rel="noopener"><div class="app-tile g-anime">
-              <img src="icons/genre-anime.png" onerror="this.remove()" alt="">銅</div>
-            <div class="app-name">繧｢繝九Γ</div>
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-anime">
+              <img src="icons/genre-anime.png" onerror="this.remove()" alt="">📺</div>
+            <div class="app-name">アニメ</div>
           </a>
 
-          <a class="app-item" href="https://chatgpt.com/g/g-6a27ddac0a108191844d5e6db38fa312-rbhuoresuto-ying-hua" target="_blank" rel="noopener"><div class="app-tile g-movie">
-              <img src="icons/genre-movie.png" onerror="this.remove()" alt="">汐</div>
-            <div class="app-name">譏逕ｻ</div>
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-movie">
+              <img src="icons/genre-movie.png" onerror="this.remove()" alt="">🎬</div>
+            <div class="app-name">映画</div>
           </a>
 
-          <a class="app-item" href="https://chatgpt.com/g/g-6a27de1a43308191878420e69f3022ef-rbhuoresuto-man-hua" target="_blank" rel="noopener"><div class="app-tile g-manga">
-              <img src="icons/genre-manga.png" onerror="this.remove()" alt="">答</div>
-            <div class="app-name">貍ｫ逕ｻ</div>
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-manga">
+              <img src="icons/genre-manga.png" onerror="this.remove()" alt="">📚</div>
+            <div class="app-name">漫画</div>
           </a>
 
-          <a class="app-item" href="https://chatgpt.com/g/g-6a27deb987b48191b3ae4896243c9382-rbhuoresuto-ben-shao-jie" target="_blank" rel="noopener"><div class="app-tile g-book">
-              <img src="icons/genre-book.png" onerror="this.remove()" alt="">当</div>
-            <div class="app-name">譛ｬ</div>
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-book">
+              <img src="icons/genre-book.png" onerror="this.remove()" alt="">📖</div>
+            <div class="app-name">本</div>
           </a>
 
-          <a class="app-item" href="https://chatgpt.com/g/g-6a27df0372d88191999a9f1b962ca299-rbhuoresuto-torama" target="_blank" rel="noopener"><div class="app-tile g-drama">
-              <img src="icons/genre-drama.png" onerror="this.remove()" alt="">鹿</div>
-            <div class="app-name">繝峨Λ繝・/div>
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-drama">
+              <img src="icons/genre-drama.png" onerror="this.remove()" alt="">🎭</div>
+            <div class="app-name">ドラマ</div>
           </a>
 
         </div>
       </div>
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">縺昴・莉・蜿ｰ譛ｬAI</div>
+        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">その他 台本AI</div>
         <div class="app-grid">
 
           <a class="app-item" href="#" target="_blank" rel="noopener">
             <div class="app-tile g-morning">
-              <img src="icons/morning-news-ai.png" onerror="this.remove()" alt="">堂</div>
-            <div class="app-name">譛昴ル繝･繝ｼ繧ｹ<br>蜿ｰ譛ｬAI</div>
+              <img src="icons/morning-news-ai.png" onerror="this.remove()" alt="">📰</div>
+            <div class="app-name">朝ニュース<br>台本AI</div>
           </a>
 
         </div>
@@ -508,23 +513,23 @@
     </div>
   </div>
 
-  <!-- 笊絶武笊・META 笊絶武笊・-->
+  <!-- ═══ META ═══ -->
   <div class="tab-panel" id="p-meta">
     <div class="panel-inner">
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--fire);color:var(--fire);">諤晄Φ繝ｻ繝励Ο繝医さ繝ｫ</div>
+        <div class="sec-label" style="border-left-color:var(--fire);color:var(--fire);">思想・プロトコル</div>
         <div class="app-grid">
 
-          <a class="app-item" href="譛咲欧莠募ワ/">
+          <a class="app-item" href="服牢井像/">
             <div class="app-tile g-fukuro">
-              <img src="icons/fukurouzo.png" onerror="this.remove()" alt="">県</div>
+              <img src="icons/fukurouzo.png" onerror="this.remove()" alt="">🌧</div>
             <div class="app-name">FUKUROUZO</div>
           </a>
 
           <a class="app-item" href="_RBAI/">
             <div class="app-tile g-meta">
-              <img src="icons/rbai.png" onerror="this.remove()" alt="">召</div>
+              <img src="icons/rbai.png" onerror="this.remove()" alt="">🏢</div>
             <div class="app-name">RBAI Inc.</div>
           </a>
 
@@ -532,68 +537,68 @@
       </div>
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">迚ｩ隱槭・荳也阜隕ｳ</div>
+        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">物語・世界観</div>
         <div class="app-grid">
 
-          <a class="app-item" href="髮ｨ縺ｨ荳也阜/">
+          <a class="app-item" href="雨と世界/">
             <div class="app-tile g-uiki">
-              <img src="icons/rain-world.png" onerror="this.remove()" alt="">県</div>
-            <div class="app-name">髮ｨ縺ｨ荳也阜</div>
+              <img src="icons/rain-world.png" onerror="this.remove()" alt="">🌧</div>
+            <div class="app-name">雨と世界</div>
           </a>
 
-          <a class="app-item" href="髮ｨ縺ｨ荳也阜/RAINA/">
+          <a class="app-item" href="雨と世界/RAINA/">
             <div class="app-tile g-story">
-              <img src="icons/raina.png" onerror="this.remove()" alt="">当</div>
+              <img src="icons/raina.png" onerror="this.remove()" alt="">📖</div>
             <div class="app-name">RAINA</div>
           </a>
 
-          <a class="app-item" href="迚ｩ隱槫ｷ･謌ｿ/">
+          <a class="app-item" href="物語工房/">
             <div class="app-tile g-story">
-              <img src="icons/story-div.png" onerror="this.remove()" alt="">糖</div>
-            <div class="app-name">迚ｩ隱槫ｷ･謌ｿ</div>
+              <img src="icons/story-div.png" onerror="this.remove()" alt="">📜</div>
+            <div class="app-name">物語工房</div>
           </a>
 
         </div>
       </div>
 
       <div class="app-section">
-        <div class="sec-label" style="border-left-color:var(--muted);color:var(--muted);">萓晞ｼ譯井ｻｶ繝ｻ縺昴・莉・/div>
+        <div class="sec-label" style="border-left-color:var(--muted);color:var(--muted);">依頼案件・その他</div>
         <div class="app-grid">
 
-          <a class="app-item" href="蟆丞・縺後ｓ/">
+          <a class="app-item" href="小児がん/">
             <div class="app-tile g-client">
-              <img src="icons/shonigan.png" onerror="this.remove()" alt="">似</div>
+              <img src="icons/shonigan.png" onerror="this.remove()" alt="">🎗</div>
             <div class="app-name">SHONIGAN</div>
           </a>
 
           <a class="app-item" href="pin-gakushikai/">
             <div class="app-tile g-misc">
-              <img src="icons/zaischool.png" onerror="this.remove()" alt="">雌</div>
+              <img src="icons/zaischool.png" onerror="this.remove()" alt="">🎓</div>
             <div class="app-name">ZAi School</div>
           </a>
 
-          <a class="app-item" href="縺ｵ縺｣縺阪・遑ｬ雋ｨ蠎・">
+          <a class="app-item" href="ふっきー硬貨店/">
             <div class="app-tile g-misc">
-              <img src="icons/fukkii.png" onerror="this.remove()" alt="">ｪ・/div>
-            <div class="app-name">縺ｵ縺｣縺阪・<br>遑ｬ雋ｨ蠎・/div>
+              <img src="icons/fukkii.png" onerror="this.remove()" alt="">🪙</div>
+            <div class="app-name">ふっきー<br>硬貨店</div>
           </a>
 
           <a class="app-item" href="https://rainybrainch.github.io/pomojikan/" target="_blank" rel="noopener">
             <div class="app-tile g-pomo">
-              <img src="icons/pomojikan.png" onerror="this.remove()" alt="">答</div>
-            <div class="app-name">縺ｽ繧ゅ§縺九ｓ</div>
+              <img src="icons/pomojikan.png" onerror="this.remove()" alt="">📚</div>
+            <div class="app-name">ぽもじかん</div>
           </a>
 
           <a class="app-item" href="SASUKE/sasuke-mania.html">
             <div class="app-tile g-misc">
-              <img src="icons/sasuke.png" onerror="this.remove()" alt="">勝・・/div>
+              <img src="icons/sasuke.png" onerror="this.remove()" alt="">🏟️</div>
             <div class="app-name">SASUKE<br>Mania</div>
           </a>
 
-          <a class="app-item" href="髮ｻ閼ｳ蟾･謌ｿ/">
+          <a class="app-item" href="電脳工房/">
             <div class="app-tile g-stream">
-              <img src="icons/denno.png" onerror="this.remove()" alt="">笞・/div>
-            <div class="app-name">髮ｻ閼ｳ蟾･謌ｿ</div>
+              <img src="icons/denno.png" onerror="this.remove()" alt="">⚒</div>
+            <div class="app-name">電脳工房</div>
           </a>
 
         </div>
@@ -605,11 +610,9 @@
 </div><!-- .panels -->
 
 <footer>
-  <a href="README.md">README</a> ﾂｷ <a href="CLAUDE.md">RBAI Inc.</a>
-  ﾂｷ icons/ 縺ｫ PNG 繧堤ｽｮ縺代・閾ｪ蜍募渚譏
+  <a href="README.md">README</a> · <a href="CLAUDE.md">RBAI Inc.</a>
+  · icons/ に PNG を置けば自動反映
 </footer>
 
 </body>
 </html>
-
-
