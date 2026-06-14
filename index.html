@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RainyBrainch Hub</title>
+  <title>RAINYBRAIN Hub</title>
   <link rel="icon" href="hub-icon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,26 +20,17 @@
     .header-sub{margin-top:10px;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.15em}
     .section{margin-bottom:40px}
     .sec-label{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.25em;text-transform:uppercase;padding:4px 14px;border-radius:4px;margin-bottom:18px}
-    .sec-label.gold{background:var(--gold);color:var(--dark)}
     .sec-label.sky{background:var(--sky);color:var(--dark)}
     .sec-label.green{background:var(--green);color:var(--dark)}
     .sec-label.red{background:var(--red);color:var(--white)}
     .sec-label.purple{background:var(--purple);color:var(--white)}
     .app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px}
     .app-item{display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;-webkit-tap-highlight-color:transparent}
-    .app-icon{width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;position:relative;overflow:hidden;transition:transform .12s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 10px rgba(0,0,0,.55);flex-shrink:0}
+    .app-icon{width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;position:relative;overflow:hidden;transition:transform .12s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 10px rgba(0,0,0,.55);flex-shrink:0;background:#1a1a2a}
     .app-item:hover .app-icon{transform:scale(1.1)}
     .app-item:active .app-icon{transform:scale(.92)}
     .app-icon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:16px}
     .app-name{font-size:10px;font-weight:700;color:rgba(255,255,255,.85);text-align:center;line-height:1.35;max-width:72px;word-break:break-word}
-    .bg-sky{background:linear-gradient(145deg,#1a4a5a,#2a7a9a)}
-    .bg-gold{background:linear-gradient(145deg,#3a2a00,#6a4a00)}
-    .bg-green{background:linear-gradient(145deg,#0a2a18,#0a4a28)}
-    .bg-purple{background:linear-gradient(145deg,#1a0a30,#2a1050)}
-    .bg-red{background:linear-gradient(145deg,#2a0000,#4a0808)}
-    .bg-dark{background:linear-gradient(145deg,#1a1a2a,#2a2a3a)}
-    .bg-forest{background:linear-gradient(145deg,#012010,#024a20)}
-    .bg-rain{background:linear-gradient(145deg,#051428,#0a2848)}
     .divider{height:1px;background:rgba(255,255,255,.06);margin:32px 0}
     footer{text-align:center;margin-top:56px;font-size:11px;color:rgba(255,255,255,.15);letter-spacing:.2em}
   </style>
@@ -48,140 +39,150 @@
 <canvas id="rain-canvas"></canvas>
 <div class="container">
   <header class="header">
-    <p class="header-eyebrow">RainyBrainch</p>
+    <p class="header-eyebrow">RAINYBRAIN</p>
     <h1 class="header-title">Hub</h1>
     <p class="header-sub">ツールへのショートカット</p>
   </header>
+
   <section class="section">
     <p class="sec-label sky">一次資料</p>
     <div class="app-grid">
       <a class="app-item" href="https://sekai-kabuka.com/pc-index.html" target="_blank" rel="noopener">
-        <div class="app-icon bg-green"><img src="icons/world-stocks.png" onerror="this.remove()" alt="">📈</div>
+        <div class="app-icon"><img src="icons/world-stocks.png" alt="世界の株価"></div>
         <span class="app-name">世界の株価</span>
       </a>
-      <a class="app-item" href="https://rainybrainch.github.io/uiki/" target="_blank" rel="noopener">
-        <div class="app-icon bg-rain"><img src="icons/uiki.png" onerror="this.remove()" alt="">🌧</div>
-        <span class="app-name">UIKI</span>
+      <a class="app-item" href="#" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/ask1.png" alt="ASK"></div>
+        <span class="app-name">ASK</span>
       </a>
     </div>
   </section>
+
   <div class="divider"></div>
+
   <section class="section">
     <p class="sec-label red">YouTube</p>
     <div class="app-grid">
       <a class="app-item" href="https://transcription-app-production-04da.up.railway.app" target="_blank" rel="noopener">
-        <div class="app-icon bg-purple"><img src="icons/transcription.png" onerror="this.remove()" alt="">🎙</div>
+        <div class="app-icon"><img src="icons/transcription.png" alt="文字起こし"></div>
         <span class="app-name">文字起こし</span>
       </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a26338c271881918e9ea284f3cafe14-manehou-moninkuniyusu" target="_blank" rel="noopener">
-        <div class="app-icon bg-green"><img src="icons/morning-news-ai.png" onerror="this.remove()" alt="">🤖</div>
-        <span class="app-name">朝ニュース AI</span>
-      </a>
       <a class="app-item" href="https://suno.com/discover" target="_blank" rel="noopener">
-        <div class="app-icon bg-purple"><img src="icons/suno-ai.png" onerror="this.remove()" alt="">🎵</div>
+        <div class="app-icon"><img src="icons/suno-ai.png" alt="SUNO AI"></div>
         <span class="app-name">SUNO AI</span>
       </a>
-      <a class="app-item" href="https://rainybrainch.github.io/live/morning-news-studio.html" target="_blank" rel="noopener">
-        <div class="app-icon bg-gold"><img src="ms-icon.png" onerror="this.remove()" alt="">📺</div>
-        <span class="app-name">Morning News Studio</span>
-      </a>
       <a class="app-item" href="https://studio.youtube.com/channel/UCQNWDJh_KoFMFVz5QRU3k6Q/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D" target="_blank" rel="noopener">
-        <div class="app-icon bg-red"><img src="icons/rb-studio.png" onerror="this.remove()" alt="">▶️</div>
+        <div class="app-icon"><img src="icons/rb-studio.png" alt="YouTube Studio"></div>
         <span class="app-name">YouTube Studio</span>
       </a>
       <a class="app-item" href="https://rainybrainch.github.io/live/streams/index.html" target="_blank" rel="noopener">
-        <div class="app-icon bg-sky"><img src="icons/streams.png" onerror="this.remove()" alt="">📡</div>
+        <div class="app-icon"><img src="icons/streams.png" alt="Channel OS"></div>
         <span class="app-name">Channel OS</span>
       </a>
     </div>
   </section>
+
   <div class="divider"></div>
+
   <section class="section">
-    <p class="sec-label green">マネぼう / Monebou</p>
+    <p class="sec-label green">マネぼう</p>
     <div class="app-grid">
       <a class="app-item" href="https://manebou-juku.vercel.app/" target="_blank" rel="noopener">
-        <div class="app-icon bg-green"><img src="icons/manebou-academy.png" onerror="this.remove()" alt="">🎓</div>
+        <div class="app-icon"><img src="icons/manebou-academy.png" alt="マネぼうアカデミー"></div>
         <span class="app-name">マネぼう<br>アカデミー</span>
       </a>
       <a class="app-item" href="https://rainybrainch.github.io/manebou-hp/" target="_blank" rel="noopener">
-        <div class="app-icon bg-gold"><img src="icons/manebou-offline.png" onerror="this.remove()" alt="">📚</div>
+        <div class="app-icon"><img src="icons/manebou-hp.png" alt="マネぼう塾HP"></div>
         <span class="app-name">マネぼう塾 HP</span>
       </a>
       <a class="app-item" href="https://app.notion.com/p/2fbd8fc4b38280929d01ce8486606b88" target="_blank" rel="noopener">
-        <div class="app-icon bg-dark"><img src="icons/manebou-notion.png" onerror="this.remove()" alt="">📋</div>
+        <div class="app-icon"><img src="icons/manebou-notion.png" alt="Notion"></div>
         <span class="app-name">Notion</span>
       </a>
       <a class="app-item" href="https://rainybrainch.github.io/manebou-hp/home.html" target="_blank" rel="noopener">
-        <div class="app-icon bg-green"><img src="icons/manebou-old.png" onerror="this.remove()" alt="">🗂</div>
+        <div class="app-icon"><img src="icons/manebou-old.png" alt="旧アプリ"></div>
         <span class="app-name">旧アプリ</span>
       </a>
-      <a class="app-item" href="#" target="_blank" rel="noopener">
-        <div class="app-icon bg-purple"><img src="icons/manebou-manga-ai.png" onerror="this.remove()" alt="">📖</div>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a2ea645f1d08191b3bb9da3052262e2-manehouman-hua-ai" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/manebou-manga-ai.png" alt="マネぼう漫画AI"></div>
         <span class="app-name">マネぼう<br>漫画AI</span>
       </a>
     </div>
   </section>
+
   <div class="divider"></div>
+
   <section class="section">
     <p class="sec-label purple">RBフォレスト</p>
     <div class="app-grid">
       <a class="app-item" href="rbforest.html">
-        <div class="app-icon bg-forest"><img src="icons/rbforest.png" onerror="this.remove()" alt="">🌲</div>
+        <div class="app-icon"><img src="icons/rbforest.png" alt="RBフォレスト"></div>
         <span class="app-name">RBフォレスト</span>
       </a>
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/rainybrain.png" alt="RAINYBRAIN"></div>
+        <span class="app-name">RAINYBRAIN</span>
+      </a>
       <a class="app-item" href="alldog-proposal.html">
-        <div class="app-icon bg-sky"><img src="icons/amemori-cionu.png" onerror="this.remove()" alt="">🐕</div>
+        <div class="app-icon"><img src="icons/amemori-cionu.png" alt="雨森子犬"></div>
         <span class="app-name">雨森子犬</span>
       </a>
       <a class="app-item" href="rbforest.html">
-        <div class="app-icon bg-forest"><img src="icons/ukai-ukapuri.png" onerror="this.remove()" alt="">🌿</div>
+        <div class="app-icon"><img src="icons/ukai-ukapuri.png" alt="う廻うかぷり"></div>
         <span class="app-name">う廻<br>うかぷり</span>
       </a>
       <a class="app-item" href="rbforest.html">
-        <div class="app-icon bg-red"><img src="icons/gogogo-meme.png" onerror="this.remove()" alt="">⚡</div>
-        <span class="app-name">轟々メメ</span>
+        <div class="app-icon"><img src="icons/all-domedia.png" alt="オール・ドメディア"></div>
+        <span class="app-name">オール・<br>ドメディア</span>
       </a>
       <a class="app-item" href="rbforest.html">
-        <div class="app-icon bg-red"><img src="icons/kouka-tokin.png" onerror="this.remove()" alt="">🔴</div>
+        <div class="app-icon"><img src="icons/kouka-tokin.png" alt="紅禍と金"></div>
         <span class="app-name">紅禍と金</span>
       </a>
       <a class="app-item" href="rbforest.html">
-        <div class="app-icon bg-purple"><img src="icons/all-domedia.png" onerror="this.remove()" alt="">🎭</div>
-        <span class="app-name">オール・<br>ドメディア</span>
+        <div class="app-icon"><img src="icons/gogogo-meme.png" alt="轟々メメ"></div>
+        <span class="app-name">轟々メメ</span>
       </a>
     </div>
   </section>
+
   <div class="divider"></div>
+
   <section class="section">
     <p class="sec-label purple">台本AI</p>
     <div class="app-grid">
       <a class="app-item" href="r13-scripts.html">
-        <div class="app-icon bg-purple"><img src="icons/script-ai-5genre.png" onerror="this.remove()" alt="">📝</div>
+        <div class="app-icon"><img src="icons/script-5genre.png" alt="台本AI 5ジャンル"></div>
         <span class="app-name">台本AI<br>5ジャンル</span>
       </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a26338c271881918e9ea284f3cafe14-manehou-moninkuniyusu" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/script-morning-news.png" alt="朝ニュース台本AI"></div>
+        <span class="app-name">朝ニュース<br>台本AI</span>
+      </a>
       <a class="app-item" href="https://chatgpt.com/g/g-6a27dca0c944819184b7cf3ac9f88227-rbhuoresuto-anime" target="_blank" rel="noopener">
-        <div class="app-icon bg-sky"><img src="icons/genre-anime.png" onerror="this.remove()" alt="">📺</div>
+        <div class="app-icon"><img src="icons/genre-anime.png" alt="アニメ"></div>
         <span class="app-name">アニメ</span>
       </a>
       <a class="app-item" href="https://chatgpt.com/g/g-6a27ddac0a108191844d5e6db38fa312-rbhuoresuto-ying-hua" target="_blank" rel="noopener">
-        <div class="app-icon bg-red"><img src="icons/genre-movie.png" onerror="this.remove()" alt="">🎬</div>
+        <div class="app-icon"><img src="icons/genre-movie.png" alt="映画"></div>
         <span class="app-name">映画</span>
       </a>
       <a class="app-item" href="https://chatgpt.com/g/g-6a27de1a43308191878420e69f3022ef-rbhuoresuto-man-hua" target="_blank" rel="noopener">
-        <div class="app-icon bg-green"><img src="icons/genre-manga.png" onerror="this.remove()" alt="">📚</div>
+        <div class="app-icon"><img src="icons/genre-manga.png" alt="漫画"></div>
         <span class="app-name">漫画</span>
       </a>
       <a class="app-item" href="https://chatgpt.com/g/g-6a27deb987b48191b3ae4896243c9382-rbhuoresuto-ben-shao-jie" target="_blank" rel="noopener">
-        <div class="app-icon bg-dark"><img src="icons/genre-book.png" onerror="this.remove()" alt="">📖</div>
+        <div class="app-icon"><img src="icons/genre-book.png" alt="本"></div>
         <span class="app-name">本</span>
       </a>
       <a class="app-item" href="https://chatgpt.com/g/g-6a27df0372d88191999a9f1b962ca299-rbhuoresuto-torama" target="_blank" rel="noopener">
-        <div class="app-icon bg-gold"><img src="icons/genre-drama.png" onerror="this.remove()" alt="">🎭</div>
+        <div class="app-icon"><img src="icons/genre-drama.png" alt="ドラマ"></div>
         <span class="app-name">ドラマ</span>
       </a>
     </div>
   </section>
-  <footer>RAINYBRAINCH · 2026</footer>
+
+  <footer>RAINYBRAIN · 2026</footer>
 </div>
 <script>
   const canvas=document.getElementById("rain-canvas"),ctx=canvas.getContext("2d");let drops=[];
