@@ -1,409 +1,619 @@
-<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RainyBrainch Hub</title>
-  <link rel="icon" href="hub-icon.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --sky: #5BC8E8;
-      --gold: #F5C842;
-      --gold-dark: #D4A017;
-      --green: #4CAF7D;
-      --red: #E8354A;
-      --purple: #9B6DD6;
-      --dark: #0d1117;
-      --dark2: #111827;
-      --white: #FFFFFF;
-      --cream: #FFFDF5;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>RBAI 窶・繧｢繝励Μ繝ｩ繝ｳ繝√Ε繝ｼ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@900&family=JetBrains+Mono:wght@700&display=swap');
+  :root {
+    --bg: #050505;
+    --steel: #141414;
+    --line: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --fire: #FF4500;
+    --gold: #FFD700;
+    --cyan: #00BCD4;
+    --green: #00E676;
+    --purple: #9C27B0;
+    --rain: #3a6fc9;
+    --forest: #2aaa6a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+  }
+  body::before {
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 8% 14%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 45% 30%, rgba(255,215,0,.4), transparent),
+      radial-gradient(1px 1px at 80% 70%, rgba(58,111,201,.4), transparent),
+      radial-gradient(1px 1px at 20% 88%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 92% 22%, rgba(255,255,255,.35), transparent);
+    opacity:.4;
+  }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* 笏笏 HEADER 笏笏 */
+  header {
+    text-align:center;
+    padding: 40px 20px 24px;
+    position:relative; z-index:10;
+  }
+  .brand {
+    font-family:'JetBrains Mono', monospace;
+    font-size:1.1rem; font-weight:700; letter-spacing:8px;
+    background: linear-gradient(135deg, var(--fire), var(--gold));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .tagline { font-size:0.7rem; color:var(--muted); letter-spacing:3px; margin-top:5px; }
 
-    body {
-      font-family: 'Zen Maru Gothic', sans-serif;
-      background: var(--dark);
-      color: var(--white);
-      min-height: 100vh;
-      padding: 56px 20px 80px;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-      position: relative;
-    }
+  /* 笏笏 TABS 笏笏 */
+  .tab-inputs { display:none; }
 
-    /* ── Rain Canvas ── */
-    #rain-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.35;
-    }
+  .tab-bar {
+    display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    gap:0;
+    border-bottom: 1px solid var(--line);
+    position:sticky; top:0; z-index:20;
+    background: rgba(5,5,5,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display:none; }
 
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 720px;
-      margin: 0 auto;
-    }
+  .tab-bar label {
+    flex-shrink:0;
+    padding: 12px 18px;
+    font-size:0.68rem; font-weight:700;
+    letter-spacing:1px;
+    color: var(--muted);
+    cursor:pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .tab-bar label:hover { color: var(--text); }
 
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 52px;
-    }
+  /* Active tab states */
+  #t-forest:checked ~ .tab-bar label[for="t-forest"]   { color:var(--forest); border-bottom-color:var(--forest); }
+  #t-youtube:checked ~ .tab-bar label[for="t-youtube"] { color:var(--cyan);   border-bottom-color:var(--cyan); }
+  #t-manebou:checked ~ .tab-bar label[for="t-manebou"] { color:var(--green);  border-bottom-color:var(--green); }
+  #t-ichi:checked ~ .tab-bar label[for="t-ichi"]       { color:var(--gold);   border-bottom-color:var(--gold); }
+  #t-daihon:checked ~ .tab-bar label[for="t-daihon"]   { color:var(--purple); border-bottom-color:var(--purple); }
+  #t-meta:checked ~ .tab-bar label[for="t-meta"]       { color:var(--fire);   border-bottom-color:var(--fire); }
 
-    .header-eyebrow {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 12px;
-    }
+  /* Tab panels */
+  .tab-panel { display:none; position:relative; z-index:1; }
+  #t-forest:checked  ~ .panels #p-forest  { display:block; }
+  #t-youtube:checked ~ .panels #p-youtube { display:block; }
+  #t-manebou:checked ~ .panels #p-manebou { display:block; }
+  #t-ichi:checked    ~ .panels #p-ichi    { display:block; }
+  #t-daihon:checked  ~ .panels #p-daihon  { display:block; }
+  #t-meta:checked    ~ .panels #p-meta    { display:block; }
 
-    .header-title {
-      font-family: 'Dela Gothic One', sans-serif;
-      font-size: clamp(42px, 10vw, 64px);
-      line-height: 1;
-      letter-spacing: -1px;
-      color: var(--white);
-      text-shadow: 4px 4px 0 var(--gold-dark);
-    }
+  /* 笏笏 PANEL CONTENT 笏笏 */
+  .panel-inner {
+    max-width:720px; margin:0 auto;
+    padding: 28px 20px 80px;
+  }
 
-    .header-sub {
-      margin-top: 14px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
-      letter-spacing: 0.15em;
-    }
+  .app-section { margin-bottom:32px; }
+  .sec-label {
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.6rem; font-weight:700; letter-spacing:4px; color:var(--muted);
+    border-left:2px solid var(--line); padding-left:10px;
+    margin-bottom:14px;
+  }
 
-    /* Section */
-    .section {
-      margin-bottom: 44px;
-    }
+  /* 笏笏 ICON GRID 笏笏 */
+  .app-grid {
+    display:flex; flex-wrap:wrap;
+    gap:18px 16px;
+  }
+  .app-item {
+    display:flex; flex-direction:column;
+    align-items:center; gap:7px;
+    width:80px; text-decoration:none; cursor:pointer;
+  }
+  .app-tile {
+    width:80px; height:80px; border-radius:18px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:2rem; position:relative; overflow:hidden;
+    transition:transform 0.15s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+    flex-shrink:0;
+  }
+  .app-tile:hover { transform:scale(1.1); }
+  .app-tile:active { transform:scale(0.94); }
+  .app-tile img {
+    position:absolute; inset:0;
+    width:100%; height:100%; object-fit:cover; border-radius:18px;
+  }
+  .app-name {
+    font-size:0.62rem; color:#ccc;
+    text-align:center; line-height:1.3;
+    max-width:80px; word-break:break-word;
+  }
 
-    .section-label {
-      display: inline-block;
-      background: var(--gold);
-      color: var(--dark);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      padding: 4px 14px;
-      border-radius: 4px;
-      margin-bottom: 16px;
-    }
+  /* Gradient presets */
+  .g-forest   { background:linear-gradient(135deg,#012010,#023a1c); }
+  .g-forest2  { background:linear-gradient(135deg,#001a10,#003020); }
+  .g-rb       { background:linear-gradient(135deg,#0a0820,#180e38); }
+  .g-char1    { background:linear-gradient(135deg,#001828,#003040); }
+  .g-char2    { background:linear-gradient(135deg,#1a0a2a,#2a1040); }
+  .g-char3    { background:linear-gradient(135deg,#1a1200,#2a1e00); }
+  .g-char4    { background:linear-gradient(135deg,#002010,#003a1c); }
+  .g-char5    { background:linear-gradient(135deg,#200a00,#401000); }
+  .g-char6    { background:linear-gradient(135deg,#280000,#4a0808); }
+  .g-youtube  { background:linear-gradient(135deg,#1a0000,#3d0000); }
+  .g-stream   { background:linear-gradient(135deg,#001828,#003040); }
+  .g-studio   { background:linear-gradient(135deg,#012a10,#024a20); }
+  .g-suno     { background:linear-gradient(135deg,#0a001a,#1a0030); }
+  .g-trans    { background:linear-gradient(135deg,#0a0a14,#141428); }
+  .g-manebou  { background:linear-gradient(135deg,#003010,#005018); }
+  .g-manoff   { background:linear-gradient(135deg,#001a08,#003010); }
+  .g-mannotion{ background:linear-gradient(135deg,#0a1a08,#142814); }
+  .g-manold   { background:linear-gradient(135deg,#00200a,#003814); }
+  .g-ichi     { background:linear-gradient(135deg,#1a0a00,#3d2000); }
+  .g-stocks   { background:linear-gradient(135deg,#001a0a,#002a14); }
+  .g-daihon   { background:linear-gradient(135deg,#0a0820,#1a1040); }
+  .g-anime    { background:linear-gradient(135deg,#001a30,#002a50); }
+  .g-movie    { background:linear-gradient(135deg,#1a0000,#3a0000); }
+  .g-manga    { background:linear-gradient(135deg,#001a00,#003800); }
+  .g-book     { background:linear-gradient(135deg,#0a0a1a,#1a1a30); }
+  .g-drama    { background:linear-gradient(135deg,#1a0a00,#3a1600); }
+  .g-morning  { background:linear-gradient(135deg,#0a1400,#182600); }
+  .g-meta     { background:linear-gradient(135deg,#0a1a2a,#1a2d40); }
+  .g-fukuro   { background:linear-gradient(135deg,#1a0800,#3d2000); }
+  .g-core     { background:linear-gradient(135deg,#2a0800,#5c1800); }
+  .g-uiki     { background:linear-gradient(135deg,#051428,#0a2848); }
+  .g-pomo     { background:linear-gradient(135deg,#0a0020,#1a0040); }
+  .g-story    { background:linear-gradient(135deg,#180028,#300050); }
+  .g-client   { background:linear-gradient(135deg,#280000,#480000); }
+  .g-misc     { background:linear-gradient(135deg,#0a0a0a,#1a1a1a); }
 
-    /* Cards */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-    }
+  /* 笏笏 FOOTER 笏笏 */
+  footer {
+    text-align:center; padding:20px; font-size:0.62rem;
+    color:var(--muted); line-height:2;
+    position:relative; z-index:1;
+    border-top: 1px solid var(--line);
+  }
+  footer a { color:var(--cyan); text-decoration:none; }
 
-    .card {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 18px 16px;
-      background: rgba(255, 253, 245, 0.92);
-      backdrop-filter: blur(8px);
-      border: 3px solid var(--dark);
-      border-radius: 18px;
-      text-decoration: none;
-      color: var(--dark);
-      box-shadow: 4px 4px 0 var(--dark);
-      transition: transform 0.12s, box-shadow 0.12s;
-      position: relative;
-    }
-
-    .card:hover {
-      transform: translate(-2px, -2px);
-    }
-
-    .card-sky   { box-shadow: 4px 4px 0 var(--sky); }
-    .card-gold  { box-shadow: 4px 4px 0 var(--gold-dark); }
-    .card-green { box-shadow: 4px 4px 0 var(--green); }
-    .card-red   { box-shadow: 4px 4px 0 var(--red); }
-    .card-purple{ box-shadow: 4px 4px 0 var(--purple); }
-
-    .card-sky:hover    { box-shadow: 6px 6px 0 var(--sky); }
-    .card-gold:hover   { box-shadow: 6px 6px 0 var(--gold-dark); }
-    .card-green:hover  { box-shadow: 6px 6px 0 var(--green); }
-    .card-red:hover    { box-shadow: 6px 6px 0 var(--red); }
-    .card-purple:hover { box-shadow: 6px 6px 0 var(--purple); }
-
-    .card-icon {
-      font-size: 28px;
-      line-height: 1;
-    }
-
-    .card-title {
-      font-family: 'Zen Maru Gothic', sans-serif;
-      font-size: 14px;
-      font-weight: 900;
-      color: var(--dark);
-      line-height: 1.3;
-    }
-
-    .card-desc {
-      font-size: 11px;
-      color: #666;
-      line-height: 1.6;
-    }
-
-    .card-arrow {
-      margin-top: auto;
-      font-size: 11px;
-      font-weight: 700;
-      color: #999;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 60px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.2);
-      letter-spacing: 0.2em;
-    }
-  </style>
+  @media (max-width:480px) {
+    .panel-inner { padding:20px 14px 60px; }
+    .app-tile { width:72px; height:72px; border-radius:16px; }
+    .app-item { width:72px; }
+    .app-name { max-width:72px; font-size:0.58rem; }
+    .tab-bar label { padding:12px 14px; font-size:0.62rem; }
+  }
+</style>
 </head>
 <body>
 
-<canvas id="rain-canvas"></canvas>
+<!-- Radio inputs for tabs -->
+<input class="tab-inputs" type="radio" id="t-forest"  name="tab" checked>
+<input class="tab-inputs" type="radio" id="t-youtube" name="tab">
+<input class="tab-inputs" type="radio" id="t-manebou" name="tab">
+<input class="tab-inputs" type="radio" id="t-ichi"    name="tab">
+<input class="tab-inputs" type="radio" id="t-daihon"  name="tab">
+<input class="tab-inputs" type="radio" id="t-meta"    name="tab">
 
-<div class="container">
+<header>
+  <div class="brand">RBAI INC.</div>
+  <div class="tagline">繧｢繝励Μ繝ｩ繝ｳ繝√Ε繝ｼ 窶・譛咲欧莠募ワ縺ｮ繧ｨ繧ｳ繧ｷ繧ｹ繝・Β</div>
+</header>
 
-  <header class="header">
-    <p class="header-eyebrow">RainyBrainch</p>
-    <h1 class="header-title">Hub</h1>
-    <p class="header-sub">ツールへのショートカット</p>
-  </header>
-
-  <section class="section">
-    <p class="section-label">一次資料</p>
-    <div class="cards">
-
-      <a class="card card-sky" href="https://sekai-kabuka.com/pc-index.html" target="_blank" rel="noopener">
-        <div class="card-icon">📈</div>
-        <div class="card-title">世界の株価</div>
-        <div class="card-desc">リアルタイム株価・指数</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-gold" href="https://mm.jcity.com/mypage/login/ask1" target="_blank" rel="noopener">
-        <div class="card-icon">📧</div>
-        <div class="card-title">ASK1</div>
-        <div class="card-desc">メール管理</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-    </div>
-  </section>
-
-  <section class="section">
-    <p class="section-label">YouTube</p>
-    <div class="cards">
-
-      <a class="card card-purple" href="https://transcription-app-production-04da.up.railway.app" target="_blank" rel="noopener">
-        <div class="card-icon">🎙</div>
-        <div class="card-title">文字起こし</div>
-        <div class="card-desc">MP3 / リアルタイム録音</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-green" href="https://chatgpt.com/g/g-6a26338c271881918e9ea284f3cafe14-manehou-moninkuniyusu" target="_blank" rel="noopener">
-        <div class="card-icon">🤖</div>
-        <div class="card-title">モーニングニュースAI</div>
-        <div class="card-desc">ChatGPT 台本生成AI</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-purple" href="https://suno.com/discover" target="_blank" rel="noopener">
-        <div class="card-icon">🎵</div>
-        <div class="card-title">SUNO AI</div>
-        <div class="card-desc">AI音楽生成</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-gold" href="https://rainybrainch.github.io/live/morning-news-studio.html" target="_blank" rel="noopener">
-        <div class="card-icon"><img src="ms-icon.png" alt="Morning News Studio" style="width:36px;height:36px;border-radius:8px;object-fit:cover;"></div>
-        <div class="card-title">Morning News Studio</div>
-        <div class="card-desc">配信スタジオ</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-red" href="https://studio.youtube.com/channel/UCQNWDJh_KoFMFVz5QRU3k6Q/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D" target="_blank" rel="noopener">
-        <div class="card-icon">▶️</div>
-        <div class="card-title">YouTube Studio</div>
-        <div class="card-desc">動画アップロード・管理</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-sky" href="https://rainybrainch.github.io/live/streams/index.html" target="_blank" rel="noopener">
-        <div class="card-icon">📡</div>
-        <div class="card-title">Channel OS ストリーム</div>
-        <div class="card-desc">RAINYBRAIN配信システム</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-purple" href="https://rainybrainch.github.io/live/streams/anime.html" target="_blank" rel="noopener">
-        <div class="card-icon">🎭</div>
-        <div class="card-title">紹介配信 画面</div>
-        <div class="card-desc">アニメ/漫画/映画/ドラマ/本</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-green" href="https://chatgpt.com" target="_blank" rel="noopener">
-        <div class="card-icon">📝</div>
-        <div class="card-title">台本 GPT</div>
-        <div class="card-desc">紹介配信 台本生成AI</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-    </div>
-  </section>
-
-  <section class="section">
-    <p class="section-label">マネぼう / Monebou</p>
-    <div class="cards">
-
-      <a class="card card-gold" href="https://rainybrainch.github.io/manebou-hp/" target="_blank" rel="noopener">
-        <div class="card-icon">📚</div>
-        <div class="card-title">マネぼう塾 HP</div>
-        <div class="card-desc">学習サポートサイト</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-green" href="https://app.notion.com/p/2fbd8fc4b38280929d01ce8486606b88" target="_blank" rel="noopener">
-        <div class="card-icon">📝</div>
-        <div class="card-title">Notion</div>
-        <div class="card-desc">マネぼうワークスペース</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-      <a class="card card-purple" href="https://rainybrainch.github.io/manebou-hp/home.html" target="_blank" rel="noopener">
-        <div class="card-icon">🗂</div>
-        <div class="card-title">旧アプリ</div>
-        <div class="card-desc">仮作成バージョン</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-    </div>
-  </section>
-
-  <section class="section">
-    <p class="section-label" style="background:var(--purple); color:var(--white);">RBフォレスト</p>
-    <div class="cards">
-
-      <a class="card card-purple" href="rbforest.html" target="_blank" rel="noopener">
-        <div class="card-icon">🌲</div>
-        <div class="card-title">RBフォレスト 全体構想</div>
-        <div class="card-desc">事務所ビジョン・メンバー・活動方針</div>
-        <div class="card-arrow">開く →</div>
-      </a>
-
-      <a class="card card-gold" href="alldog-proposal.html" target="_blank" rel="noopener">
-        <div class="card-icon">🐕‍⬛</div>
-        <div class="card-title">雨森子犬 プロポーザル</div>
-        <div class="card-desc">No.03 / 紹介系VTuber 声優募集</div>
-        <div class="card-arrow">開く →</div>
-      </a>
-
-      <a class="card card-purple" href="r13-scripts.html" target="_blank" rel="noopener">
-        <div class="card-icon">🎙</div>
-        <div class="card-title">台本AI</div>
-        <div class="card-desc">アニメ・映画・漫画・本・ドラマ 5ジャンル</div>
-        <div class="card-arrow">開く →</div>
-      </a>
-
-    </div>
-  </section>
-
-  <section class="section">
-    <p class="section-label">その他</p>
-    <div class="cards">
-
-      <a class="card card-sky" href="https://hub.vroid.com" target="_blank" rel="noopener">
-        <div class="card-icon">🧑‍🎨</div>
-        <div class="card-title">VRoid Hub</div>
-        <div class="card-desc">キャラクター管理</div>
-        <div class="card-arrow">開く ↗</div>
-      </a>
-
-    </div>
-  </section>
-
-  <footer>RAINYBRAINCH · 2026</footer>
-
+<div class="tab-bar">
+  <label for="t-forest">鹸 RB繝輔か繝ｬ繧ｹ繝・/label>
+  <label for="t-youtube">銅 YouTube</label>
+  <label for="t-manebou">腸 繝槭ロ縺ｼ縺・/label>
+  <label for="t-ichi">投 荳谺｡雉・侭</label>
+  <label for="t-daihon">統 蜿ｰ譛ｬAI</label>
+  <label for="t-meta">召 META</label>
 </div>
 
-<script>
-  const canvas = document.getElementById('rain-canvas');
-  const ctx = canvas.getContext('2d');
+<div class="panels">
 
-  let drops = [];
-  const COUNT = 120;
+  <!-- 笊絶武笊・RB繝輔か繝ｬ繧ｹ繝・笊絶武笊・-->
+  <div class="tab-panel" id="p-forest">
+    <div class="panel-inner">
 
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--forest);color:var(--forest);">繧ｹ繧ｿ繧ｸ繧ｪ</div>
+        <div class="app-grid">
 
-  function initDrops() {
-    drops = [];
-    for (let i = 0; i < COUNT; i++) {
-      drops.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        len: 10 + Math.random() * 20,
-        speed: 1.2 + Math.random() * 2.4,
-        opacity: 0.08 + Math.random() * 0.18,
-        width: 0.6 + Math.random() * 0.8,
-      });
-    }
-  }
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・">
+            <div class="app-tile g-forest">
+              <img src="icons/rbforest.png" onerror="this.remove()" alt="">鹸</div>
+            <div class="app-name">RB繝輔か繝ｬ繧ｹ繝・/div>
+          </a>
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・">
+            <div class="app-tile g-rb">
+              <img src="icons/rb.png" onerror="this.remove()" alt="">汐</div>
+            <div class="app-name">RB</div>
+          </a>
 
-    for (const d of drops) {
-      ctx.beginPath();
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x - d.len * 0.15, d.y + d.len);
-      ctx.strokeStyle = `rgba(140, 200, 240, ${d.opacity})`;
-      ctx.lineWidth = d.width;
-      ctx.lineCap = 'round';
-      ctx.stroke();
+          <a class="app-item" href="VTuber/all-domedia-studio.html">
+            <div class="app-tile g-forest2">
+              <img src="icons/all-domedia.png" onerror="this.remove()" alt="">鹿</div>
+            <div class="app-name">繧ｪ繝ｼ繝ｫ繝ｻ<br>繝峨Γ繝・ぅ繧｢</div>
+          </a>
 
-      d.y += d.speed;
-      d.x -= d.speed * 0.15;
+        </div>
+      </div>
 
-      if (d.y - d.len > canvas.height || d.x < -20) {
-        d.x = Math.random() * (canvas.width + 60);
-        d.y = -d.len;
-      }
-    }
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--forest);color:var(--forest);">繧ｭ繝｣繝ｩ繧ｯ繧ｿ繝ｼ</div>
+        <div class="app-grid">
 
-    requestAnimationFrame(draw);
-  }
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-01">
+            <div class="app-tile g-char1">
+              <img src="icons/rainy-brain.png" onerror="this.remove()" alt="">県</div>
+            <div class="app-name">RAINY<br>BRAIN</div>
+          </a>
 
-  resize();
-  initDrops();
-  draw();
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-02">
+            <div class="app-tile g-char2">
+              <img src="icons/all-domedia.png" onerror="this.remove()" alt="">ｦ・/div>
+            <div class="app-name">Owl<br>Dmedia</div>
+          </a>
 
-  window.addEventListener('resize', () => {
-    resize();
-    initDrops();
-  });
-</script>
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-03">
+            <div class="app-tile g-char3">
+              <img src="icons/enda.png" onerror="this.remove()" alt="">蒔</div>
+            <div class="app-name">縺医ｓ縺</div>
+          </a>
+
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-04">
+            <div class="app-tile g-char1">
+              <img src="icons/amemori-cionu.png" onerror="this.remove()" alt="">生</div>
+            <div class="app-name">髮ｨ譽ｮ<br>蟄千堪</div>
+          </a>
+
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-05">
+            <div class="app-tile g-char4">
+              <img src="icons/ukai-ukapuri.png" onerror="this.remove()" alt="">諺</div>
+            <div class="app-name">縺・ｻｻ<br>縺・°縺ｷ繧・/div>
+          </a>
+
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-06">
+            <div class="app-tile g-char5">
+              <img src="icons/gogogo-meme.png" onerror="this.remove()" alt="">笞｡</div>
+            <div class="app-name">霓溘・br>繝｡繝｡</div>
+          </a>
+
+          <a class="app-item" href="RB繝輔か繝ｬ繧ｹ繝・#char-07">
+            <div class="app-tile g-char6">
+              <img src="icons/kouka-tokin.png" onerror="this.remove()" alt="">閥</div>
+            <div class="app-name">邏・ｦ・br>縺ｨ驥・/div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 笊絶武笊・YouTube 笊絶武笊・-->
+  <div class="tab-panel" id="p-youtube">
+    <div class="panel-inner">
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--cyan);color:var(--cyan);">驟堺ｿ｡繝ｻ蛻ｶ菴・/div>
+        <div class="app-grid">
+
+          <a class="app-item" href="streams/">
+            <div class="app-tile g-stream">
+              <img src="icons/streams.png" onerror="this.remove()" alt="">銅</div>
+            <div class="app-name">Channel OS<br>繧ｹ繝医Μ繝ｼ繝</div>
+          </a>
+
+          <a class="app-item" href="VTuber/">
+            <div class="app-tile g-studio">
+              <img src="icons/rb-studio.png" onerror="this.remove()" alt="">汐</div>
+            <div class="app-name">RBStudio</div>
+          </a>
+
+          <a class="app-item" href="VTuber/ai-comment-system.html">
+            <div class="app-tile g-forest2">
+              <img src="icons/ai-comment.png" onerror="this.remove()" alt="">､・/div>
+            <div class="app-name">AI繧ｳ繝｡繧ｹ繧ｿ</div>
+          </a>
+
+          <a class="app-item" href="radio/">
+            <div class="app-tile g-stream">
+              <img src="icons/radio-duo.png" onerror="this.remove()" alt="">児</div>
+            <div class="app-name">Radio<br>驟堺ｿ｡</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-suno">
+              <img src="icons/suno-ai.png" onerror="this.remove()" alt="">七</div>
+            <div class="app-name">SUNO AI</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-trans">
+              <img src="icons/transcription.png" onerror="this.remove()" alt="">児</div>
+            <div class="app-name">譁・ｭ苓ｵｷ縺薙＠</div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 笊絶武笊・繝槭ロ縺ｼ縺・笊絶武笊・-->
+  <div class="tab-panel" id="p-manebou">
+    <div class="panel-inner">
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--green);color:var(--green);">繝槭ロ縺ｼ縺・ｳｻ</div>
+        <div class="app-grid">
+
+          <a class="app-item" href="https://manebou-juku.vercel.app" target="_blank" rel="noopener">
+            <div class="app-tile g-manebou">
+              <img src="icons/manebou-academy.png" onerror="this.remove()" alt="">雌</div>
+            <div class="app-name">繝槭ロ縺ｼ縺・br>繧｢繧ｫ繝・Α繝ｼ</div>
+          </a>
+
+          <a class="app-item" href="繝槭ロ縺ｼ縺・P/">
+            <div class="app-tile g-manoff">
+              <img src="icons/manebou-offline.png" onerror="this.remove()" alt="">匠</div>
+            <div class="app-name">繝槭ロ縺ｼ縺・｡ｾ<br>蟇ｾ髱｢迚・/div>
+          </a>
+
+          <a class="app-item" href="譁ｰ繝槭ロ縺ｼ縺・">
+            <div class="app-tile g-manoff">
+              <img src="icons/manebou-online.png" onerror="this.remove()" alt="">倹</div>
+            <div class="app-name">繝槭ロ縺ｼ縺・｡ｾ<br>繧ｪ繝ｳ繝ｩ繧､繝ｳ</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-mannotion">
+              <img src="icons/manebou-notion.png" onerror="this.remove()" alt="">搭</div>
+            <div class="app-name">繝槭ロ縺ｼ縺・br>Notion</div>
+          </a>
+
+          <a class="app-item" href="繝槭ロ縺ｼ縺・い繝励Μ/">
+            <div class="app-tile g-manold">
+              <img src="icons/manebou-old.png" onerror="this.remove()" alt="">導</div>
+            <div class="app-name">繝槭ロ縺ｼ縺・br>譌ｧ繧｢繝励Μ</div>
+          </a>
+
+          <a class="app-item" href="繝槭ロ縺ｼ縺・ODO/">
+            <div class="app-tile g-manoff">
+              <img src="icons/manebou-todo.png" onerror="this.remove()" alt="">笨・/div>
+            <div class="app-name">繝槭ロ縺ｼ縺・br>TODO</div>
+          </a>
+
+          <a class="app-item" href="繝槭ロ縺ｼ縺・ｨ育ｮ玲ｩ・">
+            <div class="app-tile g-manoff">
+              <img src="icons/manebou-calc.png" onerror="this.remove()" alt="">ｧｮ</div>
+            <div class="app-name">險育ｮ玲ｩ・/div>
+          </a>
+
+          <a class="app-item" href="繝槭ロ縺ｼ縺・adio/">
+            <div class="app-tile g-manoff">
+              <img src="icons/manebou-radio.png" onerror="this.remove()" alt="">峠</div>
+            <div class="app-name">繝槭ロ縺ｼ縺・br>Radio</div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 笊絶武笊・荳谺｡雉・侭 笊絶武笊・-->
+  <div class="tab-panel" id="p-ichi">
+    <div class="panel-inner">
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--gold);color:var(--gold);">荳谺｡雉・侭</div>
+        <div class="app-grid">
+
+          <a class="app-item" href="ASK-UP/">
+            <div class="app-tile g-core">
+              <img src="icons/askup.png" onerror="this.remove()" alt="">･ｷ</div>
+            <div class="app-name">ASK-UP</div>
+          </a>
+
+          <a class="app-item" href="#">
+            <div class="app-tile g-stocks">
+              <img src="icons/world-stocks.png" onerror="this.remove()" alt="">嶋</div>
+            <div class="app-name">荳也阜縺ｮ譬ｪ萓｡</div>
+          </a>
+
+          <a class="app-item" href="UIKI/">
+            <div class="app-tile g-uiki">
+              <img src="icons/uiki.png" onerror="this.remove()" alt="">県</div>
+            <div class="app-name">UIKI</div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 笊絶武笊・蜿ｰ譛ｬAI 笊絶武笊・-->
+  <div class="tab-panel" id="p-daihon">
+    <div class="panel-inner">
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">5繧ｸ繝｣繝ｳ繝ｫ蜿ｰ譛ｬAI</div>
+        <div class="app-grid">
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-daihon">
+              <img src="icons/script-ai-5genre.png" onerror="this.remove()" alt="">統</div>
+            <div class="app-name">蜿ｰ譛ｬAI<br>5繧ｸ繝｣繝ｳ繝ｫ</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-anime">
+              <img src="icons/genre-anime.png" onerror="this.remove()" alt="">銅</div>
+            <div class="app-name">繧｢繝九Γ</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-movie">
+              <img src="icons/genre-movie.png" onerror="this.remove()" alt="">汐</div>
+            <div class="app-name">譏逕ｻ</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-manga">
+              <img src="icons/genre-manga.png" onerror="this.remove()" alt="">答</div>
+            <div class="app-name">貍ｫ逕ｻ</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-book">
+              <img src="icons/genre-book.png" onerror="this.remove()" alt="">当</div>
+            <div class="app-name">譛ｬ</div>
+          </a>
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-drama">
+              <img src="icons/genre-drama.png" onerror="this.remove()" alt="">鹿</div>
+            <div class="app-name">繝峨Λ繝・/div>
+          </a>
+
+        </div>
+      </div>
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">縺昴・莉・蜿ｰ譛ｬAI</div>
+        <div class="app-grid">
+
+          <a class="app-item" href="#" target="_blank" rel="noopener">
+            <div class="app-tile g-morning">
+              <img src="icons/morning-news-ai.png" onerror="this.remove()" alt="">堂</div>
+            <div class="app-name">譛昴ル繝･繝ｼ繧ｹ<br>蜿ｰ譛ｬAI</div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 笊絶武笊・META 笊絶武笊・-->
+  <div class="tab-panel" id="p-meta">
+    <div class="panel-inner">
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--fire);color:var(--fire);">諤晄Φ繝ｻ繝励Ο繝医さ繝ｫ</div>
+        <div class="app-grid">
+
+          <a class="app-item" href="譛咲欧莠募ワ/">
+            <div class="app-tile g-fukuro">
+              <img src="icons/fukurouzo.png" onerror="this.remove()" alt="">県</div>
+            <div class="app-name">FUKUROUZO</div>
+          </a>
+
+          <a class="app-item" href="_RBAI/">
+            <div class="app-tile g-meta">
+              <img src="icons/rbai.png" onerror="this.remove()" alt="">召</div>
+            <div class="app-name">RBAI Inc.</div>
+          </a>
+
+        </div>
+      </div>
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--purple);color:var(--purple);">迚ｩ隱槭・荳也阜隕ｳ</div>
+        <div class="app-grid">
+
+          <a class="app-item" href="髮ｨ縺ｨ荳也阜/">
+            <div class="app-tile g-uiki">
+              <img src="icons/rain-world.png" onerror="this.remove()" alt="">県</div>
+            <div class="app-name">髮ｨ縺ｨ荳也阜</div>
+          </a>
+
+          <a class="app-item" href="髮ｨ縺ｨ荳也阜/RAINA/">
+            <div class="app-tile g-story">
+              <img src="icons/raina.png" onerror="this.remove()" alt="">当</div>
+            <div class="app-name">RAINA</div>
+          </a>
+
+          <a class="app-item" href="迚ｩ隱槫ｷ･謌ｿ/">
+            <div class="app-tile g-story">
+              <img src="icons/story-div.png" onerror="this.remove()" alt="">糖</div>
+            <div class="app-name">迚ｩ隱槫ｷ･謌ｿ</div>
+          </a>
+
+        </div>
+      </div>
+
+      <div class="app-section">
+        <div class="sec-label" style="border-left-color:var(--muted);color:var(--muted);">萓晞ｼ譯井ｻｶ繝ｻ縺昴・莉・/div>
+        <div class="app-grid">
+
+          <a class="app-item" href="蟆丞・縺後ｓ/">
+            <div class="app-tile g-client">
+              <img src="icons/shonigan.png" onerror="this.remove()" alt="">似</div>
+            <div class="app-name">SHONIGAN</div>
+          </a>
+
+          <a class="app-item" href="pin-gakushikai/">
+            <div class="app-tile g-misc">
+              <img src="icons/zaischool.png" onerror="this.remove()" alt="">雌</div>
+            <div class="app-name">ZAi School</div>
+          </a>
+
+          <a class="app-item" href="縺ｵ縺｣縺阪・遑ｬ雋ｨ蠎・">
+            <div class="app-tile g-misc">
+              <img src="icons/fukkii.png" onerror="this.remove()" alt="">ｪ・/div>
+            <div class="app-name">縺ｵ縺｣縺阪・<br>遑ｬ雋ｨ蠎・/div>
+          </a>
+
+          <a class="app-item" href="https://rainybrainch.github.io/pomojikan/" target="_blank" rel="noopener">
+            <div class="app-tile g-pomo">
+              <img src="icons/pomojikan.png" onerror="this.remove()" alt="">答</div>
+            <div class="app-name">縺ｽ繧ゅ§縺九ｓ</div>
+          </a>
+
+          <a class="app-item" href="SASUKE/sasuke-mania.html">
+            <div class="app-tile g-misc">
+              <img src="icons/sasuke.png" onerror="this.remove()" alt="">勝・・/div>
+            <div class="app-name">SASUKE<br>Mania</div>
+          </a>
+
+          <a class="app-item" href="髮ｻ閼ｳ蟾･謌ｿ/">
+            <div class="app-tile g-stream">
+              <img src="icons/denno.png" onerror="this.remove()" alt="">笞・/div>
+            <div class="app-name">髮ｻ閼ｳ蟾･謌ｿ</div>
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- .panels -->
+
+<footer>
+  <a href="README.md">README</a> ﾂｷ <a href="CLAUDE.md">RBAI Inc.</a>
+  ﾂｷ icons/ 縺ｫ PNG 繧堤ｽｮ縺代・閾ｪ蜍募渚譏
+</footer>
 
 </body>
 </html>
+
