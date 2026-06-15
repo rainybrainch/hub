@@ -409,8 +409,8 @@
             <span style="font-size:0.62rem; color:rgba(155,114,247,0.9);">紹介系 VTuber</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">担当</span>
-            <span style="font-size:0.62rem; color:rgba(255,255,255,0.5);">服牢（ふくろう・1号）</span>
+            <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">YouTube</span>
+            <a href="https://www.youtube.com/@AmamoriCoinuRB" target="_blank" rel="noopener" style="font-size:0.58rem; color:rgba(255,80,80,0.85); text-decoration:none;">@AmamoriCoinuRB</a>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; padding-bottom:0.45rem; border-bottom:1px solid rgba(255,255,255,0.05);">
             <span style="font-size:0.48rem; letter-spacing:0.15em; color:rgba(255,255,255,0.28); text-transform:uppercase; flex-shrink:0;">声優</span>
@@ -691,7 +691,14 @@
             <p style="font-size:0.72rem; color:rgba(255,255,255,0.75); line-height:1.7;">「やってみたい」と思ったら、DMで一声かけてほしい。<br><span style="color:var(--amber); font-weight:600;">@rainybrainch</span> が窓口です。</p>
           </div>
         </div>
-        <p class="a d6" style="margin-top:1.4rem; font-size:0.55rem; letter-spacing:0.2em; color:var(--faint); text-transform:uppercase;">Dr🦉 / 服牢研究所 — RAINYBRAIN RBフォレスト — 2026</p>
+        <div class="a d6" style="margin-top:0.75rem; padding:0.75rem 1.1rem; border-radius:10px; background:rgba(255,80,80,0.06); border:1px solid rgba(255,80,80,0.2); display:flex; align-items:center; gap:0.75rem;">
+          <div style="font-size:1.3rem; flex-shrink:0;">📺</div>
+          <div>
+            <p style="font-size:0.62rem; font-weight:700; letter-spacing:0.12em; color:#ff6b6b; margin-bottom:0.2rem;">YouTube</p>
+            <a href="https://www.youtube.com/@AmamoriCoinuRB" target="_blank" rel="noopener" style="font-size:0.72rem; color:rgba(255,255,255,0.75); text-decoration:none;">@AmamoriCoinuRB</a>
+          </div>
+        </div>
+        <p class="a d7" style="margin-top:1.4rem; font-size:0.55rem; letter-spacing:0.2em; color:var(--faint); text-transform:uppercase;">Dr🦉 / 服牢研究所 — RAINYBRAIN RBフォレスト — 2026</p>
       </div>
       <div class="cover-img-right a d1">
         <img src="alldog-imgs/alldog-samune.png" alt="雨森子犬" onerror="this.src='alldog-imgs/alldog-vroid-1.png'" />
@@ -883,7 +890,10 @@ function updateClock() {
 }
 updateClock()
 setInterval(updateClock, 10000)
-let tx=0
+let tx=0, mx=0, mDown=false
+addEventListener('mousedown',  e => { mx=e.clientX; mDown=true })
+addEventListener('mouseup',    e => { if(!mDown)return; const d=e.clientX-mx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)); mDown=false })
+addEventListener('mouseleave', () => mDown=false)
 addEventListener('touchstart', e => tx=e.touches[0].clientX)
 addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50)go(cur+(d<0?1:-1)) })
 
