@@ -1,414 +1,414 @@
-﻿<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RAINYBRAIN Hub</title>
-  <link rel="icon" href="hub-icon.png" type="image/png">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet" />
-  <style>
-    :root{--sky:#5BC8E8;--gold:#F5C842;--gold-d:#D4A017;--green:#4CAF7D;--red:#E8354A;--purple:#9B6DD6;--dark:#0d1117;--white:#FFFFFF}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:"Zen Maru Gothic",sans-serif;background:var(--dark);color:var(--white);min-height:100vh;padding:52px 20px 80px;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
-    #rain-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.3}
-    .container{position:relative;z-index:1;max-width:480px;margin:0 auto}
-    .header{text-align:center;margin-bottom:44px}
-    .header-eyebrow{font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
-    .header-title{font-family:"Dela Gothic One",sans-serif;font-size:clamp(40px,10vw,60px);line-height:1;color:var(--white);text-shadow:3px 3px 0 var(--gold-d)}
-    .header-sub{margin-top:10px;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.15em}
-    .section{margin-bottom:40px}
-    .sec-label{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.25em;text-transform:uppercase;padding:4px 14px;border-radius:4px;margin-bottom:18px}
-    .sec-label.gold{background:var(--gold);color:var(--dark)}
-    .sec-label.sky{background:var(--sky);color:var(--dark)}
-    .sec-label.green{background:var(--green);color:var(--dark)}
-    .sec-label.red{background:var(--red);color:var(--white)}
-    .sec-label.purple{background:var(--purple);color:var(--white)}
-    .app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px}
-    .app-item{display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;-webkit-tap-highlight-color:transparent}
-    .app-icon{width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;position:relative;overflow:hidden;transition:transform .12s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 10px rgba(0,0,0,.55);flex-shrink:0;background:#1a1a2a}
-    .app-item:hover .app-icon{transform:scale(1.1)}
-    .app-item:active .app-icon{transform:scale(.92)}
-    .app-icon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:16px}
-    .app-name{font-size:10px;font-weight:700;color:rgba(255,255,255,.85);text-align:center;line-height:1.35;max-width:72px;word-break:break-word}
-    .divider{height:1px;background:rgba(255,255,255,.06);margin:32px 0}
-    footer{text-align:center;margin-top:56px;font-size:11px;color:rgba(255,255,255,.15);letter-spacing:.2em}
-  </style>
-</head>
-<body>
-<canvas id="rain-canvas"></canvas>
-<div class="container">
-  <header class="header">
-    <p class="header-eyebrow">RAINYBRAIN</p>
-    <h1 class="header-title">Hub</h1>
-    <p class="header-sub">ツールへのショートカット</p>
-  </header>
-
-  <section class="section">
-    <p class="sec-label sky">一次資料</p>
-    <div class="app-grid">
-      <a class="app-item" href="https://sekai-kabuka.com/pc-index.html" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/world-stocks.png" alt="世界の株価"></div>
-        <span class="app-name">世界の株価</span>
-      </a>
-      <a class="app-item" href="https://mm.jcity.com/mypage/login/ask1" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/ask1.png" alt="ASK1"></div>
-        <span class="app-name">ASK1</span>
-      </a>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="section">
-    <p class="sec-label red">YouTube</p>
-    <div class="app-grid">
-      <a class="app-item" href="https://transcription-app-production-04da.up.railway.app" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/transcription.png" alt="文字起こし"></div>
-        <span class="app-name">文字起こし</span>
-      </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a26338c271881918e9ea284f3cafe14-manehou-moninkuniyusu" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/script-morning-news.png" alt="朝ニュース台本AI"></div>
-        <span class="app-name">朝ニュース<br>台本AI</span>
-      </a>
-      <a class="app-item" href="https://rainybrainch.github.io/live/morning-news-studio.html" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/morning-news-studio.png" alt="Morning News Studio"></div>
-        <span class="app-name">Morning News Studio</span>
-      </a>
-      <a class="app-item" href="https://suno.com/discover" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/suno-ai.png" alt="SUNO AI"></div>
-        <span class="app-name">SUNO AI</span>
-      </a>
-      <a class="app-item" href="https://studio.youtube.com/channel/UCQNWDJh_KoFMFVz5QRU3k6Q/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/rb-studio.png" alt="YouTube Studio"></div>
-        <span class="app-name">YouTube Studio</span>
-      </a>
-      <a class="app-item" href="https://rainybrainch.github.io/live/streams/index.html" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/streams.png" alt="Channel OS"></div>
-        <span class="app-name">Channel OS</span>
-      </a>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="section">
-    <p class="sec-label green">マネぼう</p>
-    <div class="app-grid">
-      <a class="app-item" href="https://manebou-juku.vercel.app/" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/manebou-academy.png" alt="マネぼうアカデミー"></div>
-        <span class="app-name">マネぼう<br>アカデミー</span>
-      </a>
-      <a class="app-item" href="https://rainybrainch.github.io/manebou-hp/" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/manebou-hp.png" alt="マネぼう塾HP"></div>
-        <span class="app-name">マネぼう塾 HP</span>
-      </a>
-      <a class="app-item" href="https://app.notion.com/p/2fbd8fc4b38280929d01ce8486606b88" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/manebou-notion.png" alt="Notion"></div>
-        <span class="app-name">Notion</span>
-      </a>
-      <a class="app-item" href="https://rainybrainch.github.io/manebou-hp/home.html" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/manebou-old.png" alt="旧アプリ"></div>
-        <span class="app-name">旧アプリ</span>
-      </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a2ea645f1d08191b3bb9da3052262e2-manehouman-hua-ai" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/manebou-manga-ai.png" alt="マネぼう漫画AI"></div>
-        <span class="app-name">マネぼう<br>漫画AI</span>
-      </a>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="section">
-    <p class="sec-label purple">RBフォレスト</p>
-    <div class="app-grid">
-      <a class="app-item" href="rbforest.html">
-        <div class="app-icon"><img src="icons/rbforest.png" alt="RBフォレスト"></div>
-        <span class="app-name">RBフォレスト</span>
-      </a>
-      <a class="app-item" href="rbforest.html">
-        <div class="app-icon"><img src="icons/rainybrain.png" alt="RAINYBRAIN"></div>
-        <span class="app-name">RAINYBRAIN</span>
-      </a>
-      <a class="app-item" href="rbforest.html">
-        <div class="app-icon"><img src="icons/all-domedia.png" alt="オール・ドメディア"></div>
-        <span class="app-name">オール・<br>ドメディア</span>
-      </a>
-      <a class="app-item" href="alldog-proposal.html">
-        <div class="app-icon"><img src="icons/amemori-cionu.png" alt="雨森子犬"></div>
-        <span class="app-name">雨森子犬</span>
-      </a>
-      <a class="app-item" href="rbforest.html">
-        <div class="app-icon"><img src="icons/ukai-ukapuri.png" alt="う廻うかぷり"></div>
-        <span class="app-name">う廻<br>うかぷり</span>
-      </a>
-      <a class="app-item" href="rbforest.html">
-        <div class="app-icon"><img src="icons/gogogo-meme.png" alt="轟々メメ"></div>
-        <span class="app-name">轟々メメ</span>
-      </a>
-      <a class="app-item" href="rbforest.html">
-        <div class="app-icon"><img src="icons/kouka-tokin.png" alt="紅禍と金"></div>
-        <span class="app-name">紅禍と金</span>
-      </a>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="section">
-    <p class="sec-label purple">台本AI</p>
-    <div class="app-grid">
-      <a class="app-item" href="https://chatgpt.com/g/g-6a27dca0c944819184b7cf3ac9f88227-rbhuoresuto-anime" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/genre-anime.png" alt="アニメ"></div>
-        <span class="app-name">アニメ</span>
-      </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a27ddac0a108191844d5e6db38fa312-rbhuoresuto-ying-hua" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/genre-movie.png" alt="映画"></div>
-        <span class="app-name">映画</span>
-      </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a27de1a43308191878420e69f3022ef-rbhuoresuto-man-hua" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/genre-manga.png" alt="漫画"></div>
-        <span class="app-name">漫画</span>
-      </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a27deb987b48191b3ae4896243c9382-rbhuoresuto-ben-shao-jie" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/genre-book.png" alt="本"></div>
-        <span class="app-name">本</span>
-      </a>
-      <a class="app-item" href="https://chatgpt.com/g/g-6a27df0372d88191999a9f1b962ca299-rbhuoresuto-torama" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/genre-drama.png" alt="ドラマ"></div>
-        <span class="app-name">ドラマ</span>
-      </a>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="section">
-    <p class="sec-label gold">RBApp</p>
-    <div class="app-grid">
-      <a class="app-item" href="https://rb-habit-rpg.vercel.app">
-        <div class="app-icon"><img src="icons/rb-habit-rpg.png" alt="RB習慣RPG"></div>
-        <span class="app-name">RB習慣RPG</span>
-      </a>
-      <a class="app-item" href="https://rb-investment-dojo.vercel.app">
-        <div class="app-icon"><img src="icons/rb-investment.png" alt="RB投資道場"></div>
-        <span class="app-name">RB投資道場</span>
-      </a>
-      <a class="app-item" href="https://rb-tree-economics.vercel.app">
-        <div class="app-icon"><img src="icons/rb-tree-economics.png" alt="RB-Tree経済"></div>
-        <span class="app-name">RB-Tree<br>経済</span>
-      </a>
-      <a class="app-item" href="https://rainybrainch.github.io/rb-shogi-dojo/">
-        <div class="app-icon"><img src="icons/rb-shogi.png" alt="RB将棋道場"></div>
-        <span class="app-name">RB将棋道場</span>
-      </a>
-      <a class="app-item" href="https://rbai-personality-league.vercel.app">
-        <div class="app-icon"><img src="icons/rbai-personality-league.png" alt="RBAI人格リーグ"></div>
-        <span class="app-name">RBAI<br>人格リーグ</span>
-      </a>
-      <a class="app-item" href="https://rb-mystery-dojo.vercel.app">
-        <div class="app-icon"><img src="icons/rb-mystery-dojo.png" alt="RB謎解き思考道場"></div>
-        <span class="app-name">RB謎解き<br>思考道場</span>
-      </a>
-      <a class="app-item" href="https://rb-eikaiwa-dojo.vercel.app">
-        <div class="app-icon"><img src="icons/rb-eikaiwa.png" alt="RB英会話道場"></div>
-        <span class="app-name">RB英会話<br>道場</span>
-      </a>
-      <a class="app-item" href="https://rb-conspiracy-hunter.vercel.app">
-        <div class="app-icon"><img src="icons/rb-conspiracy.png" alt="RB陰謀論ハンター"></div>
-        <span class="app-name">陰謀論<br>ハンター</span>
-      </a>
-      <a class="app-item" href="https://rb-philosophy-dojo.vercel.app">
-        <div class="app-icon"><img src="icons/rb-philosophy.png" alt="RB哲学道場"></div>
-        <span class="app-name">RB哲学道場</span>
-      </a>
-      <a class="app-item" href="https://rb-vtuber-ikusei.vercel.app">
-        <div class="app-icon"><img src="icons/rb-vtuber.png" alt="RBVtuber育成"></div>
-        <span class="app-name">VTuber<br>育成ゲーム</span>
-      </a>
-      <a class="app-item" href="https://rb-ai-company.vercel.app">
-        <div class="app-icon"><img src="icons/rb-ai-company.png" alt="RBAI会社"></div>
-        <span class="app-name">RBAI会社</span>
-      </a>
-      <a class="app-item" href="https://rb-ai-parliament.vercel.app">
-        <div class="app-icon"><img src="icons/rb-ai-parliament.png" alt="RBAI議会"></div>
-        <span class="app-name">RBAI議会</span>
-      </a>
-      <a class="app-item" href="https://rb-reading-dojo.vercel.app">
-        <div class="app-icon"><img src="icons/rb-reading.png" alt="RB読書道場"></div>
-        <span class="app-name">RB読書道場</span>
-      </a>
-      <a class="app-item" href="https://rb-worldhistory.vercel.app">
-        <div class="app-icon"><img src="icons/rb-worldhistory.png" alt="世界史征服ゲーム"></div>
-        <span class="app-name">世界史征服</span>
-      </a>
-      <a class="app-item" href="https://rainybrainch.github.io/pomojikan/">
-        <div class="app-icon"><img src="icons/pomojikan.png" alt="ぽもじかん"></div>
-        <span class="app-name">ぽもじかん</span>
-      </a>
-    </div>
-  </section>
-
-  <section class="section">
-    <p class="sec-label sky">アカデミー</p>
-    <div class="app-grid">
-      <a class="app-item" href="https://rainybrainch.github.io/rb-shogi-dojo/academy.html" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/shogi-academy.png" alt="将棋アカデミー"></div>
-        <span class="app-name">将棋<br>アカデミー</span>
-      </a>
-      <a class="app-item" href="#">
-        <div class="app-icon"><img src="icons/sake-food-academy.png" alt="お酒と食事のアカデミー"></div>
-        <span class="app-name">お酒と食事の<br>アカデミー</span>
-      </a>
-      <a class="app-item" href="#">
-        <div class="app-icon"><img src="icons/plant-academy.png" alt="植物アカデミー"></div>
-        <span class="app-name">植物<br>アカデミー</span>
-      </a>
-      <a class="app-item" href="#">
-        <div class="app-icon"><img src="icons/fitness-academy.png" alt="運動と筋トレアカデミー"></div>
-        <span class="app-name">運動と筋トレ<br>アカデミー</span>
-      </a>
-      <a class="app-item" href="#">
-        <div class="app-icon"><img src="icons/reading-works-academy.png" alt="読書作品のアカデミー"></div>
-        <span class="app-name">読書作品の<br>アカデミー</span>
-      </a>
-    </div>
-  </section>
-
-  <footer>RAINYBRAIN · 2026</footer>
-</div>
-<script>
-  const canvas=document.getElementById("rain-canvas"),ctx=canvas.getContext("2d");let drops=[];
-  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
-  function initDrops(){drops=[];for(let i=0;i<100;i++)drops.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,len:10+Math.random()*20,speed:1.2+Math.random()*2.4,opacity:.07+Math.random()*.16,width:.6+Math.random()*.8})}
-  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);for(const d of drops){ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-d.len*.15,d.y+d.len);ctx.strokeStyle=`rgba(140,200,240,${d.opacity})`;ctx.lineWidth=d.width;ctx.lineCap="round";ctx.stroke();d.y+=d.speed;d.x-=d.speed*.15;if(d.y-d.len>canvas.height||d.x<-20){d.x=Math.random()*(canvas.width+60);d.y=-d.len}}requestAnimationFrame(draw)}
-  resize();initDrops();draw();
-  window.addEventListener("resize",()=>{resize();initDrops()});
-</script>
-
-<!-- 雨脳ネコネコ フローティングチャット -->
-<style>
-#nk-btn{position:fixed;bottom:24px;right:24px;z-index:500;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1a1f2e,#0d1117);border:2px solid #F5C842;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 20px rgba(245,200,66,.3);transition:transform .2s}
-#nk-btn:hover{transform:scale(1.1)}
-#nk-btn .nk-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:#4CAF7D;border-radius:50%;border:2px solid #0d1117}
-#nk-panel{position:fixed;bottom:96px;right:24px;z-index:500;width:320px;max-width:calc(100vw - 48px);background:#111827;border:1px solid rgba(245,200,66,.3);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;max-height:480px}
-#nk-panel.open{display:flex}
-#nk-head{background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(91,200,232,.06));border-bottom:1px solid rgba(255,255,255,.07);padding:14px 16px;display:flex;align-items:center;gap:10px}
-#nk-head .nk-av{font-size:1.6rem}
-#nk-head .nk-info h4{font-family:"Dela Gothic One",sans-serif;font-size:.85rem;color:#F5C842;margin:0 0 2px}
-#nk-head .nk-info p{font-size:.65rem;color:rgba(255,255,255,.45);margin:0}
-#nk-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1.1rem;padding:4px}
-#nk-close:hover{color:#fff}
-#nk-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
-.nk-msg{max-width:85%;font-size:.82rem;line-height:1.6;padding:10px 14px;border-radius:14px;animation:nkfade .2s ease}
-.nk-msg.bot{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.9);align-self:flex-start;border-radius:4px 14px 14px 14px}
-.nk-msg.usr{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.25);color:#fff;align-self:flex-end;border-radius:14px 4px 14px 14px}
-@keyframes nkfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-#nk-foot{border-top:1px solid rgba(255,255,255,.07);padding:10px 12px;display:flex;gap:8px}
-#nk-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;color:#fff;font-family:"Zen Maru Gothic",sans-serif;font-size:.82rem;outline:none;transition:border-color .15s}
-#nk-inp:focus{border-color:rgba(245,200,66,.4)}
-#nk-inp::placeholder{color:rgba(255,255,255,.3)}
-#nk-send{background:#F5C842;border:none;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
-#nk-send:hover{opacity:.85}
-#nk-send:disabled{opacity:.35;cursor:not-allowed}
-.nk-typing{display:flex;gap:4px;padding:8px 12px;align-self:flex-start}
-.nk-typing span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);animation:nkdot .9s infinite}
-.nk-typing span:nth-child(2){animation-delay:.15s}
-.nk-typing span:nth-child(3){animation-delay:.3s}
-@keyframes nkdot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
-</style>
-
-<button id="nk-btn" onclick="nkToggle()" title="雨脳ネコネコに聞く">
-  🐱
-  <div class="nk-badge"></div>
-</button>
-
-<div id="nk-panel">
-  <div id="nk-head">
-    <div class="nk-av">🐱</div>
-    <div class="nk-info">
-      <h4>雨脳ネコネコ</h4>
-      <p>RBHub 総合管理AI</p>
-    </div>
-    <button id="nk-close" onclick="nkToggle()">✕</button>
-  </div>
-  <div id="nk-msgs"></div>
-  <div id="nk-foot">
-    <input id="nk-inp" placeholder="何でも聞いてにゃ..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();nkSend()}">
-    <button id="nk-send" onclick="nkSend()">➤</button>
-  </div>
-</div>
-
-<script>
-const NK_API = 'https://rb-nekoneko.vercel.app/api/chat';
-let nkHistory = [], nkOpen = false, nkBusy = false;
-const nkMsgs = document.getElementById('nk-msgs');
-
-function nkToggle() {
-  nkOpen = !nkOpen;
-  document.getElementById('nk-panel').classList.toggle('open', nkOpen);
-  if (nkOpen && nkHistory.length === 0) nkGreet();
-}
-
-function nkGreet() {
-  nkAddMsg('bot', 'にゃ！ぼくは雨脳ネコネコ、RBHubの管理AIにゃ🐱\nアプリの使い方や、どこから始めるかなど、何でも聞いてにゃ！');
-}
-
-function nkAddMsg(role, text) {
-  const el = document.createElement('div');
-  el.className = 'nk-msg ' + (role === 'bot' ? 'bot' : 'usr');
-  el.textContent = text;
-  nkMsgs.appendChild(el);
-  nkMsgs.scrollTop = nkMsgs.scrollHeight;
-  return el;
-}
-
-function nkShowTyping() {
-  const el = document.createElement('div');
-  el.className = 'nk-typing';
-  el.innerHTML = '<span></span><span></span><span></span>';
-  el.id = 'nk-typing';
-  nkMsgs.appendChild(el);
-  nkMsgs.scrollTop = nkMsgs.scrollHeight;
-}
-
-function nkHideTyping() {
-  const el = document.getElementById('nk-typing');
-  if (el) el.remove();
-}
-
-async function nkSend() {
-  const inp = document.getElementById('nk-inp');
-  const text = inp.value.trim();
-  if (!text || nkBusy) return;
-  inp.value = '';
-  nkBusy = true;
-  document.getElementById('nk-send').disabled = true;
-  nkAddMsg('usr', text);
-  nkHistory.push({ role: 'user', content: text });
-  nkShowTyping();
-  try {
-    const res = await fetch(NK_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: nkHistory.slice(-10), maxTokens: 400 })
-    });
-    const d = await res.json();
-    nkHideTyping();
-    const reply = d.text || 'うまく聞き取れなかったにゃ…もう一度試してにゃ🐱';
-    nkAddMsg('bot', reply);
-    nkHistory.push({ role: 'assistant', content: reply });
-  } catch (e) {
-    nkHideTyping();
-    nkAddMsg('bot', '通信エラーにゃ…しばらく待って試してみてにゃ🐱');
-  } finally {
-    nkBusy = false;
-    document.getElementById('nk-send').disabled = false;
-    document.getElementById('nk-inp').focus();
-  }
-}
-</script>
-</body>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAINYBRAIN Hub</title>
+  <link rel="icon" href="hub-icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{--sky:#5BC8E8;--gold:#F5C842;--gold-d:#D4A017;--green:#4CAF7D;--red:#E8354A;--purple:#9B6DD6;--dark:#0d1117;--white:#FFFFFF}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Zen Maru Gothic",sans-serif;background:var(--dark);color:var(--white);min-height:100vh;padding:52px 20px 80px;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+    #rain-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.3}
+    .container{position:relative;z-index:1;max-width:480px;margin:0 auto}
+    .header{text-align:center;margin-bottom:44px}
+    .header-eyebrow{font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    .header-title{font-family:"Dela Gothic One",sans-serif;font-size:clamp(40px,10vw,60px);line-height:1;color:var(--white);text-shadow:3px 3px 0 var(--gold-d)}
+    .header-sub{margin-top:10px;font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.15em}
+    .section{margin-bottom:40px}
+    .sec-label{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.25em;text-transform:uppercase;padding:4px 14px;border-radius:4px;margin-bottom:18px}
+    .sec-label.gold{background:var(--gold);color:var(--dark)}
+    .sec-label.sky{background:var(--sky);color:var(--dark)}
+    .sec-label.green{background:var(--green);color:var(--dark)}
+    .sec-label.red{background:var(--red);color:var(--white)}
+    .sec-label.purple{background:var(--purple);color:var(--white)}
+    .app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px}
+    .app-item{display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;-webkit-tap-highlight-color:transparent}
+    .app-icon{width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;position:relative;overflow:hidden;transition:transform .12s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 10px rgba(0,0,0,.55);flex-shrink:0;background:#1a1a2a}
+    .app-item:hover .app-icon{transform:scale(1.1)}
+    .app-item:active .app-icon{transform:scale(.92)}
+    .app-icon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:16px}
+    .app-name{font-size:10px;font-weight:700;color:rgba(255,255,255,.85);text-align:center;line-height:1.35;max-width:72px;word-break:break-word}
+    .divider{height:1px;background:rgba(255,255,255,.06);margin:32px 0}
+    footer{text-align:center;margin-top:56px;font-size:11px;color:rgba(255,255,255,.15);letter-spacing:.2em}
+  </style>
+</head>
+<body>
+<canvas id="rain-canvas"></canvas>
+<div class="container">
+  <header class="header">
+    <p class="header-eyebrow">RAINYBRAIN</p>
+    <h1 class="header-title">Hub</h1>
+    <p class="header-sub">ツールへのショートカット</p>
+  </header>
+
+  <section class="section">
+    <p class="sec-label sky">一次資料</p>
+    <div class="app-grid">
+      <a class="app-item" href="https://sekai-kabuka.com/pc-index.html" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/world-stocks.png" alt="世界の株価"></div>
+        <span class="app-name">世界の株価</span>
+      </a>
+      <a class="app-item" href="https://mm.jcity.com/mypage/login/ask1" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/ask1.png" alt="ASK1"></div>
+        <span class="app-name">ASK1</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <p class="sec-label red">YouTube</p>
+    <div class="app-grid">
+      <a class="app-item" href="https://transcription-app-production-04da.up.railway.app" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/transcription.png" alt="文字起こし"></div>
+        <span class="app-name">文字起こし</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a26338c271881918e9ea284f3cafe14-manehou-moninkuniyusu" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/script-morning-news.png" alt="朝ニュース台本AI"></div>
+        <span class="app-name">朝ニュース<br>台本AI</span>
+      </a>
+      <a class="app-item" href="https://rainybrainch.github.io/live/morning-news-studio.html" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/morning-news-studio.png" alt="Morning News Studio"></div>
+        <span class="app-name">Morning News Studio</span>
+      </a>
+      <a class="app-item" href="https://suno.com/discover" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/suno-ai.png" alt="SUNO AI"></div>
+        <span class="app-name">SUNO AI</span>
+      </a>
+      <a class="app-item" href="https://studio.youtube.com/channel/UCQNWDJh_KoFMFVz5QRU3k6Q/videos/upload?filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/rb-studio.png" alt="YouTube Studio"></div>
+        <span class="app-name">YouTube Studio</span>
+      </a>
+      <a class="app-item" href="https://rainybrainch.github.io/live/streams/index.html" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/streams.png" alt="Channel OS"></div>
+        <span class="app-name">Channel OS</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <p class="sec-label green">マネぼう</p>
+    <div class="app-grid">
+      <a class="app-item" href="https://manebou-juku.vercel.app/" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/manebou-academy.png" alt="マネぼうアカデミー"></div>
+        <span class="app-name">マネぼう<br>アカデミー</span>
+      </a>
+      <a class="app-item" href="https://rainybrainch.github.io/manebou-hp/" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/manebou-hp.png" alt="マネぼう塾HP"></div>
+        <span class="app-name">マネぼう塾 HP</span>
+      </a>
+      <a class="app-item" href="https://app.notion.com/p/2fbd8fc4b38280929d01ce8486606b88" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/manebou-notion.png" alt="Notion"></div>
+        <span class="app-name">Notion</span>
+      </a>
+      <a class="app-item" href="https://rainybrainch.github.io/manebou-hp/home.html" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/manebou-old.png" alt="旧アプリ"></div>
+        <span class="app-name">旧アプリ</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a2ea645f1d08191b3bb9da3052262e2-manehouman-hua-ai" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/manebou-manga-ai.png" alt="マネぼう漫画AI"></div>
+        <span class="app-name">マネぼう<br>漫画AI</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <p class="sec-label purple">RBフォレスト</p>
+    <div class="app-grid">
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/rbforest.png" alt="RBフォレスト"></div>
+        <span class="app-name">RBフォレスト</span>
+      </a>
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/rainybrain.png" alt="RAINYBRAIN"></div>
+        <span class="app-name">RAINYBRAIN</span>
+      </a>
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/all-domedia.png" alt="オール・ドメディア"></div>
+        <span class="app-name">オール・<br>ドメディア</span>
+      </a>
+      <a class="app-item" href="alldog-proposal.html">
+        <div class="app-icon"><img src="icons/amemori-cionu.png" alt="雨森子犬"></div>
+        <span class="app-name">雨森子犬</span>
+      </a>
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/ukai-ukapuri.png" alt="う廻うかぷり"></div>
+        <span class="app-name">う廻<br>うかぷり</span>
+      </a>
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/gogogo-meme.png" alt="轟々メメ"></div>
+        <span class="app-name">轟々メメ</span>
+      </a>
+      <a class="app-item" href="rbforest.html">
+        <div class="app-icon"><img src="icons/kouka-tokin.png" alt="紅禍と金"></div>
+        <span class="app-name">紅禍と金</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <p class="sec-label purple">台本AI</p>
+    <div class="app-grid">
+      <a class="app-item" href="https://chatgpt.com/g/g-6a27dca0c944819184b7cf3ac9f88227-rbhuoresuto-anime" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/genre-anime.png" alt="アニメ"></div>
+        <span class="app-name">アニメ</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a27ddac0a108191844d5e6db38fa312-rbhuoresuto-ying-hua" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/genre-movie.png" alt="映画"></div>
+        <span class="app-name">映画</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a27de1a43308191878420e69f3022ef-rbhuoresuto-man-hua" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/genre-manga.png" alt="漫画"></div>
+        <span class="app-name">漫画</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a27deb987b48191b3ae4896243c9382-rbhuoresuto-ben-shao-jie" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/genre-book.png" alt="本"></div>
+        <span class="app-name">本</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a27df0372d88191999a9f1b962ca299-rbhuoresuto-torama" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/genre-drama.png" alt="ドラマ"></div>
+        <span class="app-name">ドラマ</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <p class="sec-label gold">RBApp</p>
+    <div class="app-grid">
+      <a class="app-item" href="https://rb-habit-rpg.vercel.app">
+        <div class="app-icon"><img src="icons/rb-habit-rpg.png" alt="RB習慣RPG"></div>
+        <span class="app-name">RB習慣RPG</span>
+      </a>
+      <a class="app-item" href="https://rb-investment-dojo.vercel.app">
+        <div class="app-icon"><img src="icons/rb-investment.png" alt="RB投資道場"></div>
+        <span class="app-name">RB投資道場</span>
+      </a>
+      <a class="app-item" href="https://rb-tree-economics.vercel.app">
+        <div class="app-icon"><img src="icons/rb-tree-economics.png" alt="RB-Tree経済"></div>
+        <span class="app-name">RB-Tree<br>経済</span>
+      </a>
+      <a class="app-item" href="https://rainybrainch.github.io/rb-shogi-dojo/">
+        <div class="app-icon"><img src="icons/rb-shogi.png" alt="RB将棋道場"></div>
+        <span class="app-name">RB将棋道場</span>
+      </a>
+      <a class="app-item" href="https://rbai-personality-league.vercel.app">
+        <div class="app-icon"><img src="icons/rbai-personality-league.png" alt="RBAI人格リーグ"></div>
+        <span class="app-name">RBAI<br>人格リーグ</span>
+      </a>
+      <a class="app-item" href="https://rb-mystery-dojo.vercel.app">
+        <div class="app-icon"><img src="icons/rb-mystery-dojo.png" alt="RB謎解き思考道場"></div>
+        <span class="app-name">RB謎解き<br>思考道場</span>
+      </a>
+      <a class="app-item" href="https://rb-eikaiwa-dojo.vercel.app">
+        <div class="app-icon"><img src="icons/rb-eikaiwa.png" alt="RB英会話道場"></div>
+        <span class="app-name">RB英会話<br>道場</span>
+      </a>
+      <a class="app-item" href="https://rb-conspiracy-hunter.vercel.app">
+        <div class="app-icon"><img src="icons/rb-conspiracy.png" alt="RB陰謀論ハンター"></div>
+        <span class="app-name">陰謀論<br>ハンター</span>
+      </a>
+      <a class="app-item" href="https://rb-philosophy-dojo.vercel.app">
+        <div class="app-icon"><img src="icons/rb-philosophy.png" alt="RB哲学道場"></div>
+        <span class="app-name">RB哲学道場</span>
+      </a>
+      <a class="app-item" href="https://rb-vtuber-ikusei.vercel.app">
+        <div class="app-icon"><img src="icons/rb-vtuber.png" alt="RBVtuber育成"></div>
+        <span class="app-name">VTuber<br>育成ゲーム</span>
+      </a>
+      <a class="app-item" href="https://rb-ai-company.vercel.app">
+        <div class="app-icon"><img src="icons/rb-ai-company.png" alt="RBAI会社"></div>
+        <span class="app-name">RBAI会社</span>
+      </a>
+      <a class="app-item" href="https://rb-ai-parliament.vercel.app">
+        <div class="app-icon"><img src="icons/rb-ai-parliament.png" alt="RBAI議会"></div>
+        <span class="app-name">RBAI議会</span>
+      </a>
+      <a class="app-item" href="https://rb-reading-dojo.vercel.app">
+        <div class="app-icon"><img src="icons/rb-reading.png" alt="RB読書道場"></div>
+        <span class="app-name">RB読書道場</span>
+      </a>
+      <a class="app-item" href="https://rb-worldhistory.vercel.app">
+        <div class="app-icon"><img src="icons/rb-worldhistory.png" alt="世界史征服ゲーム"></div>
+        <span class="app-name">世界史征服</span>
+      </a>
+      <a class="app-item" href="https://rainybrainch.github.io/pomojikan/">
+        <div class="app-icon"><img src="icons/pomojikan.png" alt="ぽもじかん"></div>
+        <span class="app-name">ぽもじかん</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="sec-label sky">アカデミー</p>
+    <div class="app-grid">
+      <a class="app-item" href="https://rainybrainch.github.io/rb-shogi-dojo/academy.html" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/shogi-academy.png" alt="RB将棋アカデミー"></div>
+        <span class="app-name">RB将棋<br>アカデミー</span>
+      </a>
+      <a class="app-item" href="#">
+        <div class="app-icon"><img src="icons/sake-food-academy.png" alt="RBお酒と食事のアカデミー"></div>
+        <span class="app-name">RBお酒と食事の<br>アカデミー</span>
+      </a>
+      <a class="app-item" href="#">
+        <div class="app-icon"><img src="icons/plant-academy.png" alt="RB植物アカデミー"></div>
+        <span class="app-name">RB植物<br>アカデミー</span>
+      </a>
+      <a class="app-item" href="#">
+        <div class="app-icon"><img src="icons/fitness-academy.png" alt="RB運動と筋トレアカデミー"></div>
+        <span class="app-name">RB運動と筋トレ<br>アカデミー</span>
+      </a>
+      <a class="app-item" href="#">
+        <div class="app-icon"><img src="icons/reading-works-academy.png" alt="RB読書作品のアカデミー"></div>
+        <span class="app-name">RB読書作品の<br>アカデミー</span>
+      </a>
+    </div>
+  </section>
+
+  <footer>RAINYBRAIN · 2026</footer>
+</div>
+<script>
+  const canvas=document.getElementById("rain-canvas"),ctx=canvas.getContext("2d");let drops=[];
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+  function initDrops(){drops=[];for(let i=0;i<100;i++)drops.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,len:10+Math.random()*20,speed:1.2+Math.random()*2.4,opacity:.07+Math.random()*.16,width:.6+Math.random()*.8})}
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);for(const d of drops){ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-d.len*.15,d.y+d.len);ctx.strokeStyle=`rgba(140,200,240,${d.opacity})`;ctx.lineWidth=d.width;ctx.lineCap="round";ctx.stroke();d.y+=d.speed;d.x-=d.speed*.15;if(d.y-d.len>canvas.height||d.x<-20){d.x=Math.random()*(canvas.width+60);d.y=-d.len}}requestAnimationFrame(draw)}
+  resize();initDrops();draw();
+  window.addEventListener("resize",()=>{resize();initDrops()});
+</script>
+
+<!-- 雨脳ネコネコ フローティングチャット -->
+<style>
+#nk-btn{position:fixed;bottom:24px;right:24px;z-index:500;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1a1f2e,#0d1117);border:2px solid #F5C842;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 20px rgba(245,200,66,.3);transition:transform .2s}
+#nk-btn:hover{transform:scale(1.1)}
+#nk-btn .nk-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:#4CAF7D;border-radius:50%;border:2px solid #0d1117}
+#nk-panel{position:fixed;bottom:96px;right:24px;z-index:500;width:320px;max-width:calc(100vw - 48px);background:#111827;border:1px solid rgba(245,200,66,.3);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;max-height:480px}
+#nk-panel.open{display:flex}
+#nk-head{background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(91,200,232,.06));border-bottom:1px solid rgba(255,255,255,.07);padding:14px 16px;display:flex;align-items:center;gap:10px}
+#nk-head .nk-av{font-size:1.6rem}
+#nk-head .nk-info h4{font-family:"Dela Gothic One",sans-serif;font-size:.85rem;color:#F5C842;margin:0 0 2px}
+#nk-head .nk-info p{font-size:.65rem;color:rgba(255,255,255,.45);margin:0}
+#nk-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1.1rem;padding:4px}
+#nk-close:hover{color:#fff}
+#nk-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.nk-msg{max-width:85%;font-size:.82rem;line-height:1.6;padding:10px 14px;border-radius:14px;animation:nkfade .2s ease}
+.nk-msg.bot{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.9);align-self:flex-start;border-radius:4px 14px 14px 14px}
+.nk-msg.usr{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.25);color:#fff;align-self:flex-end;border-radius:14px 4px 14px 14px}
+@keyframes nkfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#nk-foot{border-top:1px solid rgba(255,255,255,.07);padding:10px 12px;display:flex;gap:8px}
+#nk-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;color:#fff;font-family:"Zen Maru Gothic",sans-serif;font-size:.82rem;outline:none;transition:border-color .15s}
+#nk-inp:focus{border-color:rgba(245,200,66,.4)}
+#nk-inp::placeholder{color:rgba(255,255,255,.3)}
+#nk-send{background:#F5C842;border:none;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+#nk-send:hover{opacity:.85}
+#nk-send:disabled{opacity:.35;cursor:not-allowed}
+.nk-typing{display:flex;gap:4px;padding:8px 12px;align-self:flex-start}
+.nk-typing span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);animation:nkdot .9s infinite}
+.nk-typing span:nth-child(2){animation-delay:.15s}
+.nk-typing span:nth-child(3){animation-delay:.3s}
+@keyframes nkdot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+</style>
+
+<button id="nk-btn" onclick="nkToggle()" title="雨脳ネコネコに聞く">
+  🐱
+  <div class="nk-badge"></div>
+</button>
+
+<div id="nk-panel">
+  <div id="nk-head">
+    <div class="nk-av">🐱</div>
+    <div class="nk-info">
+      <h4>雨脳ネコネコ</h4>
+      <p>RBHub 総合管理AI</p>
+    </div>
+    <button id="nk-close" onclick="nkToggle()">✕</button>
+  </div>
+  <div id="nk-msgs"></div>
+  <div id="nk-foot">
+    <input id="nk-inp" placeholder="何でも聞いてにゃ..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();nkSend()}">
+    <button id="nk-send" onclick="nkSend()">➤</button>
+  </div>
+</div>
+
+<script>
+const NK_API = 'https://rb-nekoneko.vercel.app/api/chat';
+let nkHistory = [], nkOpen = false, nkBusy = false;
+const nkMsgs = document.getElementById('nk-msgs');
+
+function nkToggle() {
+  nkOpen = !nkOpen;
+  document.getElementById('nk-panel').classList.toggle('open', nkOpen);
+  if (nkOpen && nkHistory.length === 0) nkGreet();
+}
+
+function nkGreet() {
+  nkAddMsg('bot', 'にゃ！ぼくは雨脳ネコネコ、RBHubの管理AIにゃ🐱\nアプリの使い方や、どこから始めるかなど、何でも聞いてにゃ！');
+}
+
+function nkAddMsg(role, text) {
+  const el = document.createElement('div');
+  el.className = 'nk-msg ' + (role === 'bot' ? 'bot' : 'usr');
+  el.textContent = text;
+  nkMsgs.appendChild(el);
+  nkMsgs.scrollTop = nkMsgs.scrollHeight;
+  return el;
+}
+
+function nkShowTyping() {
+  const el = document.createElement('div');
+  el.className = 'nk-typing';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  el.id = 'nk-typing';
+  nkMsgs.appendChild(el);
+  nkMsgs.scrollTop = nkMsgs.scrollHeight;
+}
+
+function nkHideTyping() {
+  const el = document.getElementById('nk-typing');
+  if (el) el.remove();
+}
+
+async function nkSend() {
+  const inp = document.getElementById('nk-inp');
+  const text = inp.value.trim();
+  if (!text || nkBusy) return;
+  inp.value = '';
+  nkBusy = true;
+  document.getElementById('nk-send').disabled = true;
+  nkAddMsg('usr', text);
+  nkHistory.push({ role: 'user', content: text });
+  nkShowTyping();
+  try {
+    const res = await fetch(NK_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: nkHistory.slice(-10), maxTokens: 400 })
+    });
+    const d = await res.json();
+    nkHideTyping();
+    const reply = d.text || 'うまく聞き取れなかったにゃ…もう一度試してにゃ🐱';
+    nkAddMsg('bot', reply);
+    nkHistory.push({ role: 'assistant', content: reply });
+  } catch (e) {
+    nkHideTyping();
+    nkAddMsg('bot', '通信エラーにゃ…しばらく待って試してみてにゃ🐱');
+  } finally {
+    nkBusy = false;
+    document.getElementById('nk-send').disabled = false;
+    document.getElementById('nk-inp').focus();
+  }
+}
+</script>
+</body>
 </html>
