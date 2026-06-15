@@ -290,7 +290,7 @@
 
 <!-- 雨脳ネコネコ フローティングチャット -->
 <style>
-#nk-btn{position:fixed;bottom:24px;right:24px;z-index:500;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1a1f2e,#0d1117);border:2px solid #F5C842;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 20px rgba(245,200,66,.3);transition:transform .2s}
+#nk-btn{position:fixed;bottom:24px;right:24px;z-index:500;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1a1f2e,#0d1117);border:2px solid #F5C842;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(245,200,66,.3);transition:transform .2s}
 #nk-btn:hover{transform:scale(1.1)}
 #nk-btn .nk-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:#4CAF7D;border-radius:50%;border:2px solid #0d1117}
 #nk-panel{position:fixed;bottom:96px;right:24px;z-index:500;width:320px;max-width:calc(100vw - 48px);background:#111827;border:1px solid rgba(245,200,66,.3);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;max-height:480px}
@@ -321,13 +321,13 @@
 </style>
 
 <button id="nk-btn" onclick="nkToggle()" title="雨脳ネコネコに聞く">
-  🐱
+  <img src="nekoneko-icon.png" style="width:48px;height:48px;border-radius:50%;object-fit:cover;" alt="雨脳ネコネコ">
   <div class="nk-badge"></div>
 </button>
 
 <div id="nk-panel">
   <div id="nk-head">
-    <div class="nk-av">🐱</div>
+    <div class="nk-av"><img src="nekoneko-icon.png" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="雨脳ネコネコ"></div>
     <div class="nk-info">
       <h4>雨脳ネコネコ</h4>
       <p>RBHub 総合管理AI</p>
