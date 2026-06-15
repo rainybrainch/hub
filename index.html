@@ -261,5 +261,128 @@
   resize();initDrops();draw();
   window.addEventListener("resize",()=>{resize();initDrops()});
 </script>
+
+<!-- 雨脳ネコネコ フローティングチャット -->
+<style>
+#nk-btn{position:fixed;bottom:24px;right:24px;z-index:500;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1a1f2e,#0d1117);border:2px solid #F5C842;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 20px rgba(245,200,66,.3);transition:transform .2s}
+#nk-btn:hover{transform:scale(1.1)}
+#nk-btn .nk-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:#4CAF7D;border-radius:50%;border:2px solid #0d1117}
+#nk-panel{position:fixed;bottom:96px;right:24px;z-index:500;width:320px;max-width:calc(100vw - 48px);background:#111827;border:1px solid rgba(245,200,66,.3);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;max-height:480px}
+#nk-panel.open{display:flex}
+#nk-head{background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(91,200,232,.06));border-bottom:1px solid rgba(255,255,255,.07);padding:14px 16px;display:flex;align-items:center;gap:10px}
+#nk-head .nk-av{font-size:1.6rem}
+#nk-head .nk-info h4{font-family:"Dela Gothic One",sans-serif;font-size:.85rem;color:#F5C842;margin:0 0 2px}
+#nk-head .nk-info p{font-size:.65rem;color:rgba(255,255,255,.45);margin:0}
+#nk-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1.1rem;padding:4px}
+#nk-close:hover{color:#fff}
+#nk-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.nk-msg{max-width:85%;font-size:.82rem;line-height:1.6;padding:10px 14px;border-radius:14px;animation:nkfade .2s ease}
+.nk-msg.bot{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.9);align-self:flex-start;border-radius:4px 14px 14px 14px}
+.nk-msg.usr{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.25);color:#fff;align-self:flex-end;border-radius:14px 4px 14px 14px}
+@keyframes nkfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#nk-foot{border-top:1px solid rgba(255,255,255,.07);padding:10px 12px;display:flex;gap:8px}
+#nk-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;color:#fff;font-family:"Zen Maru Gothic",sans-serif;font-size:.82rem;outline:none;transition:border-color .15s}
+#nk-inp:focus{border-color:rgba(245,200,66,.4)}
+#nk-inp::placeholder{color:rgba(255,255,255,.3)}
+#nk-send{background:#F5C842;border:none;border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+#nk-send:hover{opacity:.85}
+#nk-send:disabled{opacity:.35;cursor:not-allowed}
+.nk-typing{display:flex;gap:4px;padding:8px 12px;align-self:flex-start}
+.nk-typing span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);animation:nkdot .9s infinite}
+.nk-typing span:nth-child(2){animation-delay:.15s}
+.nk-typing span:nth-child(3){animation-delay:.3s}
+@keyframes nkdot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+</style>
+
+<button id="nk-btn" onclick="nkToggle()" title="雨脳ネコネコに聞く">
+  🐱
+  <div class="nk-badge"></div>
+</button>
+
+<div id="nk-panel">
+  <div id="nk-head">
+    <div class="nk-av">🐱</div>
+    <div class="nk-info">
+      <h4>雨脳ネコネコ</h4>
+      <p>RBHub 総合管理AI</p>
+    </div>
+    <button id="nk-close" onclick="nkToggle()">✕</button>
+  </div>
+  <div id="nk-msgs"></div>
+  <div id="nk-foot">
+    <input id="nk-inp" placeholder="何でも聞いてにゃ..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();nkSend()}">
+    <button id="nk-send" onclick="nkSend()">➤</button>
+  </div>
+</div>
+
+<script>
+const NK_API = 'https://rb-nekoneko.vercel.app/api/chat';
+let nkHistory = [], nkOpen = false, nkBusy = false;
+const nkMsgs = document.getElementById('nk-msgs');
+
+function nkToggle() {
+  nkOpen = !nkOpen;
+  document.getElementById('nk-panel').classList.toggle('open', nkOpen);
+  if (nkOpen && nkHistory.length === 0) nkGreet();
+}
+
+function nkGreet() {
+  nkAddMsg('bot', 'にゃ！ぼくは雨脳ネコネコ、RBHubの管理AIにゃ🐱\nアプリの使い方や、どこから始めるかなど、何でも聞いてにゃ！');
+}
+
+function nkAddMsg(role, text) {
+  const el = document.createElement('div');
+  el.className = 'nk-msg ' + (role === 'bot' ? 'bot' : 'usr');
+  el.textContent = text;
+  nkMsgs.appendChild(el);
+  nkMsgs.scrollTop = nkMsgs.scrollHeight;
+  return el;
+}
+
+function nkShowTyping() {
+  const el = document.createElement('div');
+  el.className = 'nk-typing';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  el.id = 'nk-typing';
+  nkMsgs.appendChild(el);
+  nkMsgs.scrollTop = nkMsgs.scrollHeight;
+}
+
+function nkHideTyping() {
+  const el = document.getElementById('nk-typing');
+  if (el) el.remove();
+}
+
+async function nkSend() {
+  const inp = document.getElementById('nk-inp');
+  const text = inp.value.trim();
+  if (!text || nkBusy) return;
+  inp.value = '';
+  nkBusy = true;
+  document.getElementById('nk-send').disabled = true;
+  nkAddMsg('usr', text);
+  nkHistory.push({ role: 'user', content: text });
+  nkShowTyping();
+  try {
+    const res = await fetch(NK_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: nkHistory.slice(-10), maxTokens: 400 })
+    });
+    const d = await res.json();
+    nkHideTyping();
+    const reply = d.text || 'うまく聞き取れなかったにゃ…もう一度試してにゃ🐱';
+    nkAddMsg('bot', reply);
+    nkHistory.push({ role: 'assistant', content: reply });
+  } catch (e) {
+    nkHideTyping();
+    nkAddMsg('bot', '通信エラーにゃ…しばらく待って試してみてにゃ🐱');
+  } finally {
+    nkBusy = false;
+    document.getElementById('nk-send').disabled = false;
+    document.getElementById('nk-inp').focus();
+  }
+}
+</script>
 </body>
 </html>
