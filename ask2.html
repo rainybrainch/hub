@@ -19,7 +19,7 @@
     .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
     .btn-primary { background: #5BC8E8; color: #0d1117; margin-bottom: 12px; }
     .btn-secondary { background: rgba(91, 200, 232, 0.2); color: #5BC8E8; border: 1px solid #5BC8E8; }
-    .main-content { display: none; }
+    .main-content { display: block; }
     .main-content.visible { display: block; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(91, 200, 232, 0.2); }
     .header h1 { font-size: 28px; color: #5BC8E8; }
@@ -132,13 +132,11 @@
     }
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
-      currentUser = null;
-      localStorage.removeItem('ask2_user');
-      showLoginScreen();
+      localStorage.clear();
+      location.reload();
     });
 
     function showMainContent() {
-      document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('mainContent').classList.add('visible');
       document.getElementById('userEmail').textContent = currentUser.email;
       renderCalendar();
