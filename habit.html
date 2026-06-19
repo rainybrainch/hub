@@ -236,6 +236,26 @@
     body.compact .habit-name{font-size:13px}
     body.compact .sec-progress{display:none}
     body.compact .chk{width:20px;height:20px;border-radius:6px}
+
+    /* Cycle 14: real-time search filter */
+    .search-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;position:relative}
+    .search-inp{flex:1;background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 34px 8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+    .search-inp:focus{border-color:rgba(91,200,232,.4)}
+    .search-inp::placeholder{color:var(--muted)}
+    .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s}
+    .search-clear:hover{color:var(--white)}
+    body.light .search-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .search-inp::placeholder{color:rgba(0,0,0,.35)}
+    body.light .search-inp:focus{border-color:rgba(91,200,232,.4)}
+    body.light .search-clear{color:rgba(0,0,0,.3)}
+    body.light .search-clear:hover{color:#1a1a2e}
+
+    /* Cycle 14: week-over-week comparison badge */
+    .week-cmp{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;letter-spacing:.03em}
+    .week-cmp.up{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2)}
+    .week-cmp.down{color:var(--red);background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.15)}
+    .week-cmp.same{color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+    body.light .week-cmp.same{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1)}
   </style>
 </head>
 <body>
@@ -280,6 +300,7 @@
   <div class="chart-box">
     <div class="chart-hdr">
       <div class="chart-ttl" id="chart-ttl">📊 週間達成率</div>
+      <span class="week-cmp same" id="week-cmp"></span>
       <div class="chart-toggle">
         <button class="toggle-btn active" data-view="week" onclick="setChartView('week')">週</button>
         <button class="toggle-btn" data-view="month" onclick="setChartView('month')">月</button>
@@ -304,6 +325,10 @@
 
   <div class="sort-row">
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
+  </div>
+  <div class="search-row">
+    <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="検索をクリア">✕</button>
   </div>
   <div id="list"></div>
 </div>
@@ -342,7 +367,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '';
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -566,10 +591,14 @@ function renderChart(){
 function renderList(){
   const el=document.getElementById('list');
   const td=today(),dc=completions[td]||{};
-  const list=filter==='all'?habits:habits.filter(h=>h.category===filter);
+  let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
+  // Cycle 14: apply real-time search filter
+  if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
 
   if(!list.length){
-    el.innerHTML=`<div class="empty"><div class="empty-ico">🌱</div><div class="empty-txt">＋ボタンで習慣を追加しよう！</div></div>`;
+    const msg=searchQuery?`「${esc(searchQuery)}」に一致する習慣はありません`:'＋ボタンで習慣を追加しよう！';
+    const ico=searchQuery?'🔍':'🌱';
+    el.innerHTML=`<div class="empty"><div class="empty-ico">${ico}</div><div class="empty-txt">${msg}</div></div>`;
     return;
   }
 
@@ -610,6 +639,7 @@ function render(){
   renderHeader();
   renderStats();
   renderChart();
+  renderWeekComparison();
   renderMotto();
   renderList();
 }
@@ -812,6 +842,38 @@ function setFilter(cat){
   renderList();
 }
 
+// ── Cycle 14: real-time search filter ──
+function onSearch(val){
+  searchQuery=val.trim().toLowerCase();
+  const clr=document.getElementById('search-clear');
+  if(clr)clr.style.display=searchQuery?'block':'none';
+  renderList();
+}
+function clearSearch(){
+  const inp=document.getElementById('search-inp');
+  if(inp)inp.value='';
+  onSearch('');
+  if(inp)inp.focus();
+}
+
+// ── Cycle 14: week-over-week comparison ──
+function weekAvg(offsetWeeks){
+  const start=offsetWeeks*7;
+  let sum=0;
+  for(let i=0;i<7;i++)sum+=dayRate(dateAgo(start+i));
+  return sum/7;
+}
+function renderWeekComparison(){
+  const el=document.getElementById('week-cmp');
+  if(!el)return;
+  const thisW=Math.round(weekAvg(0)*100);
+  const lastW=Math.round(weekAvg(1)*100);
+  const diff=thisW-lastW;
+  if(diff>0){el.textContent=`↑ 先週比+${diff}%`;el.className='week-cmp up';}
+  else if(diff<0){el.textContent=`↓ 先週比${diff}%`;el.className='week-cmp down';}
+  else{el.textContent='= 先週と同じ';el.className='week-cmp same';}
+}
+
 // ── celebration (cycle 2 新機能) ──
 function showBanner(){
   const b=document.getElementById('banner');
@@ -894,7 +956,12 @@ initTheme();
 updateSoundBtn();
 initCompactView();
 render();
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('overlay').classList.contains('open'))closeModal();
+    else if(searchQuery)clearSearch();
+  }
+});
 </script>
 </body>
 </html>
