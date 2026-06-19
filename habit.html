@@ -5,28 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>習慣</title>
   <style>
-    :root{--sky:#5BC8E8;--gold:#F5C842;--green:#4CAF7D;--red:#E8354A;--dark:#0d1117;--white:#fff}
+    :root{--sky:#5BC8E8;--gold:#F5C842;--green:#4CAF7D;--red:#E8354A;--dark:#0d1117;--white:#fff;--subtle:#1a1f3a;--border:rgba(91,200,232,.2)}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:"Zen Maru Gothic",sans-serif;background:var(--dark);color:var(--white);min-height:100vh;padding:40px 20px}
+    body{font-family:"Zen Maru Gothic",sans-serif;background:linear-gradient(135deg, var(--dark) 0%, #1a2847 100%);color:var(--white);min-height:100vh;padding:20px;overflow-x:hidden}
     .container{max-width:480px;margin:0 auto}
-    .header{text-align:center;margin-bottom:32px}
-    .header-title{font-size:40px;color:var(--white);margin:0;text-shadow:2px 2px 0 #D4A017}
-    .dashboard{background:rgba(91,200,232,.08);border:1px solid rgba(91,200,232,.2);border-radius:12px;padding:20px;margin-bottom:28px}
+    .header{text-align:center;margin-bottom:32px;animation:fadeIn 0.8s ease-out}
+    .header-title{font-size:36px;color:var(--white);margin:0;text-shadow:2px 2px 0 #D4A017;letter-spacing:2px}
+    .motivation-message{background:linear-gradient(135deg, rgba(91,200,232,.15), rgba(76,175,125,.1));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;min-height:60px;display:flex;align-items:center;justify-content:center;animation:slideIn 0.6s ease-out}
+    .motivation-text{font-size:14px;font-weight:600;color:var(--sky);line-height:1.6}
+    .motivation-emoji{font-size:24px;margin-right:8px;animation:bounce 1.5s infinite}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .dashboard{background:rgba(91,200,232,.08);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:28px;animation:fadeIn 0.8s ease-out 0.2s both}
     .dashboard-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .stat-card{text-align:center;background:rgba(26,31,58,.6);border-radius:8px;padding:12px}
-    .stat-number{font-size:24px;font-weight:900;color:var(--sky)}
-    .stat-label{font-size:9px;color:rgba(255,255,255,.5)}
-    .form-section{background:rgba(26,31,58,.5);border:1px solid rgba(91,200,232,.15);border-radius:12px;padding:20px;margin:28px 0}
+    .stat-card{text-align:center;background:rgba(26,31,58,.8);border-radius:8px;padding:14px;border:1px solid rgba(91,200,232,.1);transition:all 0.3s ease;cursor:default}
+    .stat-card:hover{border-color:var(--border);transform:translateY(-2px)}
+    .stat-number{font-size:28px;font-weight:900;color:var(--sky);transition:all 0.5s ease}
+    .stat-number.pulse{animation:pulse-scale 0.6s ease-out}
+    @keyframes pulse-scale{0%{transform:scale(1.1);opacity:0.7}100%{transform:scale(1);opacity:1}}
+    .stat-label{font-size:10px;color:rgba(255,255,255,.5);margin-top:6px}
+    .suggestion-box{background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.2);border-radius:10px;padding:14px;margin-bottom:20px;animation:slideIn 0.6s ease-out}
+    .suggestion-title{font-size:11px;color:var(--green);font-weight:700;margin-bottom:8px}
+    .suggestion-text{font-size:12px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:10px}
+    .suggestion-btn{width:100%;padding:8px;background:var(--green);color:var(--white);border:0;border-radius:6px;font-weight:600;cursor:pointer;font-size:11px;transition:all 0.2s}
+    .suggestion-btn:hover{opacity:0.9;transform:scale(1.02)}
+    .form-section{background:rgba(26,31,58,.5);border:1px solid rgba(91,200,232,.15);border-radius:12px;padding:20px;margin:28px 0;animation:fadeIn 0.8s ease-out 0.3s both}
+    .form-section h3{color:var(--sky);margin-bottom:14px;font-size:14px}
     .form-group{margin-bottom:12px}
-    .form-group input,.form-group select{width:100%;padding:10px;background:rgba(91,200,232,.05);border:1px solid rgba(91,200,232,.25);border-radius:6px;color:var(--white);font-family:inherit;font-size:12px}
-    .btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--sky),#4fb5d5);color:var(--dark);border:0;border-radius:6px;font-weight:700;cursor:pointer;margin-top:8px}
-    .habit-item{background:rgba(26,31,58,.7);border:1px solid rgba(91,200,232,.15);border-radius:8px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
-    .habit-checkbox{width:24px;height:24px;cursor:pointer}
-    .habit-checkbox:checked{accent-color:var(--green)}
-    .habit-name{flex:1;font-size:12px;font-weight:700}
-    .habit-delete{width:28px;height:28px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.3);border-radius:4px;color:var(--red);cursor:pointer;font-weight:700}
-    .empty-state{text-align:center;padding:40px;color:rgba(255,255,255,.4)}
+    .form-group input,.form-group select{width:100%;padding:10px;background:rgba(91,200,232,.05);border:1px solid rgba(91,200,232,.25);border-radius:6px;color:var(--white);font-family:inherit;font-size:12px;transition:all 0.2s}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--sky);background:rgba(91,200,232,.1)}
+    .btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--sky),#4fb5d5);color:var(--dark);border:0;border-radius:6px;font-weight:700;cursor:pointer;margin-top:8px;transition:all 0.2s;font-size:12px}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(91,200,232,.3)}
+    .btn:active{transform:translateY(0)}
+    .habits-section{animation:fadeIn 0.8s ease-out 0.4s both}
+    .habits-title{font-size:13px;color:var(--sky);margin:20px 0 16px;font-weight:700}
+    .habit-item{background:rgba(26,31,58,.7);border:1px solid rgba(91,200,232,.15);border-radius:8px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;transition:all 0.2s;animation:slideIn 0.4s ease-out}
+    .habit-item:hover{border-color:rgba(91,200,232,.3);background:rgba(26,31,58,.85)}
+    .habit-item.completed{opacity:0.7}
+    .habit-checkbox{width:24px;height:24px;cursor:pointer;accent-color:var(--green)}
+    .habit-name{flex:1;font-size:12px;font-weight:600}
+    .habit-item.completed .habit-name{text-decoration:line-through;color:rgba(255,255,255,.5)}
+    .habit-meta{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
+    .habit-delete{width:28px;height:28px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.3);border-radius:4px;color:var(--red);cursor:pointer;font-weight:700;transition:all 0.2s;font-size:14px}
+    .habit-delete:hover{background:rgba(232,53,74,.2)}
+    .empty-state{text-align:center;padding:40px 20px;color:rgba(255,255,255,.4);font-size:13px}
+    .improvement-log{background:rgba(245,200,66,.05);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:14px;margin-bottom:20px;font-size:11px;animation:slideIn 0.6s ease-out}
+    .improvement-log-title{color:var(--gold);font-weight:700;margin-bottom:8px}
+    .improvement-log-entry{color:rgba(255,255,255,.6);margin-bottom:4px;padding-left:12px;border-left:2px solid var(--gold)}
+    .improvement-log-entry:last-child{margin-bottom:0}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;font-size:10px}
+    .stat-mini{background:rgba(26,31,58,.6);padding:8px;border-radius:6px;text-align:center}
+    .stat-mini-label{color:rgba(255,255,255,.5);margin-bottom:4px}
+    .stat-mini-value{color:var(--green);font-weight:700;font-size:14px}
     footer{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid rgba(91,200,232,.1);font-size:11px;color:rgba(255,255,255,.3)}
+    footer a{color:var(--sky);text-decoration:none;transition:color 0.2s}
+    footer a:hover{color:rgba(91,200,232,.8)}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:480px){
+      body{padding:16px}
+      .header-title{font-size:32px}
+      .dashboard-stat{grid-template-columns:repeat(3,1fr)}
+      .stat-number{font-size:24px}
+    }
+    .no-habits-yet{color:rgba(255,255,255,.4);text-align:center;padding:30px 20px;font-size:13px}
   </style>
 </head>
 <body>
@@ -34,36 +75,309 @@
   <header class="header">
     <h1 class="header-title">📅 習慣</h1>
   </header>
+
+  <div class="motivation-message" id="motivation">
+    <span class="motivation-emoji" id="motivation-emoji">🌟</span>
+    <div class="motivation-text" id="motivation-text">習慣を1つ始めよう！</div>
+  </div>
+
   <div class="dashboard">
     <div class="dashboard-stat">
-      <div class="stat-card"><div class="stat-number" id="stat-today">0</div><div class="stat-label">今日完了</div></div>
-      <div class="stat-card"><div class="stat-number" id="stat-total">0</div><div class="stat-label">全習慣</div></div>
-      <div class="stat-card"><div class="stat-number" id="stat-rate">0%</div><div class="stat-label">完了率</div></div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-today">0</div>
+        <div class="stat-label">今日完了</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-total">0</div>
+        <div class="stat-label">全習慣</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-rate">0%</div>
+        <div class="stat-label">完了率</div>
+      </div>
     </div>
   </div>
+
+  <div id="suggestion-container"></div>
+
   <div class="form-section">
-    <h3 style="color:var(--sky);margin-bottom:14px;">新しい習慣を追加</h3>
+    <h3>新しい習慣を追加</h3>
     <div class="form-group">
       <input id="habit-name" type="text" placeholder="習慣の名前">
     </div>
     <div class="form-group">
       <select id="habit-category">
-        <option>📚 学習</option><option>💪 運動</option><option>🎨 創作</option><option>✨ 自己改善</option>
+        <option>📚 学習</option>
+        <option>💪 運動</option>
+        <option>🎨 創作</option>
+        <option>✨ 自己改善</option>
       </select>
     </div>
     <button class="btn" onclick="addHabit()">追加</button>
   </div>
-  <div>
-    <h3 style="font-size:12px;color:var(--sky);margin:20px 0 16px;">📋 今日の習慣</h3>
+
+  <div class="habits-section">
+    <h3 class="habits-title">📋 今日の習慣</h3>
     <div id="habits-list"><div class="empty-state">習慣を追加してください</div></div>
   </div>
+
+  <div id="improvement-log-container"></div>
+
   <footer>
-    <p>習慣アプリ v1.0 - RAINYBRAIN Hub</p>
-    <p style="margin-top:8px;"><a href="index.html" style="color:var(--sky);text-decoration:none;">← Hubに戻る</a></p>
+    <p>習慣アプリ v2.0 - RAINYBRAIN Hub</p>
+    <p style="margin-top:8px;"><a href="index.html">← Hubに戻る</a></p>
   </footer>
 </div>
+
 <script>
-const SK='habit_data';let d={habits:[]};function init(){try{d=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){}render();setInterval(render,60000)}function render(){const t=new Date().toISOString().split('T')[0];let c=0;d.habits.forEach(h=>{if(h.log&&h.log[t])c++});document.getElementById('stat-today').textContent=c;document.getElementById('stat-total').textContent=d.habits.length;const r=d.habits.length?Math.round(c*100/d.habits.length):0;document.getElementById('stat-rate').textContent=r+'%';let html='';d.habits.forEach(h=>{const done=h.log&&h.log[t];html+=`<div class="habit-item"><input type="checkbox" class="habit-checkbox" ${done?'checked':''} onchange="toggle('${h.id}')"><div class="habit-name">${h.name}</div><button class="habit-delete" onclick="del('${h.id}')">x</button></div>`});document.getElementById('habits-list').innerHTML=html||'<div class="empty-state">習慣を追加してください</div>';localStorage.setItem(SK,JSON.stringify(d))}function addHabit(){const n=document.getElementById('habit-name').value.trim();if(!n)return;d.habits.push({id:'h_'+Date.now(),name:n,log:{}});document.getElementById('habit-name').value='';render()}function toggle(id){const t=new Date().toISOString().split('T')[0];const h=d.habits.find(x=>x.id===id);if(!h)return;if(!h.log)h.log={};h.log[t]=!h.log[t];render()}function del(id){d.habits=d.habits.filter(h=>h.id!==id);render()}window.addEventListener('load',init);
+const SK = 'habit_data';
+const ILK = 'improvement_log';
+let data = { habits: [], improvementCycle: 0 };
+let improvementLog = [];
+
+const messages = [
+  { emoji: '🌟', text: '今日も習慣を1つ始めよう！', rate: 0 },
+  { emoji: '💪', text: '半分完了！この調子だ！', rate: 33 },
+  { emoji: '🎉', text: 'いい調子！もう少しで完了だ！', rate: 66 },
+  { emoji: '🏆', text: '完璧だ！今日のタスク全クリア！', rate: 100 }
+];
+
+const suggestions = {
+  low: [
+    'この習慣を朝の決まった時間に実行してみましょう',
+    'リマインダーを設定するのは？習慣が自動化されます',
+    'もっと簡単な目標に変更してみては？',
+    '友達と一緒にやるのはいかが？楽しくなります',
+    'ご褒美を用意しておくのもモチベーションアップ'
+  ],
+  high: [
+    'この習慣を習慣化できました！素晴らしい！',
+    'もっと難しい目標に挑戦してみては？',
+    'この成功を他の習慣にも応用しましょう'
+  ]
+};
+
+function init() {
+  try {
+    const saved = localStorage.getItem(SK);
+    if (saved) data = JSON.parse(saved);
+  } catch (e) {}
+
+  try {
+    const saved = localStorage.getItem(ILK);
+    if (saved) improvementLog = JSON.parse(saved);
+  } catch (e) {}
+
+  render();
+  // Improvement cycle every 1 minute
+  setInterval(improveApp, 60000);
+  // Render update every 30 seconds
+  setInterval(render, 30000);
+}
+
+function improveApp() {
+  data.improvementCycle = (data.improvementCycle || 0) + 1;
+  const today = new Date().toISOString().split('T')[0];
+  const completed = data.habits.filter(h => h.log && h.log[today]).length;
+  const rate = data.habits.length ? Math.round(completed * 100 / data.habits.length) : 0;
+
+  const entry = {
+    id: 'i_' + Date.now(),
+    cycle: data.improvementCycle,
+    timestamp: new Date().toLocaleTimeString('ja-JP'),
+    completedCount: completed,
+    totalCount: data.habits.length,
+    rate: rate
+  };
+
+  improvementLog.push(entry);
+  if (improvementLog.length > 20) improvementLog.shift();
+
+  localStorage.setItem(ILK, JSON.stringify(improvementLog));
+  render();
+}
+
+function render() {
+  const today = new Date().toISOString().split('T')[0];
+  let completed = 0;
+
+  data.habits.forEach(h => {
+    if (h.log && h.log[today]) completed++;
+  });
+
+  // Update stats with animation
+  updateStatWithPulse('stat-today', completed);
+  updateStatWithPulse('stat-total', data.habits.length);
+
+  const rate = data.habits.length ? Math.round(completed * 100 / data.habits.length) : 0;
+  updateStatWithPulse('stat-rate', rate + '%');
+
+  // Update motivation message
+  updateMotivation(rate);
+
+  // Update suggestion
+  updateSuggestion(rate);
+
+  // Render habits
+  let html = '';
+  data.habits.forEach(h => {
+    const done = h.log && h.log[today];
+    const streak = calculateStreak(h);
+    html += `<div class="habit-item ${done ? 'completed' : ''}">
+      <input type="checkbox" class="habit-checkbox" ${done ? 'checked' : ''} onchange="toggle('${h.id}')">
+      <div style="flex:1">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-meta">連続: ${streak}日 ${h.category || '📚'}</div>
+      </div>
+      <button class="habit-delete" onclick="del('${h.id}')">×</button>
+    </div>`;
+  });
+
+  document.getElementById('habits-list').innerHTML = html || '<div class="empty-state">習慣を追加してください</div>';
+
+  // Update improvement log
+  renderImprovementLog();
+
+  localStorage.setItem(SK, JSON.stringify(data));
+}
+
+function updateStatWithPulse(id, value) {
+  const elem = document.getElementById(id);
+  const oldValue = elem.textContent;
+  if (oldValue !== String(value)) {
+    elem.textContent = value;
+    elem.classList.remove('pulse');
+    // Trigger reflow
+    void elem.offsetWidth;
+    elem.classList.add('pulse');
+  }
+}
+
+function updateMotivation(rate) {
+  const msg = messages.reduce((prev, curr) =>
+    rate >= curr.rate ? curr : prev
+  );
+
+  document.getElementById('motivation-emoji').textContent = msg.emoji;
+  document.getElementById('motivation-text').textContent = msg.text;
+}
+
+function updateSuggestion(rate) {
+  const container = document.getElementById('suggestion-container');
+
+  // Find low-performing habits
+  const today = new Date().toISOString().split('T')[0];
+  const lowPerforming = data.habits.filter(h => {
+    const daysTracked = h.startDate ? Math.floor((new Date() - new Date(h.startDate)) / (1000 * 60 * 60 * 24)) + 1 : 1;
+    const completions = h.log ? Object.keys(h.log).length : 0;
+    const habitRate = completions / daysTracked;
+    return habitRate < 0.6;
+  });
+
+  if (lowPerforming.length > 0 && Math.random() > 0.5) {
+    const habit = lowPerforming[Math.floor(Math.random() * lowPerforming.length)];
+    const suggestion = suggestions.low[Math.floor(Math.random() * suggestions.low.length)];
+
+    container.innerHTML = `<div class="suggestion-box">
+      <div class="suggestion-title">💡 「${habit.name}」を改善するなら...</div>
+      <div class="suggestion-text">${suggestion}</div>
+      <button class="suggestion-btn" onclick="dismissSuggestion()">このヒントを消す</button>
+    </div>`;
+  } else if (rate === 100 && data.habits.length > 0) {
+    container.innerHTML = `<div class="suggestion-box">
+      <div class="suggestion-title">🎯 完璧達成！</div>
+      <div class="suggestion-text">今日のすべての習慣を完了しました。素晴らしい！明日も頑張ろう！</div>
+      <button class="suggestion-btn" onclick="dismissSuggestion()">このメッセージを消す</button>
+    </div>`;
+  } else {
+    container.innerHTML = '';
+  }
+}
+
+function dismissSuggestion() {
+  document.getElementById('suggestion-container').innerHTML = '';
+}
+
+function renderImprovementLog() {
+  const container = document.getElementById('improvement-log-container');
+
+  if (improvementLog.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const recentLog = improvementLog.slice(-5).reverse();
+  const html = `<div class="improvement-log">
+    <div class="improvement-log-title">🔄 改善サイクル (最新5件)</div>
+    ${recentLog.map(e => `
+      <div class="improvement-log-entry">
+        <strong>サイクル #${e.cycle}</strong> (${e.timestamp}):
+        <strong>${e.completedCount}/${e.totalCount}</strong> (${e.rate}%)
+      </div>
+    `).join('')}
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+function calculateStreak(habit) {
+  if (!habit.log || Object.keys(habit.log).length === 0) return 0;
+
+  let streak = 0;
+  const today = new Date();
+
+  for (let i = 0; i < 365; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+
+    if (habit.log[dateStr]) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+function addHabit() {
+  const name = document.getElementById('habit-name').value.trim();
+  const category = document.getElementById('habit-category').value;
+
+  if (!name) return;
+
+  data.habits.push({
+    id: 'h_' + Date.now(),
+    name: name,
+    category: category,
+    log: {},
+    startDate: new Date().toISOString().split('T')[0]
+  });
+
+  document.getElementById('habit-name').value = '';
+  render();
+}
+
+function toggle(id) {
+  const today = new Date().toISOString().split('T')[0];
+  const habit = data.habits.find(x => x.id === id);
+
+  if (!habit) return;
+
+  if (!habit.log) habit.log = {};
+  habit.log[today] = !habit.log[today];
+  render();
+}
+
+function del(id) {
+  if (confirm('この習慣を削除しますか？')) {
+    data.habits = data.habits.filter(h => h.id !== id);
+    render();
+  }
+}
+
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
