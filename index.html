@@ -415,6 +415,50 @@ async function nkSend() {
   const text = inp.value.trim();
   if (!text || nkBusy) return;
   inp.value = '';
+  
+  // 隠しコマンド処理
+  if (text.startsWith('/')) {
+    nkBusy = true;
+    nkAddMsg('usr', text);
+    
+    let response = '';
+    switch (text.toLowerCase()) {
+      case '/help':
+        response = '🐱 ネコネコのコマンド一覧:
+/help - このリストを表示
+/ask2 - ASK2 へのリンク
+/hub - Hub について
+/secret - 秘密のメッセージ
+/clear - チャット履歴をリセット';
+        break;
+      case '/ask2':
+        response = '📅 ASK2: 毎日の市場分析と漫画を記録するカレンダー
+👉 https://rainybrainch.github.io/hub/ask2.html';
+        break;
+      case '/hub':
+        response = '🌊 RAINYBRAIN Hub は、RBAIのアプリ・ツール・プラットフォームを集約したポータルサイトにゃ!
+各プロジェクトへの入口が整理されています。';
+        break;
+      case '/secret':
+        response = '🎉 秘密のメッセージ: にゃ〜ん！あなたはボクの特別な友達にゃ！🐱✨';
+        break;
+      case '/clear':
+        nkHistory = [];
+        nkMsgs.innerHTML = '';
+        response = '✓ チャット履歴をリセットしたにゃ!';
+        break;
+      default:
+        response = '❓ わからないコマンドにゃ… /help でコマンド一覧を見てにゃ!';
+    }
+    
+    nkAddMsg('bot', response);
+    nkHistory.push({ role: 'assistant', content: response });
+    nkBusy = false;
+    document.getElementById('nk-send').disabled = false;
+    document.getElementById('nk-inp').focus();
+    return;
+  }
+  
   nkBusy = true;
   document.getElementById('nk-send').disabled = true;
   nkAddMsg('usr', text);
