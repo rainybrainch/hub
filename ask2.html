@@ -61,23 +61,6 @@
   </style>
 </head>
 <body>
-  <div class="login-screen" id="loginScreen">
-    <div class="login-box">
-      <h1>ASK2</h1>
-      <div class="form-group">
-        <label for="loginEmail">メールアドレス</label>
-        <input type="email" id="loginEmail" placeholder="example@mail.com">
-      </div>
-      <div class="form-group">
-        <label for="loginPassword">パスワード</label>
-        <input type="password" id="loginPassword" placeholder="••••••••">
-      </div>
-      <button class="btn btn-primary" id="loginBtn">ログイン</button>
-      <button class="btn btn-secondary" id="signupBtn">アカウント作成</button>
-      <div class="error-msg" id="loginError"></div>
-    </div>
-  </div>
-
   <div class="main-content" id="mainContent">
     <div class="container">
       <div class="header">
@@ -143,49 +126,16 @@
     let currentData = {};
 
     function checkAuth() {
-      const storedUser = localStorage.getItem('ask2_user');
-      if (storedUser) {
-        currentUser = JSON.parse(storedUser);
-        showMainContent();
-      } else {
-        showLoginScreen();
-      }
+      currentUser = { email: 'rainybrain.ch@gmail.com', uid: 'ask2' };
+      localStorage.setItem('ask2_user', JSON.stringify(currentUser));
+      showMainContent();
     }
-
-    document.getElementById('loginBtn').addEventListener('click', () => {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      const errorEl = document.getElementById('loginError');
-
-      if (!email || !password) {
-        errorEl.textContent = 'メールアドレスとパスワードを入力してください';
-        return;
-      }
-
-      if (email === 'rainybrain.ch@gmail.com' && password === 'ASK2') {
-        currentUser = { email: email, uid: btoa(email) };
-        localStorage.setItem('ask2_user', JSON.stringify(currentUser));
-        errorEl.textContent = '';
-        showMainContent();
-      } else {
-        errorEl.textContent = 'メールアドレスまたはパスワードが間違っています';
-      }
-    });
-
-    document.getElementById('signupBtn').addEventListener('click', () => {
-      alert('アカウント作成は現在利用できません。管理者にお問い合わせください。');
-    });
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
       currentUser = null;
       localStorage.removeItem('ask2_user');
       showLoginScreen();
     });
-
-    function showLoginScreen() {
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('mainContent').classList.remove('visible');
-    }
 
     function showMainContent() {
       document.getElementById('loginScreen').classList.add('hidden');
