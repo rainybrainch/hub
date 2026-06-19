@@ -145,6 +145,46 @@
     .hdr-btn:active{transform:scale(.92)}
     /* Best streak sub-label — cycle 5 */
     .stat-sub{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px;letter-spacing:.05em}
+
+    /* Cycle 7: theme toggle button */
+    .theme-btn{background:none;border:none;cursor:pointer;font-size:18px;padding:6px 8px;border-radius:8px;transition:all .15s;line-height:1;flex-shrink:0}
+    .theme-btn:hover{background:rgba(255,255,255,.08)}
+
+    /* Cycle 7: sort undone button */
+    .sort-row{display:flex;align-items:center;margin-bottom:10px}
+    .sort-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .sort-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .sort-btn.active{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+
+    /* Cycle 7: light mode */
+    body.light{--dark2:#ffffff;--dark3:#e8eaed;--muted:rgba(0,0,0,.45);background:#f0f2f5;color:#1a1a2e}
+    body.light .hdr{background:rgba(248,249,250,.95);border-bottom-color:rgba(0,0,0,.08)}
+    body.light .stat,body.light .chart-box{border-color:rgba(0,0,0,.08)}
+    body.light .bar-wrap{background:rgba(0,0,0,.06)}
+    body.light .habit{border-color:rgba(0,0,0,.08)}
+    body.light .habit.done{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.25)}
+    body.light .chk{border-color:rgba(0,0,0,.2)}
+    body.light .del-btn{color:rgba(0,0,0,.2)}
+    body.light .edit-btn{color:rgba(0,0,0,.2)}
+    body.light .modal{border-color:rgba(0,0,0,.1)}
+    body.light .modal-handle{background:rgba(0,0,0,.1)}
+    body.light .modal-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .modal-inp::placeholder{color:rgba(0,0,0,.35)}
+    body.light .cat-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .cat-btn:hover{color:#1a1a2e}
+    body.light .toggle-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .tab{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .tab:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .habit-cnt{background:rgba(0,0,0,.06)}
+    body.light .stat-sub{color:rgba(0,0,0,.3)}
+    body.light .hdr-btn{color:rgba(0,0,0,.4)}
+    body.light .hdr-btn:hover{color:#1a1a2e;background:rgba(0,0,0,.08)}
+    body.light .back:hover{background:rgba(0,0,0,.06)}
+    body.light .theme-btn:hover{background:rgba(0,0,0,.08)}
+    body.light .sort-btn{border-color:rgba(0,0,0,.12)}
+    body.light .sort-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .streak-badge{background:linear-gradient(135deg,rgba(245,200,66,.2),rgba(212,160,23,.15))}
+    body.light .progress-ring circle:first-child{stroke:rgba(0,0,0,.07)}
   </style>
 </head>
 <body>
@@ -156,6 +196,7 @@
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 
@@ -205,6 +246,9 @@
     <button class="tab" data-cat="自己改善" onclick="setFilter('自己改善')">✨ 自己改善</button>
   </div>
 
+  <div class="sort-row">
+    <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
+  </div>
   <div id="list"></div>
 </div>
 
@@ -233,7 +277,7 @@ const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 const DAYS = ['日','月','火','水','木','金','土'];
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false;
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
@@ -303,7 +347,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.5',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.7',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -367,7 +411,8 @@ function renderChart(){
       const ds=dateAgo(i),pct=dayRate(ds);
       const cell=document.createElement('div');
       cell.className='hm-cell';
-      cell.style.background=pct===0?'rgba(255,255,255,.06)':`rgba(245,200,66,${(0.12+pct*.82).toFixed(2)})`;
+      const emptyBg=document.body.classList.contains('light')?'rgba(0,0,0,.06)':'rgba(255,255,255,.06)';
+      cell.style.background=pct===0?emptyBg:`rgba(245,200,66,${(0.12+pct*.82).toFixed(2)})`;
       const d=daysAgo(i);
       cell.title=`${d.getMonth()+1}月${d.getDate()}日 ${Math.round(pct*100)}%達成`;
       c.appendChild(cell);
@@ -388,8 +433,9 @@ function renderList(){
   const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
   let html='';
   for(const cat of cats){
-    const ch=list.filter(h=>h.category===cat);
+    let ch=list.filter(h=>h.category===cat);
     if(!ch.length)continue;
+    if(sortUndone)ch=[...ch].sort((a,b)=>(dc[a.id]?1:0)-(dc[b.id]?1:0));
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><span class="sec-count">${done}/${ch.length}</span></div>`;
     for(const h of ch){
@@ -484,6 +530,30 @@ function saveHabit(){
   render();
 }
 
+// ── theme (cycle 7) ──
+function initTheme(){
+  if(localStorage.getItem('rh_theme')==='light')document.body.classList.add('light');
+  updateThemeBtn();
+}
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  localStorage.setItem('rh_theme',isLight?'light':'dark');
+  updateThemeBtn();
+  renderChart();
+}
+function updateThemeBtn(){
+  const btn=document.getElementById('theme-btn');
+  if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀️';
+}
+
+// ── sort undone (cycle 7) ──
+function toggleSortUndone(){
+  sortUndone=!sortUndone;
+  const btn=document.getElementById('sort-undone-btn');
+  if(btn)btn.classList.toggle('active',sortUndone);
+  renderList();
+}
+
 // cycle 6: JSON import
 function importData(){
   const inp=document.createElement('input');
@@ -524,7 +594,7 @@ function launchConfetti(){
   const canvas=document.getElementById('cfv');
   const ctx=canvas.getContext('2d');
   canvas.width=innerWidth;canvas.height=innerHeight;
-  const cols=['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff'];
+  const cols=document.body.classList.contains('light')?['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#333333']:['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff'];
   const ps=Array.from({length:130},()=>({
     x:Math.random()*canvas.width,
     y:-20-Math.random()*80,
@@ -559,6 +629,7 @@ function launchConfetti(){
 
 // ── init ──
 load();
+initTheme();
 render();
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 </script>
