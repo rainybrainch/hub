@@ -77,6 +77,8 @@
     .cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
     .del-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
     .del-btn:hover{color:var(--red);background:rgba(232,53,74,.1)}
+    .edit-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .edit-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
 
     /* Empty state */
     .empty{text-align:center;padding:48px 20px;color:var(--muted)}
@@ -153,6 +155,7 @@
   <a href="index.html" class="back">← Hub</a>
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
+  <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 
@@ -210,16 +213,16 @@
 <div class="overlay" id="overlay" onclick="bgClose(event)">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h2 class="modal-ttl">習慣を追加</h2>
+    <h2 class="modal-ttl" id="modal-ttl">習慣を追加</h2>
     <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
-      oninput="validateModal()" onkeydown="if(event.key==='Enter')addHabit()">
+      oninput="validateModal()" onkeydown="if(event.key==='Enter')saveHabit()">
     <div class="cat-grid">
       <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
       <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
       <button class="cat-btn" data-cat="創作" onclick="selCat('創作')">🎨 創作</button>
       <button class="cat-btn" data-cat="自己改善" onclick="selCat('自己改善')">✨ 自己改善</button>
     </div>
-    <button class="modal-ok" id="modal-ok" onclick="addHabit()" disabled>追加する</button>
+    <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
 
@@ -230,7 +233,7 @@ const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 const DAYS = ['日','月','火','水','木','金','土'];
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null;
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
@@ -393,7 +396,7 @@ function renderList(){
       const isDone=!!dc[h.id];
       const cnt=habitTotalCount(h.id);
       const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}<button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
@@ -433,15 +436,28 @@ function del(id){
 }
 
 // ── modal ──
-function openModal(){
+function openModal(id=null){
+  editingId=id;
   document.getElementById('overlay').classList.add('open');
-  document.getElementById('habit-inp').value='';
-  selCatVal='';
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('modal-ok').disabled=true;
-  setTimeout(()=>document.getElementById('habit-inp').focus(),300);
+  const inp=document.getElementById('habit-inp');
+  const ok=document.getElementById('modal-ok');
+  const ttl=document.getElementById('modal-ttl');
+  if(id){
+    const h=habits.find(h=>h.id===id);
+    inp.value=h?h.name:'';
+    selCatVal=h?h.category:'';
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
+    if(ttl)ttl.textContent='習慣を編集';
+    if(ok){ok.textContent='更新する';ok.disabled=false;}
+  }else{
+    inp.value='';selCatVal='';
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+    if(ttl)ttl.textContent='習慣を追加';
+    if(ok){ok.textContent='追加する';ok.disabled=true;}
+  }
+  setTimeout(()=>inp.focus(),300);
 }
-function closeModal(){document.getElementById('overlay').classList.remove('open')}
+function closeModal(){editingId=null;document.getElementById('overlay').classList.remove('open')}
 function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal()}
 
 function selCat(cat){
@@ -453,14 +469,41 @@ function validateModal(){
   const name=document.getElementById('habit-inp').value.trim();
   document.getElementById('modal-ok').disabled=!name||!selCatVal;
 }
-function addHabit(){
+function saveHabit(){
   const name=document.getElementById('habit-inp').value.trim();
   if(!name||!selCatVal)return;
-  habits.push({id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()});
+  if(editingId){
+    const h=habits.find(h=>h.id===editingId);
+    if(h){h.name=name;h.category=selCatVal;}
+  }else{
+    habits.push({id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()});
+  }
   saveH();
   closeModal();
   celebrated=false;
   render();
+}
+
+// cycle 6: JSON import
+function importData(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=e=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=evt=>{
+      try{
+        const data=JSON.parse(evt.target.result);
+        if(!data.habits||!Array.isArray(data.habits))throw new Error();
+        if(!confirm(`${data.habits.length}件の習慣データをインポートします。現在のデータは上書きされます。続けますか？`))return;
+        habits=data.habits;completions=data.completions||{};
+        saveH();saveC();celebrated=false;render();
+      }catch{alert('インポートに失敗しました。正しいバックアップJSONを選択してください。');}
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
 }
 
 // ── filter ──
