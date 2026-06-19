@@ -221,6 +221,21 @@
     .snackbar-undo{background:none;border:none;color:var(--gold);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:900;cursor:pointer;padding:4px 10px;border-radius:8px;transition:background .15s;flex-shrink:0;letter-spacing:.05em}
     .snackbar-undo:hover{background:rgba(245,200,66,.15)}
     body.light .snackbar{background:#1a1a2e;border-color:rgba(255,255,255,.15)}
+
+    /* Cycle 13: habit streak milestone toast */
+    .milestone-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.55);z-index:450;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .milestone-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Cycle 13: compact view mode */
+    body.compact .habit{padding:8px 12px}
+    body.compact .h-dots{display:none}
+    body.compact .habit-cnt{display:none}
+    body.compact .habit-streak{display:none}
+    body.compact .done-time{display:none}
+    body.compact .habit-note{display:none}
+    body.compact .habit-name{font-size:13px}
+    body.compact .sec-progress{display:none}
+    body.compact .chk{width:20px;height:20px;border-radius:6px}
   </style>
 </head>
 <body>
@@ -235,6 +250,7 @@
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
+  <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 
@@ -312,6 +328,7 @@
 </div>
 
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
+<div class="milestone-toast" id="milestone-toast"></div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -604,7 +621,7 @@ function toggle(id){
   const wasCompleted=!!completions[td][id];
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
-  if(!wasCompleted)playTick();
+  if(!wasCompleted){playTick();checkHabitMilestone(id);}
   saveC();
   render();
   // cycle 2: celebration check
@@ -839,10 +856,43 @@ function launchConfetti(){
   draw();
 }
 
+// ── Cycle 13: habit streak milestone celebration ──
+const MILESTONES=[7,14,21,30,50,100];
+function checkHabitMilestone(id){
+  const s=habitStreak(id);
+  if(!MILESTONES.includes(s))return;
+  const h=habits.find(x=>x.id===id);
+  if(!h)return;
+  const emoji=s>=100?'🏆':s>=50?'🌟':s>=30?'💎':s>=14?'⭐':'🔥';
+  const el=document.getElementById('milestone-toast');
+  if(!el)return;
+  el.textContent=`${emoji} ${h.name} ${s}日連続達成！`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// ── Cycle 13: compact view mode ──
+let compactView=localStorage.getItem('rh_compact')==='true';
+function toggleCompactView(){
+  compactView=!compactView;
+  localStorage.setItem('rh_compact',compactView?'true':'false');
+  document.body.classList.toggle('compact',compactView);
+  updateCompactBtn();
+}
+function updateCompactBtn(){
+  const btn=document.getElementById('compact-btn');
+  if(btn)btn.textContent=compactView?'⊞':'⊟';
+}
+function initCompactView(){
+  if(compactView)document.body.classList.add('compact');
+  updateCompactBtn();
+}
+
 // ── init ──
 load();
 initTheme();
 updateSoundBtn();
+initCompactView();
 render();
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 </script>
