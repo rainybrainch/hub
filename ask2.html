@@ -157,24 +157,18 @@
         errorEl.textContent = 'メールアドレスとパスワードを入力してください';
         return;
       }
-      currentUser = { email, uid: btoa(email) };
-      localStorage.setItem('ask2_user', JSON.stringify(currentUser));
-      errorEl.textContent = '';
-      showMainContent();
+      if (email === 'rainybrain.ch@gmail.com' && password === 'ASK2') {
+        currentUser = { email, uid: btoa(email) };
+        localStorage.setItem('ask2_user', JSON.stringify(currentUser));
+        errorEl.textContent = '';
+        showMainContent();
+      } else {
+        errorEl.textContent = 'メールアドレスまたはパスワードが間違っています';
+      }
     });
 
     document.getElementById('signupBtn').addEventListener('click', () => {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      const errorEl = document.getElementById('loginError');
-      if (!email || !password) {
-        errorEl.textContent = 'メールアドレスとパスワードを入力してください';
-        return;
-      }
-      currentUser = { email, uid: btoa(email) };
-      localStorage.setItem('ask2_user', JSON.stringify(currentUser));
-      errorEl.textContent = '';
-      showMainContent();
+      alert('アカウント作成は現在利用できません。管理者にお問い合わせください。');
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
