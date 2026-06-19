@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
@@ -26,6 +26,7 @@
     .header-right { display: flex; gap: 15px; align-items: center; }
     .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
     .btn-logout { padding: 8px 16px; background: rgba(232, 53, 74, 0.2); color: #E8354A; border: 1px solid #E8354A; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .sync-status { font-size: 10px; color: rgba(91, 200, 232, 0.7); margin-top: 4px; }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .calendar-nav { display: flex; gap: 15px; }
@@ -83,7 +84,10 @@
       <div class="header">
         <h1>ASK2 - 毎日の市場分析と漫画</h1>
         <div class="header-right">
-          <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
+          <div class="user-info">
+            ユーザー: <span id="userEmail">-</span>
+            <div class="sync-status" id="syncStatus">ローカル保存中</div>
+          </div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
         </div>
       </div>
@@ -136,32 +140,70 @@
     </div>
   </div>
 
-  <script>
-    let currentUser = null, currentDate = new Date(), selectedDate = null, currentData = {};
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
 
-    function checkAuth() {
-      const storedUser = localStorage.getItem('ask2_user');
-      if (storedUser) {
-        currentUser = JSON.parse(storedUser);
+  <script>
+    // Firebase 設定（必ず設定してください）
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDqqyWccLd8MZK7_-_iXJvC7PzEtVZh0dM",
+      authDomain: "ask-data-sync.firebaseapp.com",
+      projectId: "ask-data-sync",
+      storageBucket: "ask-data-sync.appspot.com",
+      messagingSenderId: "715481405649",
+      appId: "1:715481405649:web:b1d7c2c0e5e0a1b2c3d4e5f6"
+    };
+
+    let currentUser = null;
+    let currentDate = new Date();
+    let selectedDate = null;
+    let currentData = {};
+    let firebaseReady = false;
+    let db = null;
+
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      firebaseReady = true;
+      if (user) {
+        currentUser = { email: user.email, uid: user.uid };
         showMainContent();
+        await loadDataFromFirebase();
+        syncStatus('クラウド同期中');
       } else {
+        currentUser = null;
         showLoginScreen();
       }
+    });
+
+    function syncStatus(msg) {
+      const el = document.getElementById('syncStatus');
+      if (el) el.textContent = msg;
     }
 
-    document.getElementById('loginBtn').addEventListener('click', () => {
+    document.getElementById('loginBtn').addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       const errorEl = document.getElementById('loginError');
+
       if (!email || !password) {
         errorEl.textContent = 'メールアドレスとパスワードを入力してください';
         return;
       }
+
       if (email === 'rainybrain.ch@gmail.com' && password === 'ASK2') {
-        currentUser = { email, uid: btoa(email) };
-        localStorage.setItem('ask2_user', JSON.stringify(currentUser));
-        errorEl.textContent = '';
-        showMainContent();
+        try {
+          await firebase.auth().signInWithEmailAndPassword(email, password);
+          errorEl.textContent = '';
+        } catch (error) {
+          if (error.code === 'auth/user-not-found') {
+            await firebase.auth().createUserWithEmailAndPassword(email, password);
+          } else {
+            errorEl.textContent = 'ログインに失敗しました: ' + error.message;
+          }
+        }
       } else {
         errorEl.textContent = 'メールアドレスまたはパスワードが間違っています';
       }
@@ -171,10 +213,8 @@
       alert('アカウント作成は現在利用できません。管理者にお問い合わせください。');
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      currentUser = null;
-      localStorage.removeItem('ask2_user');
-      showLoginScreen();
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await firebase.auth().signOut();
     });
 
     function showLoginScreen() {
@@ -187,27 +227,36 @@
       document.getElementById('mainContent').classList.add('visible');
       document.getElementById('userEmail').textContent = currentUser.email;
       renderCalendar();
-      loadData();
     }
 
     function renderCalendar() {
-      const year = currentDate.getFullYear(), month = currentDate.getMonth();
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
       document.getElementById('monthYear').textContent = `${year}年${month + 1}月`;
-      const firstDay = new Date(year, month, 1), lastDay = new Date(year, month + 1, 0), prevLastDay = new Date(year, month, 0);
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const prevLastDay = new Date(year, month, 0);
+
       const grid = document.getElementById('calendarGrid');
       grid.innerHTML = '';
+
       ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
         const el = document.createElement('div');
         el.className = 'weekday';
         el.textContent = day;
         grid.appendChild(el);
       });
+
       for (let i = prevLastDay.getDate() - firstDay.getDay() + 1; i <= prevLastDay.getDate(); i++) {
         addDayElement(grid, i, month - 1, year, true);
       }
+
       for (let i = 1; i <= lastDay.getDate(); i++) {
         addDayElement(grid, i, month, year, false);
       }
+
       for (let i = 1; i <= (7 - lastDay.getDay() - 1); i++) {
         addDayElement(grid, i, month + 1, year, true);
       }
@@ -216,6 +265,7 @@
     function addDayElement(grid, date, month, year, otherMonth) {
       const el = document.createElement('div');
       el.className = 'day';
+
       if (otherMonth) {
         el.classList.add('other-month');
         el.innerHTML = `<div class="day-number">${date}</div>`;
@@ -224,6 +274,7 @@
         if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
           el.classList.add('today');
         }
+
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
         if (currentData[dateStr]) {
           el.classList.add('has-data');
@@ -231,20 +282,30 @@
         } else {
           el.innerHTML = `<div class="day-number">${date}</div>`;
         }
+
         el.addEventListener('click', () => openDetailModal(date, month, year));
       }
+
       grid.appendChild(el);
     }
 
     function openDetailModal(date, month, year) {
       selectedDate = new Date(year, month, date);
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+
       const data = currentData[dateStr] || {};
+
       document.getElementById('modalDate').textContent = `${year}年${month + 1}月${date}日`;
       document.getElementById('ask1Summary').value = data.ask1Summary || '';
       document.getElementById('marketAnalysis').value = data.marketAnalysis || '';
+
       const mangaDisplay = document.getElementById('mangaDisplay');
-      mangaDisplay.innerHTML = data.manga ? `<img src="${data.manga}" alt="漫画">` : '';
+      if (data.manga) {
+        mangaDisplay.innerHTML = `<img src="${data.manga}" alt="漫画">`;
+      } else {
+        mangaDisplay.innerHTML = '';
+      }
+
       setupImageUpload();
       document.getElementById('detailModal').classList.add('visible');
     }
@@ -262,62 +323,119 @@
     function setupImageUpload() {
       const dropZone = document.getElementById('mangaDropZone');
       const fileInput = document.getElementById('mangaFileInput');
+
       dropZone.onclick = () => fileInput.click();
-      dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); };
+
+      dropZone.ondragover = (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      };
+
       dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+
       dropZone.ondrop = (e) => {
         e.preventDefault();
         dropZone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length > 0) handleImageFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length > 0) {
+          handleImageFile(e.dataTransfer.files[0]);
+        }
       };
+
       fileInput.onchange = (e) => {
-        if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
+        if (e.target.files.length > 0) {
+          handleImageFile(e.target.files[0]);
+        }
       };
     }
 
     function handleImageFile(file) {
       const reader = new FileReader();
+
       reader.onload = (e) => {
         const img = new Image();
+
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          let width = img.width, height = img.height;
+
+          let width = img.width;
+          let height = img.height;
+
           if (width > 800) {
             height = (height * 800) / width;
             width = 800;
           }
+
           canvas.width = width;
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
+
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-          document.getElementById('mangaDisplay').innerHTML = `<img src="${compressedBase64}" alt="漫画">`;
+
+          const mangaDisplay = document.getElementById('mangaDisplay');
+          mangaDisplay.innerHTML = `<img src="${compressedBase64}" alt="漫画">`;
+
           const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
           currentData[dateStr] = currentData[dateStr] || {};
           currentData[dateStr].manga = compressedBase64;
         };
+
         img.src = e.target.result;
       };
+
       reader.readAsDataURL(file);
     }
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      if (!selectedDate) return;
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      if (!selectedDate || !currentUser) return;
+
       const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+
       currentData[dateStr] = {
         ask1Summary: document.getElementById('ask1Summary').value,
         marketAnalysis: document.getElementById('marketAnalysis').value,
         manga: currentData[dateStr]?.manga || null,
         timestamp: new Date().toISOString()
       };
+
       localStorage.setItem('ask2_data', JSON.stringify(currentData));
+
+      syncStatus('保存中...');
+
+      try {
+        await db.collection('users').doc(currentUser.uid).collection('data').doc(dateStr).set(currentData[dateStr]);
+        syncStatus('✓ クラウド同期完了');
+      } catch (error) {
+        console.error('Firestore save error:', error);
+        syncStatus('⚠ ローカル保存のみ');
+      }
+
       document.getElementById('detailModal').classList.remove('visible');
       renderCalendar();
     });
 
-    function loadData() {
+    async function loadDataFromFirebase() {
+      if (!currentUser) return;
+
+      try {
+        const querySnapshot = await db.collection('users').doc(currentUser.uid).collection('data').get();
+        querySnapshot.forEach((doc) => {
+          currentData[doc.id] = doc.data();
+        });
+        localStorage.setItem('ask2_data', JSON.stringify(currentData));
+        renderCalendar();
+      } catch (error) {
+        console.error('Firestore load error:', error);
+        syncStatus('⚠ ローカル保存のみ');
+        loadDataFromLocalStorage();
+      }
+    }
+
+    function loadDataFromLocalStorage() {
       const stored = localStorage.getItem('ask2_data');
-      if (stored) currentData = JSON.parse(stored);
+      if (stored) {
+        currentData = JSON.parse(stored);
+      }
     }
 
     document.getElementById('prevBtn').addEventListener('click', () => {
@@ -329,8 +447,6 @@
       currentDate.setMonth(currentDate.getMonth() + 1);
       renderCalendar();
     });
-
-    checkAuth();
   </script>
 </body>
 </html>
