@@ -68,6 +68,19 @@
       .stat-number{font-size:24px}
     }
     .no-habits-yet{color:rgba(255,255,255,.4);text-align:center;padding:30px 20px;font-size:13px}
+    .weekly-chart{margin-top:16px;padding-top:14px;border-top:1px solid rgba(91,200,232,.1)}
+    .weekly-chart-title{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px;font-weight:700;letter-spacing:.5px}
+    .chart-bars{display:flex;align-items:flex-end;gap:5px;height:56px}
+    .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%}
+    .chart-bar-outer{flex:1;width:100%;background:rgba(255,255,255,.05);border-radius:3px 3px 0 0;overflow:hidden;display:flex;align-items:flex-end}
+    .chart-bar-inner{width:100%;background:linear-gradient(to top,var(--sky),rgba(76,175,125,.6));border-radius:3px 3px 0 0;transition:height 0.8s ease;min-height:1px}
+    .chart-bar-wrap.today .chart-bar-inner{background:linear-gradient(to top,var(--gold),#e8a020)}
+    .chart-bar-wrap.today .chart-bar-label{color:var(--gold);font-weight:700}
+    .chart-bar-label{font-size:9px;color:rgba(255,255,255,.35)}
+    .habit-cat-study{border-left:3px solid var(--sky)!important}
+    .habit-cat-exercise{border-left:3px solid var(--green)!important}
+    .habit-cat-creative{border-left:3px solid #B48EF5!important}
+    .habit-cat-self{border-left:3px solid var(--gold)!important}
   </style>
 </head>
 <body>
@@ -96,6 +109,7 @@
         <div class="stat-label">完了率</div>
       </div>
     </div>
+    <div id="weekly-chart"></div>
   </div>
 
   <div id="suggestion-container"></div>
@@ -124,7 +138,7 @@
   <div id="improvement-log-container"></div>
 
   <footer>
-    <p>習慣アプリ v2.0 - RAINYBRAIN Hub</p>
+    <p>習慣アプリ v2.1 - RAINYBRAIN Hub</p>
     <p style="margin-top:8px;"><a href="index.html">← Hubに戻る</a></p>
   </footer>
 </div>
@@ -218,12 +232,16 @@ function render() {
   // Update suggestion
   updateSuggestion(rate);
 
+  // Render weekly chart
+  document.getElementById('weekly-chart').innerHTML = buildWeeklyChart();
+
   // Render habits
   let html = '';
   data.habits.forEach(h => {
     const done = h.log && h.log[today];
     const streak = calculateStreak(h);
-    html += `<div class="habit-item ${done ? 'completed' : ''}">
+    const catClass = getCategoryClass(h.category);
+    html += `<div class="habit-item ${done ? 'completed' : ''} ${catClass}">
       <input type="checkbox" class="habit-checkbox" ${done ? 'checked' : ''} onchange="toggle('${h.id}')">
       <div style="flex:1">
         <div class="habit-name">${h.name}</div>
@@ -318,6 +336,43 @@ function renderImprovementLog() {
   </div>`;
 
   container.innerHTML = html;
+}
+
+function buildWeeklyChart() {
+  if (data.habits.length === 0) return '';
+  const days = ['月','火','水','木','金','土','日'];
+  const today = new Date();
+  const bars = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dow = d.getDay();
+    const label = days[dow === 0 ? 6 : dow - 1];
+    const completed = data.habits.filter(h => h.log && h.log[dateStr]).length;
+    const rate = Math.round(completed * 100 / data.habits.length);
+    bars.push({ label, rate, isToday: i === 0 });
+  }
+
+  return `<div class="weekly-chart">
+    <div class="weekly-chart-title">📊 週間達成率</div>
+    <div class="chart-bars">
+      ${bars.map(b => `<div class="chart-bar-wrap ${b.isToday ? 'today' : ''}">
+        <div class="chart-bar-outer"><div class="chart-bar-inner" style="height:${b.rate}%"></div></div>
+        <div class="chart-bar-label">${b.label}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function getCategoryClass(category) {
+  if (!category) return '';
+  if (category.includes('学習')) return 'habit-cat-study';
+  if (category.includes('運動')) return 'habit-cat-exercise';
+  if (category.includes('創作')) return 'habit-cat-creative';
+  if (category.includes('自己')) return 'habit-cat-self';
+  return '';
 }
 
 function calculateStreak(habit) {
