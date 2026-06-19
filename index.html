@@ -153,6 +153,22 @@
   <div class="divider"></div>
 
   <section class="section">
+    <p class="sec-label gold">パーソナル</p>
+    <div class="app-grid">
+      <a class="app-item" href="habit.html" target="_blank" rel="noopener">
+        <div class="app-icon">📅</div>
+        <span class="app-name">習慣<br>トラッカー</span>
+      </a>
+      <a class="app-item" href="hyakuso.html" target="_blank" rel="noopener">
+        <div class="app-icon">🏔️</div>
+        <span class="app-name">百層<br>世界</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section">
     <p class="sec-label purple">RBフォレスト</p>
     <div class="app-grid">
       <a class="app-item" href="rbforest.html">
@@ -428,6 +444,7 @@ async function nkSend() {
 /help - このリストを表示
 /ask2 - ASK2 へのリンク
 /hub - Hub について
+/habit - 習慣アプリを開く
 /secret - 秘密のメッセージ
 /clear - チャット履歴をリセット';
         break;
@@ -454,7 +471,12 @@ async function nkSend() {
         response = '🏔️ 百層世界（HundredLayerWorld）を開いたにゃ!
 🎮 8フィールド・100層・タスク連携・AI文字磨き実装済み';
         break;
-      case '/clear':
+      case '/habit':
+        window.open('habit.html', '_blank');
+        response = '📅 習慣アプリを開いたにゃ!
+毎日の習慣を記録して、小さな成功を積み重ねてにゃ🌱';
+        break;
+            case '/clear':
         nkHistory = [];
         nkMsgs.innerHTML = '';
         response = '✓ チャット履歴をリセットしたにゃ!';
