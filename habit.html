@@ -76,7 +76,11 @@
     .habit.done .chk{background:var(--green);border-color:var(--green);transform:scale(1.1)}
     .chk-ico{display:none;font-size:13px;color:var(--dark);font-weight:900}
     .habit.done .chk-ico{display:block}
-    .habit-name{flex:1;font-size:14px;font-weight:700;transition:color .15s}
+    .habit-info{flex:1;min-width:0}
+    .habit-name{font-size:14px;font-weight:700;transition:color .15s;display:block}
+    .habit-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:1px}
+    .habit.done .habit-note{opacity:.65}
+    body.light .habit-note{color:rgba(0,0,0,.4)}
     .habit.done .habit-name{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(76,175,125,.5)}
     .cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
     .del-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
@@ -229,6 +233,7 @@
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
+  <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -295,6 +300,7 @@
     <h2 class="modal-ttl" id="modal-ttl">習慣を追加</h2>
     <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
       oninput="onHabitInput()" onkeydown="if(event.key==='Enter')saveHabit()">
+    <input class="modal-inp" id="note-inp" type="text" placeholder="メモ（任意）..." maxlength="60" style="margin-bottom:14px">
     <div class="cat-grid">
       <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
       <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
@@ -320,6 +326,45 @@ const DAYS = ['日','月','火','水','木','金','土'];
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
 let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false;
+
+// ── Cycle 12: sound effects ──
+let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
+function _audioCtx(){return new (window.AudioContext||window.webkitAudioContext)()}
+function playTick(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=_audioCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.connect(g);g.connect(ctx.destination);
+    osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660,ctx.currentTime+0.08);
+    g.gain.setValueAtTime(0.25,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
+    osc.start();osc.stop(ctx.currentTime+0.22);
+  }catch(e){}
+}
+function playCelebration(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=_audioCtx();
+    [523,659,784,1047].forEach((f,i)=>{
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.frequency.value=f;
+      const t=ctx.currentTime+i*0.12;
+      g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+      osc.start(t);osc.stop(t+0.35);
+    });
+  }catch(e){}
+}
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  localStorage.setItem('rh_sound',soundEnabled?'true':'false');
+  updateSoundBtn();
+}
+function updateSoundBtn(){
+  const btn=document.getElementById('sound-btn');
+  if(btn)btn.textContent=soundEnabled?'🔊':'🔇';
+}
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
@@ -389,7 +434,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.11',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.12',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -535,7 +580,9 @@ function renderList(){
       }
       // cycle 11: 7-day dot calendar
       const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      // cycle 12: habit note/memo
+      const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info"><span class="habit-name">${esc(h.name)}</span>${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
@@ -557,6 +604,7 @@ function toggle(id){
   const wasCompleted=!!completions[td][id];
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
+  if(!wasCompleted)playTick();
   saveC();
   render();
   // cycle 2: celebration check
@@ -564,6 +612,7 @@ function toggle(id){
     celebrated=true;
     showBanner();
     launchConfetti();
+    playCelebration();
   }else if(todayRate()<100){
     celebrated=false;
   }
@@ -619,15 +668,17 @@ function openModal(id=null){
   const inp=document.getElementById('habit-inp');
   const ok=document.getElementById('modal-ok');
   const ttl=document.getElementById('modal-ttl');
+  const noteEl=document.getElementById('note-inp');
   if(id){
     const h=habits.find(h=>h.id===id);
     inp.value=h?h.name:'';
+    if(noteEl)noteEl.value=h&&h.note?h.note:'';
     selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
   }else{
-    inp.value='';selCatVal='';catAutoSel=false;
+    inp.value='';if(noteEl)noteEl.value='';selCatVal='';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -648,12 +699,15 @@ function validateModal(){
 }
 function saveHabit(){
   const name=document.getElementById('habit-inp').value.trim();
+  const note=((document.getElementById('note-inp')||{}).value||'').trim();
   if(!name||!selCatVal)return;
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
-    if(h){h.name=name;h.category=selCatVal;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;}
   }else{
-    habits.push({id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()});
+    const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
+    if(note)nh.note=note;
+    habits.push(nh);
   }
   saveH();
   closeModal();
@@ -788,6 +842,7 @@ function launchConfetti(){
 // ── init ──
 load();
 initTheme();
+updateSoundBtn();
 render();
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 </script>
