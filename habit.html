@@ -199,6 +199,13 @@
     .done-time{font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2);border-radius:6px;line-height:1.5}
     body.light .done-time{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
 
+    /* Cycle 11: per-habit 7-day mini dot calendar */
+    .h-dots{display:flex;gap:3px;align-items:center;flex-shrink:0}
+    .h-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .2s}
+    .h-dot.done{background:var(--green);box-shadow:0 0 3px rgba(76,175,125,.5)}
+    body.light .h-dot{background:rgba(0,0,0,.1)}
+    body.light .h-dot.done{background:var(--green)}
+
     /* Cycle 9: daily motivational motto */
     .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(91,200,232,.05));border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 16px;margin-bottom:16px;text-align:center;font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;transition:all .3s}
     body.light .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(91,200,232,.07));border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.5)}
@@ -287,7 +294,7 @@
     <div class="modal-handle"></div>
     <h2 class="modal-ttl" id="modal-ttl">習慣を追加</h2>
     <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
-      oninput="validateModal()" onkeydown="if(event.key==='Enter')saveHabit()">
+      oninput="onHabitInput()" onkeydown="if(event.key==='Enter')saveHabit()">
     <div class="cat-grid">
       <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
       <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
@@ -309,8 +316,10 @@
 const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 const DAYS = ['日','月','火','水','木','金','土'];
+// Cycle 11: keyword→category mapping for auto-suggest
+const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false;
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
@@ -380,7 +389,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.8',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.11',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -401,6 +410,35 @@ function habitStreak(id){
     if((completions[dateAgo(d)]||{})[id])s++;else break;
   }
   return s;
+}
+
+// cycle 11: 7-day dot calendar per habit (oldest→newest)
+function habit7Days(id){
+  return Array.from({length:7},(_,i)=>!!( completions[dateAgo(6-i)]||{})[id]);
+}
+
+// cycle 11: smart category auto-suggest based on habit name keywords
+function suggestCategory(name){
+  for(const[cat,kws]of Object.entries(CAT_KEYWORDS)){
+    if(kws.some(kw=>name.includes(kw)))return cat;
+  }
+  return null;
+}
+
+// cycle 11: input handler with auto-suggest
+function onHabitInput(){
+  const name=document.getElementById('habit-inp').value.trim();
+  if(!editingId&&(!selCatVal||catAutoSel)){
+    const sug=name?suggestCategory(name):null;
+    if(sug){
+      selCatVal=sug;catAutoSel=true;
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===sug));
+    }else if(!name&&catAutoSel){
+      selCatVal='';catAutoSel=false;
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+    }
+  }
+  validateModal();
 }
 
 // ── render ──
@@ -495,7 +533,9 @@ function renderList(){
         const d=new Date(completedVal);
         timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;
       }
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      // cycle 11: 7-day dot calendar
+      const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
@@ -582,12 +622,12 @@ function openModal(id=null){
   if(id){
     const h=habits.find(h=>h.id===id);
     inp.value=h?h.name:'';
-    selCatVal=h?h.category:'';
+    selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
   }else{
-    inp.value='';selCatVal='';
+    inp.value='';selCatVal='';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -597,8 +637,8 @@ function openModal(id=null){
 function closeModal(){editingId=null;document.getElementById('overlay').classList.remove('open')}
 function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal()}
 
-function selCat(cat){
-  selCatVal=cat;
+function selCat(cat,auto=false){
+  selCatVal=cat;catAutoSel=auto;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===cat));
   validateModal();
 }
