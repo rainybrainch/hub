@@ -467,13 +467,49 @@
       background: rgba(91, 200, 232, 0.1);
     }
 
-    .error-msg {
+    
+    .search-results { background: rgba(26,31,58,0.5); border: 1px solid rgba(91,200,232,0.2); border-radius: 8px; padding: 10px; margin: 10px 0; display: none; }
+    .search-results.show { display: block; }
+    .search-item { padding: 8px; background: rgba(255,255,255,0.02); margin: 5px 0; border-radius: 4px; cursor: pointer; }
+    .search-item:hover { background: rgba(91,200,232,0.1); }
+.error-msg {
       color: var(--error);
       font-size: 12px;
       margin-top: 10px;
     }
 
+    
+    @media (max-width: 1024px) {
+        .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day { min-height: 70px; font-size: 12px; }
+        .modal-content { max-width: 90vw; }
+    }
     @media (max-width: 768px) {
+        .header { flex-direction: column; gap: 10px; }
+        .header h1 { font-size: 18px; }
+        .header-right { width: 100%; flex-wrap: wrap; }
+        .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .day { min-height: 50px; font-size: 10px; padding: 5px; }
+        .modal-content { max-width: 95vw; padding: 15px; }
+        .modal-section textarea { min-height: 80px; }
+        .image-container { gap: 8px; }
+        .image-container img { max-width: 100px; max-height: 100px; }
+    }
+    @media (max-width: 480px) {
+        body { padding: 10px; }
+        .header { flex-direction: column; }
+        .header h1 { font-size: 16px; }
+        .header-right { flex-direction: column; gap: 8px; }
+        button { font-size: 10px; padding: 6px; }
+        .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day { min-height: 40px; font-size: 9px; }
+        .day-number { font-size: 11px; }
+        .day-indicator { font-size: 16px; margin-top: 2px; }
+        .modal-content { max-width: 98vw; padding: 10px; }
+        .modal-section h3 { font-size: 12px; }
+        .modal-section textarea { min-height: 60px; font-size: 14px; }
+    }
+@media (max-width: 768px) {
       .header h1 { font-size: 20px; }
       .header { flex-direction: column; align-items: flex-start; }
       .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 8px; }
@@ -505,6 +541,7 @@
             <button id="nextBtn">鄙梧怦 竊・/button>
           </div>
         </div>
+        <div id="searchResults" class="search-results"></div>
         <div class="calendar-grid" id="calendarGrid"></div>
       </div>
     </div>
@@ -942,7 +979,11 @@ let editHistory=[];function saveToHistory(){editHistory.push(JSON.parse(JSON.str
 
 `;let c=0;let t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}r+=`記入:${c}/${d}日
 画像:${t}枚
-記入率:${Math.round(c*100/d)}%`;return r;}function showReport(){const t=generateReport();alert(t);}function autoBackup(){localStorage.setItem("ask2_backup",JSON.stringify({data:currentData,time:new Date().toISOString()}));}function attachToolbar(){const e=document.getElementById("exportBtn");const i=document.getElementById("importBtn");const r=document.getElementById("reportBtn");if(e)e.onclick=exportData;if(i)i.onclick=importData;if(r)r.onclick=showReport;document.addEventListener("keydown",(ev)=>{if(ev.ctrlKey&&ev.key==="z"){ev.preventDefault();undo();}});} attachToolbar();checkAuth();
+記入率:${Math.round(c*100/d)}%`;return r;}function showReport(){const t=generateReport();alert(t);}function autoBackup(){localStorage.setItem("ask2_backup",JSON.stringify({data:currentData,time:new Date().toISOString()}));}function attachToolbar(){const e=document.getElementById("exportBtn");const i=document.getElementById("importBtn");const r=document.getElementById("reportBtn");if(e)e.onclick=exportData;if(i)i.onclick=importData;if(r)r.onclick=showReport;document.addEventListener("keydown",(ev)=>{if(ev.ctrlKey&&ev.key==="z"){ev.preventDefault();undo();}});} attachToolbar();
+    function enhancedSearch(){const q=document.getElementById('searchBox').value.toLowerCase();const results=document.getElementById('searchResults');if(!q){results.classList.remove('show');return;}const items=[];for(const[date,data]of Object.entries(currentData)){const text=(data.ask1Summary+' '+data.marketAnalysis).toLowerCase();if(text.includes(q)){items.push({date,text:data.ask1Summary||data.marketAnalysis||'(no text)',imgs:(data.images||[]).length});}}if(items.length){results.innerHTML=items.map(i=>`<div class="search-item" onclick="goToDate('${i.date}')">${i.date} - ${i.text.substring(0,30)}... (画像${i.imgs}枚)</div>`).join('');results.classList.add('show');}else{results.innerHTML='<div style="text-align:center;color:gray;">検索結果なし</div>';results.classList.add('show');}}
+    function goToDate(dateStr){const[y,m,d]=dateStr.split('-');currentDate=new Date(parseInt(y),parseInt(m)-1,parseInt(d));renderCalendar();openDetailModal(parseInt(d),parseInt(m)-1,parseInt(y));}
+    document.getElementById('searchBox')?.addEventListener('input',enhancedSearch);
+    checkAuth();
   </script>
 </body>
 <!-- CYCLE4 ADDED -->
