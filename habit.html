@@ -256,6 +256,22 @@
     .week-cmp.down{color:var(--red);background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.15)}
     .week-cmp.same{color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
     body.light .week-cmp.same{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1)}
+
+    /* Cycle 15: habit emoji icon */
+    .habit-name-row{display:flex;align-items:center;gap:5px}
+    .habit-emoji{font-size:15px;flex-shrink:0;line-height:1}
+    .modal-emoji-row{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+    .modal-emoji-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;flex-shrink:0}
+    .modal-emoji-inp{width:52px;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px;color:var(--white);font-size:20px;text-align:center;outline:none;transition:border-color .15s;flex-shrink:0}
+    .modal-emoji-inp:focus{border-color:rgba(245,200,66,.4)}
+    .emoji-presets{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+    .emoji-preset{background:none;border:1px solid rgba(255,255,255,.08);font-size:16px;cursor:pointer;padding:4px 3px;border-radius:7px;transition:all .12s;line-height:1;width:30px;text-align:center;flex-shrink:0}
+    .emoji-preset:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+    .emoji-preset.sel{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.4)}
+    body.light .modal-emoji-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .emoji-preset{border-color:rgba(0,0,0,.1)}
+    body.light .emoji-preset:hover{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.2)}
+    body.light .emoji-preset.sel{background:rgba(245,200,66,.25);border-color:rgba(245,200,66,.5)}
   </style>
 </head>
 <body>
@@ -342,6 +358,10 @@
     <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
       oninput="onHabitInput()" onkeydown="if(event.key==='Enter')saveHabit()">
     <input class="modal-inp" id="note-inp" type="text" placeholder="メモ（任意）..." maxlength="60" style="margin-bottom:14px">
+    <div class="modal-emoji-row">
+      <input class="modal-emoji-inp" id="emoji-inp" type="text" placeholder="🎯" maxlength="4" oninput="onEmojiInput(this.value)" title="絵文字アイコン（任意）">
+      <div class="emoji-presets" id="emoji-presets"></div>
+    </div>
     <div class="cat-grid">
       <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
       <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
@@ -363,6 +383,8 @@
 <script>
 const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
+// Cycle 15: preset emoji for habit icons
+const EMOJI_PRESETS=['📚','📖','✏️','💪','🏃','🧘','🎨','🎵','📝','💡','🌱','⭐','🎯','🔔','🌅','🏆','💎','🔥','⚡','💤','🥗','💊','🛌','🧠'];
 const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
@@ -409,6 +431,25 @@ function updateSoundBtn(){
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ── Cycle 15: haptic vibration feedback ──
+function vib(pattern){if(navigator.vibrate)navigator.vibrate(pattern)}
+
+// ── Cycle 15: emoji icon helpers ──
+function initEmojiPresets(){
+  const el=document.getElementById('emoji-presets');
+  if(!el)return;
+  el.innerHTML=EMOJI_PRESETS.map(e=>`<button class="emoji-preset" onclick="selectEmoji('${e}')" title="${e}">${e}</button>`).join('');
+}
+function selectEmoji(e){
+  const inp=document.getElementById('emoji-inp');
+  if(inp)inp.value=e;
+  document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.toggle('sel',b.textContent.trim()===e));
+}
+function onEmojiInput(val){
+  const v=val.trim();
+  document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.toggle('sel',b.textContent.trim()===v));
+}
 
 // ── date helpers ──
 function toStr(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -476,7 +517,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.12',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.15',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -628,7 +669,10 @@ function renderList(){
       const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
       // cycle 12: habit note/memo
       const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info"><span class="habit-name">${esc(h.name)}</span>${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      // cycle 15: emoji icon
+      const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
+      const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
@@ -651,7 +695,7 @@ function toggle(id){
   const wasCompleted=!!completions[td][id];
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
-  if(!wasCompleted){playTick();checkHabitMilestone(id);}
+  if(!wasCompleted){playTick();vib(50);checkHabitMilestone(id);}
   saveC();
   render();
   // cycle 2: celebration check
@@ -673,7 +717,7 @@ function del(id){
   if(idx===-1)return;
   _delHabit=habits[idx];_delIdx=idx;
   habits.splice(idx,1);
-  celebrated=false;render();
+  vib(25);celebrated=false;render();
   document.getElementById('sb-msg').textContent=`「${_delHabit.name}」を削除しました`;
   const sb=document.getElementById('snackbar');
   sb.classList.add('show');
@@ -716,16 +760,20 @@ function openModal(id=null){
   const ok=document.getElementById('modal-ok');
   const ttl=document.getElementById('modal-ttl');
   const noteEl=document.getElementById('note-inp');
+  const emojiEl=document.getElementById('emoji-inp');
   if(id){
     const h=habits.find(h=>h.id===id);
     inp.value=h?h.name:'';
     if(noteEl)noteEl.value=h&&h.note?h.note:'';
+    if(emojiEl){emojiEl.value=h&&h.emoji?h.emoji:'';onEmojiInput(emojiEl.value);}
     selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
   }else{
-    inp.value='';if(noteEl)noteEl.value='';selCatVal='';catAutoSel=false;
+    inp.value='';if(noteEl)noteEl.value='';
+    if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
+    selCatVal='';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -747,13 +795,15 @@ function validateModal(){
 function saveHabit(){
   const name=document.getElementById('habit-inp').value.trim();
   const note=((document.getElementById('note-inp')||{}).value||'').trim();
+  const emoji=((document.getElementById('emoji-inp')||{}).value||'').trim();
   if(!name||!selCatVal)return;
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;}
   }else{
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
+    if(emoji)nh.emoji=emoji;
     habits.push(nh);
   }
   saveH();
@@ -878,6 +928,7 @@ function renderWeekComparison(){
 function showBanner(){
   const b=document.getElementById('banner');
   b.classList.add('show');
+  vib([80,40,80,40,180]);
   setTimeout(()=>b.classList.remove('show'),3500);
 }
 
@@ -955,6 +1006,7 @@ load();
 initTheme();
 updateSoundBtn();
 initCompactView();
+initEmojiPresets();
 render();
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
