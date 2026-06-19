@@ -26,7 +26,6 @@
     .header-right { display: flex; gap: 15px; align-items: center; }
     .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
     .btn-logout { padding: 8px 16px; background: rgba(232, 53, 74, 0.2); color: #E8354A; border: 1px solid #E8354A; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    .sync-status { font-size: 10px; color: rgba(91, 200, 232, 0.7); margin-top: 4px; }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .calendar-nav { display: flex; gap: 15px; }
@@ -84,10 +83,7 @@
       <div class="header">
         <h1>ASK2 - 毎日の市場分析と漫画</h1>
         <div class="header-right">
-          <div class="user-info">
-            ユーザー: <span id="userEmail">-</span>
-            <div class="sync-status" id="syncStatus">ローカル保存中</div>
-          </div>
+          <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
         </div>
       </div>
@@ -140,50 +136,23 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
-
   <script>
-    // Firebase 設定（必ず設定してください）
-    const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDqqyWccLd8MZK7_-_iXJvC7PzEtVZh0dM",
-      authDomain: "ask-data-sync.firebaseapp.com",
-      projectId: "ask-data-sync",
-      storageBucket: "ask-data-sync.appspot.com",
-      messagingSenderId: "715481405649",
-      appId: "1:715481405649:web:b1d7c2c0e5e0a1b2c3d4e5f6"
-    };
-
     let currentUser = null;
     let currentDate = new Date();
     let selectedDate = null;
     let currentData = {};
-    let firebaseReady = false;
-    let db = null;
 
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.firestore();
-
-    firebase.auth().onAuthStateChanged(async (user) => {
-      firebaseReady = true;
-      if (user) {
-        currentUser = { email: user.email, uid: user.uid };
+    function checkAuth() {
+      const storedUser = localStorage.getItem('ask2_user');
+      if (storedUser) {
+        currentUser = JSON.parse(storedUser);
         showMainContent();
-        await loadDataFromFirebase();
-        syncStatus('クラウド同期中');
       } else {
-        currentUser = null;
         showLoginScreen();
       }
-    });
-
-    function syncStatus(msg) {
-      const el = document.getElementById('syncStatus');
-      if (el) el.textContent = msg;
     }
 
-    document.getElementById('loginBtn').addEventListener('click', async () => {
+    document.getElementById('loginBtn').addEventListener('click', () => {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       const errorEl = document.getElementById('loginError');
@@ -194,16 +163,10 @@
       }
 
       if (email === 'rainybrain.ch@gmail.com' && password === 'ASK2') {
-        try {
-          await firebase.auth().signInWithEmailAndPassword(email, password);
-          errorEl.textContent = '';
-        } catch (error) {
-          if (error.code === 'auth/user-not-found') {
-            await firebase.auth().createUserWithEmailAndPassword(email, password);
-          } else {
-            errorEl.textContent = 'ログインに失敗しました: ' + error.message;
-          }
-        }
+        currentUser = { email: email, uid: btoa(email) };
+        localStorage.setItem('ask2_user', JSON.stringify(currentUser));
+        errorEl.textContent = '';
+        showMainContent();
       } else {
         errorEl.textContent = 'メールアドレスまたはパスワードが間違っています';
       }
@@ -213,8 +176,10 @@
       alert('アカウント作成は現在利用できません。管理者にお問い合わせください。');
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await firebase.auth().signOut();
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      currentUser = null;
+      localStorage.removeItem('ask2_user');
+      showLoginScreen();
     });
 
     function showLoginScreen() {
@@ -227,6 +192,7 @@
       document.getElementById('mainContent').classList.add('visible');
       document.getElementById('userEmail').textContent = currentUser.email;
       renderCalendar();
+      loadData();
     }
 
     function renderCalendar() {
@@ -386,7 +352,7 @@
       reader.readAsDataURL(file);
     }
 
-    document.getElementById('saveBtn').addEventListener('click', async () => {
+    document.getElementById('saveBtn').addEventListener('click', () => {
       if (!selectedDate || !currentUser) return;
 
       const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
@@ -400,38 +366,11 @@
 
       localStorage.setItem('ask2_data', JSON.stringify(currentData));
 
-      syncStatus('保存中...');
-
-      try {
-        await db.collection('users').doc(currentUser.uid).collection('data').doc(dateStr).set(currentData[dateStr]);
-        syncStatus('✓ クラウド同期完了');
-      } catch (error) {
-        console.error('Firestore save error:', error);
-        syncStatus('⚠ ローカル保存のみ');
-      }
-
       document.getElementById('detailModal').classList.remove('visible');
       renderCalendar();
     });
 
-    async function loadDataFromFirebase() {
-      if (!currentUser) return;
-
-      try {
-        const querySnapshot = await db.collection('users').doc(currentUser.uid).collection('data').get();
-        querySnapshot.forEach((doc) => {
-          currentData[doc.id] = doc.data();
-        });
-        localStorage.setItem('ask2_data', JSON.stringify(currentData));
-        renderCalendar();
-      } catch (error) {
-        console.error('Firestore load error:', error);
-        syncStatus('⚠ ローカル保存のみ');
-        loadDataFromLocalStorage();
-      }
-    }
-
-    function loadDataFromLocalStorage() {
+    function loadData() {
       const stored = localStorage.getItem('ask2_data');
       if (stored) {
         currentData = JSON.parse(stored);
@@ -447,6 +386,8 @@
       currentDate.setMonth(currentDate.getMonth() + 1);
       renderCalendar();
     });
+
+    checkAuth();
   </script>
 </body>
 </html>
