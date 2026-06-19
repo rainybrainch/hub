@@ -194,6 +194,14 @@
     body.light .progress-ring circle:first-child{stroke:rgba(0,0,0,.07)}
     body.light .habit-streak{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.35)}
     body.light .sec-progress{background:rgba(0,0,0,.08)}
+
+    /* Cycle 9: completion timestamp badge */
+    .done-time{font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2);border-radius:6px;line-height:1.5}
+    body.light .done-time{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
+
+    /* Cycle 9: daily motivational motto */
+    .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(91,200,232,.05));border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 16px;margin-bottom:16px;text-align:center;font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;transition:all .3s}
+    body.light .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(91,200,232,.07));border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.5)}
   </style>
 </head>
 <body>
@@ -246,6 +254,8 @@
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
   </div>
+
+  <div class="motto-box" id="motto-box"></div>
 
   <div class="tabs">
     <button class="tab active" data-cat="all" onclick="setFilter('all')">全て</button>
@@ -459,12 +469,19 @@ function renderList(){
     const pct=ch.length?Math.round(done/ch.length*100):0;
     html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span></div>`;
     for(const h of ch){
-      const isDone=!!dc[h.id];
+      const completedVal=dc[h.id];
+      const isDone=!!completedVal;
       const cnt=habitTotalCount(h.id);
       const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
       const hs=habitStreak(h.id);
       const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}${streakBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      // cycle 9: show completion time badge
+      let timeBadge='';
+      if(isDone&&typeof completedVal==='string'){
+        const d=new Date(completedVal);
+        timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;
+      }
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
@@ -475,6 +492,7 @@ function render(){
   renderHeader();
   renderStats();
   renderChart();
+  renderMotto();
   renderList();
 }
 
@@ -482,7 +500,9 @@ function render(){
 function toggle(id){
   const td=today();
   if(!completions[td])completions[td]={};
-  completions[td][id]=!completions[td][id];
+  const wasCompleted=!!completions[td][id];
+  // cycle 9: store ISO timestamp on completion, null on undo
+  completions[td][id]=wasCompleted?null:new Date().toISOString();
   saveC();
   render();
   // cycle 2: celebration check
@@ -596,6 +616,33 @@ function importData(){
     reader.readAsText(file);
   };
   inp.click();
+}
+
+// cycle 9: daily motivational motto
+const MOTTOS=[
+  '一歩一歩が、遠くへ連れて行く。🚶',
+  '今日の積み重ねが明日の自分を作る。✨',
+  '継続こそが才能を超える唯一の道。💪',
+  '小さな習慣が大きな人生を変える。🌱',
+  '昨日より今日、少しだけ前進しよう。📈',
+  '完璧じゃなくていい、続けることが大切。🎯',
+  '習慣は第二の天性、それを磨こう。⚡',
+  'やり続ける人が、最後に笑う。😊',
+  '成功は習慣の集大成。今日も一つずつ。🏆',
+  '挑戦しないことが、最大の失敗。🔥',
+  '毎日が新しいスタートライン。一緒に頑張ろう。🌅',
+  '積み重ねの先に、必ず景色が変わる。🗻',
+];
+function renderMotto(){
+  const box=document.getElementById('motto-box');
+  if(!box)return;
+  const streak=calcStreak(),rate=todayRate();
+  let msg;
+  if(rate===100)msg='🎊 今日の全習慣クリア！最高の一日！';
+  else if(streak>=7)msg=`🔥 ${streak}日連続！あなたの継続力は本物です！`;
+  else if(streak>=3)msg=`✨ ${streak}日連続中！この勢いを止めるな！`;
+  else{const d=new Date();msg=MOTTOS[(d.getDate()+d.getMonth()*3)%MOTTOS.length];}
+  box.textContent=msg;
 }
 
 // ── filter ──
