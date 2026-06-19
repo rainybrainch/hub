@@ -63,7 +63,11 @@
     .sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
     .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .sec-name{font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
-    .sec-count{font-size:11px;color:var(--muted);margin-left:auto}
+    .sec-count{font-size:11px;color:var(--muted)}
+
+    /* Cycle 8: category progress bar in section header */
+    .sec-progress{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin:0 6px}
+    .sec-progress-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
 
     .habit{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:transform .12s,background .15s,border-color .15s;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
     .habit:active{transform:scale(.98)}
@@ -139,6 +143,9 @@
     /* Habit count badge — cycle 4 */
     .habit-cnt{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;padding:2px 6px;background:rgba(255,255,255,.06);border-radius:6px;line-height:1.5}
 
+    /* Cycle 8: per-habit individual streak badge */
+    .habit-streak{font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.2);border-radius:6px;line-height:1.5}
+
     /* Export button in header — cycle 5 */
     .hdr-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:6px 8px;border-radius:8px;transition:all .15s;line-height:1;flex-shrink:0}
     .hdr-btn:hover{color:var(--white);background:rgba(255,255,255,.08)}
@@ -185,6 +192,8 @@
     body.light .sort-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
     body.light .streak-badge{background:linear-gradient(135deg,rgba(245,200,66,.2),rgba(212,160,23,.15))}
     body.light .progress-ring circle:first-child{stroke:rgba(0,0,0,.07)}
+    body.light .habit-streak{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.35)}
+    body.light .sec-progress{background:rgba(0,0,0,.08)}
   </style>
 </head>
 <body>
@@ -347,7 +356,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.7',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.8',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -358,6 +367,16 @@ function exportData(){
 // cycle 4: per-habit cumulative count
 function habitTotalCount(id){
   return Object.values(completions).filter(day=>day[id]).length;
+}
+
+// cycle 8: per-habit individual consecutive streak
+function habitStreak(id){
+  let s=0,dc=completions[today()]||{};
+  const start=dc[id]?0:1;
+  for(let d=start;d<365;d++){
+    if((completions[dateAgo(d)]||{})[id])s++;else break;
+  }
+  return s;
 }
 
 // ── render ──
@@ -437,12 +456,15 @@ function renderList(){
     if(!ch.length)continue;
     if(sortUndone)ch=[...ch].sort((a,b)=>(dc[a.id]?1:0)-(dc[b.id]?1:0));
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
-    html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><span class="sec-count">${done}/${ch.length}</span></div>`;
+    const pct=ch.length?Math.round(done/ch.length*100):0;
+    html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span></div>`;
     for(const h of ch){
       const isDone=!!dc[h.id];
       const cnt=habitTotalCount(h.id);
       const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      const hs=habitStreak(h.id);
+      const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div>${cntBadge}${streakBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
