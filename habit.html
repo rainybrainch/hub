@@ -202,6 +202,14 @@
     /* Cycle 9: daily motivational motto */
     .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(91,200,232,.05));border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 16px;margin-bottom:16px;text-align:center;font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;transition:all .3s}
     body.light .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(91,200,232,.07));border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.5)}
+
+    /* Cycle 10: undo delete snackbar */
+    .snackbar{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e2330;color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:14px;z-index:600;opacity:0;transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 6px 28px rgba(0,0,0,.55);pointer-events:none;border:1px solid rgba(255,255,255,.1);max-width:calc(100vw - 32px)}
+    .snackbar.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .sb-msg{overflow:hidden;text-overflow:ellipsis;max-width:200px}
+    .snackbar-undo{background:none;border:none;color:var(--gold);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:900;cursor:pointer;padding:4px 10px;border-radius:8px;transition:background .15s;flex-shrink:0;letter-spacing:.05em}
+    .snackbar-undo:hover{background:rgba(245,200,66,.15)}
+    body.light .snackbar{background:#1a1a2e;border-color:rgba(255,255,255,.15)}
   </style>
 </head>
 <body>
@@ -211,6 +219,7 @@
 <header class="hdr">
   <a href="index.html" class="back">← Hub</a>
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
+  <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
@@ -290,6 +299,11 @@
 </div>
 
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
+
+<div class="snackbar" id="snackbar">
+  <span class="sb-msg" id="sb-msg"></span>
+  <button class="snackbar-undo" onclick="undoDelete()">元に戻す</button>
+</div>
 
 <script>
 const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
@@ -515,12 +529,47 @@ function toggle(id){
   }
 }
 
+// ── Cycle 10: Undo delete snackbar ──
+let _delHabit=null,_delIdx=null,_delTimer=null;
 function del(id){
-  if(!confirm('この習慣を削除しますか？'))return;
-  habits=habits.filter(h=>h.id!==id);
-  saveH();
-  celebrated=false;
-  render();
+  if(_delTimer){clearTimeout(_delTimer);saveH();}  // commit any pending delete
+  const idx=habits.findIndex(h=>h.id===id);
+  if(idx===-1)return;
+  _delHabit=habits[idx];_delIdx=idx;
+  habits.splice(idx,1);
+  celebrated=false;render();
+  document.getElementById('sb-msg').textContent=`「${_delHabit.name}」を削除しました`;
+  const sb=document.getElementById('snackbar');
+  sb.classList.add('show');
+  _delTimer=setTimeout(()=>{saveH();_hideSb();},4000);
+}
+function _hideSb(){
+  document.getElementById('snackbar').classList.remove('show');
+  _delHabit=null;_delIdx=null;_delTimer=null;
+}
+function undoDelete(){
+  if(!_delHabit)return;
+  clearTimeout(_delTimer);
+  habits.splice(_delIdx,0,_delHabit);
+  saveH();_hideSb();render();
+}
+
+// Cycle 10: weekly summary copy
+function shareWeeklySummary(){
+  const lines=['📅 習慣週間レポート',today(),''];
+  for(let i=6;i>=0;i--){
+    const ds=dateAgo(i),rate=Math.round(dayRate(ds)*100);
+    const d=daysAgo(i),lbl=i===0?'今日':DAYS[d.getDay()];
+    const filled=Math.round(rate/10);
+    lines.push(`${lbl} ${'■'.repeat(filled)}${'□'.repeat(10-filled)} ${rate}%`);
+  }
+  lines.push('','🔥 連続記録: '+calcStreak()+'日','✅ 累計: '+totalDone()+'回','─────────────','習慣トラッカー | RAINYBRAIN');
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const b=document.getElementById('banner');
+    b.textContent='📋 週間レポートをコピーしました！';
+    b.classList.add('show');
+    setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
+  }).catch(()=>{alert(lines.join('\n'));});
 }
 
 // ── modal ──
