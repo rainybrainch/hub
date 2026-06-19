@@ -136,6 +136,13 @@
 
     /* Habit count badge — cycle 4 */
     .habit-cnt{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;padding:2px 6px;background:rgba(255,255,255,.06);border-radius:6px;line-height:1.5}
+
+    /* Export button in header — cycle 5 */
+    .hdr-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:6px 8px;border-radius:8px;transition:all .15s;line-height:1;flex-shrink:0}
+    .hdr-btn:hover{color:var(--white);background:rgba(255,255,255,.08)}
+    .hdr-btn:active{transform:scale(.92)}
+    /* Best streak sub-label — cycle 5 */
+    .stat-sub{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px;letter-spacing:.05em}
   </style>
 </head>
 <body>
@@ -145,6 +152,7 @@
 <header class="hdr">
   <a href="index.html" class="back">← Hub</a>
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
+  <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 
@@ -163,6 +171,7 @@
     <div class="stat">
       <div class="stat-val sky" id="s-streak">0</div>
       <div class="stat-lbl">🔥 連続記録</div>
+      <div class="stat-sub" id="s-best">最高: 0日</div>
     </div>
     <div class="stat">
       <div class="stat-val green" id="s-total">0</div>
@@ -217,7 +226,7 @@
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 
 <script>
-const HK = 'rh_habits', CK = 'rh_completions';
+const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 const DAYS = ['日','月','火','水','木','金','土'];
 
@@ -281,6 +290,24 @@ function calcStreak(){
   return s;
 }
 
+// cycle 5: best streak persistence
+function getBestStreak(){return parseInt(localStorage.getItem(BK)||'0')}
+function updateBestStreak(current){
+  const best=getBestStreak();
+  if(current>best){localStorage.setItem(BK,current);return current}
+  return best;
+}
+
+// cycle 5: JSON export
+function exportData(){
+  const data={version:'2.5',exportedAt:new Date().toISOString(),habits,completions};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`habit-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+
 // cycle 4: per-habit cumulative count
 function habitTotalCount(id){
   return Object.values(completions).filter(day=>day[id]).length;
@@ -293,10 +320,13 @@ function renderHeader(){
 }
 
 function renderStats(){
-  const rate=todayRate(),streak=calcStreak();
+  const rate=todayRate(),streak=calcStreak(),best=updateBestStreak(streak);
   document.getElementById('s-today').textContent=rate+'%';
   document.getElementById('s-streak').textContent=streak;
   document.getElementById('s-total').textContent=totalDone();
+  // cycle 5: best streak display
+  const sb=document.getElementById('s-best');
+  if(sb)sb.textContent=`最高: ${best}日`;
   const badge=document.getElementById('streak-badge');
   badge.textContent=`🔥 ${streak}日連続達成中`;
   badge.classList.toggle('fire',streak>=3);
