@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>習慣トラッカー | RAINYBRAIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--sky:#5BC8E8;--gold:#F5C842;--gold-d:#D4A017;--green:#4CAF7D;--red:#E8354A;--purple:#9B6DD6;--dark:#0d1117;--dark2:#161b22;--dark3:#21262d;--white:#fff;--muted:rgba(255,255,255,.45)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Zen Maru Gothic",sans-serif;background:var(--dark);color:var(--white);min-height:100vh;padding-bottom:100px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+    /* Header */
+    .hdr{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:14px 20px;display:flex;align-items:center;gap:12px}
+    .back{display:flex;align-items:center;gap:6px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;padding:6px 10px;border-radius:8px;transition:background .15s}
+    .back:hover{background:rgba(245,200,66,.1)}
+    .hdr-title{font-family:"Dela Gothic One",sans-serif;font-size:18px;flex:1}
+    .hdr-date{font-size:11px;color:var(--muted);text-align:right}
+
+    /* Container */
+    .wrap{max-width:520px;margin:0 auto;padding:20px 16px}
+
+    /* Stats strip */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .stat{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 12px;text-align:center}
+    .stat-val{font-family:"Dela Gothic One",sans-serif;font-size:28px;line-height:1;margin-bottom:4px}
+    .stat-val.gold{color:var(--gold)}
+    .stat-val.sky{color:var(--sky)}
+    .stat-val.green{color:var(--green)}
+    .stat-lbl{font-size:10px;color:var(--muted);letter-spacing:.1em}
+
+    /* Weekly chart — cycle 1 feature */
+    .chart-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;margin-bottom:20px}
+    .chart-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .chart-bars{display:flex;gap:6px;align-items:flex-end;height:80px}
+    .chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+    .bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:4px;position:relative;overflow:hidden;min-height:60px}
+    .bar-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,var(--gold),var(--gold-d));border-radius:4px;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .bar-fill.today{background:linear-gradient(180deg,var(--sky),#2a8eb0)}
+    .bar-lbl{font-size:9px;color:var(--muted);font-weight:700}
+    .bar-lbl.today{color:var(--sky)}
+
+    /* Streak badge — cycle 2 feature */
+    .streak-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .streak-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.15),rgba(212,160,23,.1));border:1px solid rgba(245,200,66,.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--gold);transition:all .3s}
+    .streak-badge.fire{box-shadow:0 0 16px rgba(245,200,66,.3);border-color:rgba(245,200,66,.6)}
+
+    /* Category tabs */
+    .tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;background:none;font-family:"Zen Maru Gothic",sans-serif}
+    .tab:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .tab.active[data-cat="all"]{background:var(--gold);border-color:transparent;color:var(--dark)}
+    .tab.active[data-cat="学習"]{background:var(--sky);border-color:transparent;color:var(--dark)}
+    .tab.active[data-cat="運動"]{background:var(--green);border-color:transparent;color:var(--dark)}
+    .tab.active[data-cat="創作"]{background:var(--purple);border-color:transparent;color:var(--white)}
+    .tab.active[data-cat="自己改善"]{background:var(--gold);border-color:transparent;color:var(--dark)}
+
+    /* Habit list */
+    .habit-sec{margin-bottom:24px}
+    .sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .sec-name{font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+    .sec-count{font-size:11px;color:var(--muted);margin-left:auto}
+
+    .habit{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:transform .12s,background .15s,border-color .15s;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+    .habit:active{transform:scale(.98)}
+    .habit.done{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.2)}
+    .chk{width:24px;height:24px;border-radius:8px;border:2px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+    .habit.done .chk{background:var(--green);border-color:var(--green);transform:scale(1.1)}
+    .chk-ico{display:none;font-size:13px;color:var(--dark);font-weight:900}
+    .habit.done .chk-ico{display:block}
+    .habit-name{flex:1;font-size:14px;font-weight:700;transition:color .15s}
+    .habit.done .habit-name{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(76,175,125,.5)}
+    .cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .del-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .del-btn:hover{color:var(--red);background:rgba(232,53,74,.1)}
+
+    /* Empty state */
+    .empty{text-align:center;padding:48px 20px;color:var(--muted)}
+    .empty-ico{font-size:52px;margin-bottom:12px}
+    .empty-txt{font-size:13px}
+
+    /* FAB */
+    .fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--gold);color:var(--dark);border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(245,200,66,.4);transition:transform .2s cubic-bezier(.34,1.56,.64,1);z-index:200;font-weight:900}
+    .fab:hover{transform:scale(1.1)}
+    .fab:active{transform:scale(.95)}
+
+    /* Modal */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .overlay.open{opacity:1;pointer-events:auto}
+    .modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:520px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .overlay.open .modal{transform:translateY(0)}
+    .modal-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+    .modal-ttl{font-family:"Dela Gothic One",sans-serif;font-size:18px;margin-bottom:20px}
+    .modal-inp{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:15px;outline:none;transition:border-color .15s;margin-bottom:14px}
+    .modal-inp:focus{border-color:rgba(245,200,66,.4)}
+    .modal-inp::placeholder{color:var(--muted)}
+    .cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
+    .cat-btn{padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+    .cat-btn:hover{color:var(--white)}
+    .cat-btn.sel[data-cat="学習"]{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    .cat-btn.sel[data-cat="運動"]{background:rgba(76,175,125,.15);border-color:var(--green);color:var(--green)}
+    .cat-btn.sel[data-cat="創作"]{background:rgba(155,109,214,.15);border-color:var(--purple);color:var(--purple)}
+    .cat-btn.sel[data-cat="自己改善"]{background:rgba(245,200,66,.15);border-color:var(--gold);color:var(--gold)}
+    .modal-ok{width:100%;padding:16px;border-radius:14px;background:var(--gold);border:none;color:var(--dark);font-family:"Zen Maru Gothic",sans-serif;font-size:15px;font-weight:900;cursor:pointer;transition:opacity .15s}
+    .modal-ok:hover{opacity:.9}
+    .modal-ok:disabled{opacity:.35;cursor:not-allowed}
+
+    /* Celebration — cycle 2 feature */
+    .banner{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:14px;padding:12px 24px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.5);z-index:400;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+    .banner.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Confetti canvas */
+    #cfv{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:500}
+  </style>
+</head>
+<body>
+
+<canvas id="cfv"></canvas>
+
+<header class="hdr">
+  <a href="index.html" class="back">← Hub</a>
+  <h1 class="hdr-title">📅 習慣トラッカー</h1>
+  <div class="hdr-date" id="hdr-date"></div>
+</header>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val gold" id="s-today">0%</div>
+      <div class="stat-lbl">今日の達成率</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val sky" id="s-streak">0</div>
+      <div class="stat-lbl">🔥 連続記録</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val green" id="s-total">0</div>
+      <div class="stat-lbl">累計完了</div>
+    </div>
+  </div>
+
+  <div class="chart-box">
+    <div class="chart-ttl">📊 週間達成率</div>
+    <div class="chart-bars" id="chart"></div>
+  </div>
+
+  <div class="streak-row">
+    <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-cat="all" onclick="setFilter('all')">全て</button>
+    <button class="tab" data-cat="学習" onclick="setFilter('学習')">📚 学習</button>
+    <button class="tab" data-cat="運動" onclick="setFilter('運動')">💪 運動</button>
+    <button class="tab" data-cat="創作" onclick="setFilter('創作')">🎨 創作</button>
+    <button class="tab" data-cat="自己改善" onclick="setFilter('自己改善')">✨ 自己改善</button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<button class="fab" onclick="openModal()" aria-label="習慣を追加">＋</button>
+
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 class="modal-ttl">習慣を追加</h2>
+    <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
+      oninput="validateModal()" onkeydown="if(event.key==='Enter')addHabit()">
+    <div class="cat-grid">
+      <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
+      <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
+      <button class="cat-btn" data-cat="創作" onclick="selCat('創作')">🎨 創作</button>
+      <button class="cat-btn" data-cat="自己改善" onclick="selCat('自己改善')">✨ 自己改善</button>
+    </div>
+    <button class="modal-ok" id="modal-ok" onclick="addHabit()" disabled>追加する</button>
+  </div>
+</div>
+
+<div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
+
+<script>
+const HK = 'rh_habits', CK = 'rh_completions';
+const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
+const DAYS = ['日','月','火','水','木','金','土'];
+
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false;
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ── date helpers ──
+function toStr(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function today(){return toStr(new Date())}
+function daysAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d}
+function dateAgo(n){return toStr(daysAgo(n))}
+
+// ── storage ──
+function load(){
+  try{
+    const h=localStorage.getItem(HK);
+    habits=h?JSON.parse(h):defaults();
+    const c=localStorage.getItem(CK);
+    completions=c?JSON.parse(c):{};
+  }catch{habits=defaults();completions={}}
+  if(!habits.length)habits=defaults();
+}
+function saveH(){localStorage.setItem(HK,JSON.stringify(habits))}
+function saveC(){localStorage.setItem(CK,JSON.stringify(completions))}
+
+function defaults(){
+  const t=new Date().toISOString();
+  return[
+    {id:'h1',name:'読書30分',category:'学習',createdAt:t},
+    {id:'h2',name:'英語学習',category:'学習',createdAt:t},
+    {id:'h3',name:'筋トレ',category:'運動',createdAt:t},
+    {id:'h4',name:'ウォーキング',category:'運動',createdAt:t},
+    {id:'h5',name:'YouTube動画制作',category:'創作',createdAt:t},
+    {id:'h6',name:'瞑想',category:'自己改善',createdAt:t},
+    {id:'h7',name:'日記',category:'自己改善',createdAt:t},
+  ];
+}
+
+// ── stats ──
+function dayRate(dateStr){
+  if(!habits.length)return 0;
+  const dc=completions[dateStr]||{};
+  return habits.filter(h=>dc[h.id]).length/habits.length;
+}
+function todayRate(){return Math.round(dayRate(today())*100)}
+
+function totalDone(){
+  let n=0;
+  for(const day of Object.values(completions))for(const v of Object.values(day))if(v)n++;
+  return n;
+}
+
+// cycle 2: streak counter
+function calcStreak(){
+  if(!habits.length)return 0;
+  let s=0,start=dayRate(today())===1?0:1;
+  for(let d=start;d<365;d++){
+    if(dayRate(dateAgo(d))===1)s++;else break;
+  }
+  return s;
+}
+
+// ── render ──
+function renderHeader(){
+  const now=new Date();
+  document.getElementById('hdr-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${DAYS[now.getDay()]}）`;
+}
+
+function renderStats(){
+  const rate=todayRate(),streak=calcStreak();
+  document.getElementById('s-today').textContent=rate+'%';
+  document.getElementById('s-streak').textContent=streak;
+  document.getElementById('s-total').textContent=totalDone();
+  const badge=document.getElementById('streak-badge');
+  badge.textContent=`🔥 ${streak}日連続達成中`;
+  badge.classList.toggle('fire',streak>=3);
+}
+
+function renderChart(){
+  const c=document.getElementById('chart');
+  c.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const ds=dateAgo(i),rate=dayRate(ds),pct=Math.round(rate*100),isToday=i===0;
+    const lbl=isToday?'今日':DAYS[daysAgo(i).getDay()];
+    const col=document.createElement('div');
+    col.className='chart-col';
+    col.innerHTML=`<div class="bar-wrap"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%" title="${pct}%"></div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
+    c.appendChild(col);
+  }
+}
+
+function renderList(){
+  const el=document.getElementById('list');
+  const td=today(),dc=completions[td]||{};
+  const list=filter==='all'?habits:habits.filter(h=>h.category===filter);
+
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ico">🌱</div><div class="empty-txt">＋ボタンで習慣を追加しよう！</div></div>`;
+    return;
+  }
+
+  const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
+  let html='';
+  for(const cat of cats){
+    const ch=list.filter(h=>h.category===cat);
+    if(!ch.length)continue;
+    const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
+    html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><span class="sec-count">${done}/${ch.length}</span></div>`;
+    for(const h of ch){
+      const isDone=!!dc[h.id];
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><span class="habit-name">${esc(h.name)}</span><div class="cat-dot" style="background:${col}"></div><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+    }
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+
+function render(){
+  renderHeader();
+  renderStats();
+  renderChart();
+  renderList();
+}
+
+// ── actions ──
+function toggle(id){
+  const td=today();
+  if(!completions[td])completions[td]={};
+  completions[td][id]=!completions[td][id];
+  saveC();
+  render();
+  // cycle 2: celebration check
+  if(todayRate()===100&&!celebrated){
+    celebrated=true;
+    showBanner();
+    launchConfetti();
+  }else if(todayRate()<100){
+    celebrated=false;
+  }
+}
+
+function del(id){
+  if(!confirm('この習慣を削除しますか？'))return;
+  habits=habits.filter(h=>h.id!==id);
+  saveH();
+  celebrated=false;
+  render();
+}
+
+// ── modal ──
+function openModal(){
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('habit-inp').value='';
+  selCatVal='';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('modal-ok').disabled=true;
+  setTimeout(()=>document.getElementById('habit-inp').focus(),300);
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open')}
+function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal()}
+
+function selCat(cat){
+  selCatVal=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===cat));
+  validateModal();
+}
+function validateModal(){
+  const name=document.getElementById('habit-inp').value.trim();
+  document.getElementById('modal-ok').disabled=!name||!selCatVal;
+}
+function addHabit(){
+  const name=document.getElementById('habit-inp').value.trim();
+  if(!name||!selCatVal)return;
+  habits.push({id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()});
+  saveH();
+  closeModal();
+  celebrated=false;
+  render();
+}
+
+// ── filter ──
+function setFilter(cat){
+  filter=cat;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
+  renderList();
+}
+
+// ── celebration (cycle 2 新機能) ──
+function showBanner(){
+  const b=document.getElementById('banner');
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),3500);
+}
+
+function launchConfetti(){
+  const canvas=document.getElementById('cfv');
+  const ctx=canvas.getContext('2d');
+  canvas.width=innerWidth;canvas.height=innerHeight;
+  const cols=['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff'];
+  const ps=Array.from({length:130},()=>({
+    x:Math.random()*canvas.width,
+    y:-20-Math.random()*80,
+    vx:(Math.random()-.5)*6,
+    vy:2+Math.random()*4,
+    col:cols[Math.floor(Math.random()*cols.length)],
+    w:4+Math.random()*6,
+    h:2+Math.random()*4,
+    rot:Math.random()*Math.PI*2,
+    rs:(Math.random()-.5)*.2,
+    a:1
+  }));
+  let fr=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    for(const p of ps){
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.rot+=p.rs;
+      if(p.y>canvas.height*.75)p.a-=.025;
+      if(p.a<=0)continue;
+      alive=true;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.globalAlpha=p.a;ctx.fillStyle=p.col;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    }
+    if(alive&&fr++<240)requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+
+// ── init ──
+load();
+render();
+</script>
+</body>
+</html>
