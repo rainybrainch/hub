@@ -507,6 +507,27 @@
     body.light .kbd-close{background:rgba(0,0,0,.06);color:#1a1a2e}
     body.light .kbd-close:hover{background:rgba(0,0,0,.1)}
 
+    /* Cycle 31: weekly reflection note */
+    .weekly-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:background .25s,border-color .25s}
+    .weekly-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;user-select:none}
+    .weekly-ico{font-size:14px;flex-shrink:0;line-height:1}
+    .weekly-preview{flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
+    .weekly-preview.has-text{color:var(--white)}
+    .weekly-chev{color:var(--muted);font-size:10px;flex-shrink:0;transition:transform .25s;display:inline-block}
+    .weekly-chev.open{transform:rotate(180deg)}
+    .weekly-body{padding:0 14px 14px;display:none}
+    .weekly-body.open{display:block}
+    .weekly-ta{width:100%;background:transparent;border:none;border-top:1px solid rgba(255,255,255,.07);padding:10px 0 0;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;resize:none;outline:none;line-height:1.7}
+    .weekly-ta::placeholder{color:var(--muted)}
+    body.light .weekly-box{border-color:rgba(0,0,0,.08)}
+    body.light .weekly-ta{color:#1a1a2e;border-top-color:rgba(0,0,0,.07)}
+    body.light .weekly-ta::placeholder{color:rgba(0,0,0,.35)}
+    body.light .weekly-preview.has-text{color:#1a1a2e}
+    /* Cycle 31: low-rate habit alert (0 completions in past 7 days) */
+    .habit.low-rate:not(.done):not(.paused){border-left:3px solid rgba(232,53,74,.45)!important}
+    .low-rate-lbl{font-size:9px;color:var(--red);font-weight:700;padding:1px 5px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.2);border-radius:5px;line-height:1.5;flex-shrink:0}
+    body.light .low-rate-lbl{background:rgba(232,53,74,.1);border-color:rgba(232,53,74,.25)}
+    body.compact .low-rate-lbl{display:none}
     /* Cycle 30: per-habit 28-day heatmap detail panel */
     .habit-wrap{margin-bottom:8px}
     .habit-wrap .habit{margin-bottom:0}
@@ -583,6 +604,17 @@
       </div>
     </div>
     <div id="chart"></div>
+  </div>
+
+  <div class="weekly-box" id="weekly-box">
+    <div class="weekly-hdr" onclick="toggleWeekly()">
+      <span class="weekly-ico">📓</span>
+      <span class="weekly-preview" id="weekly-preview">今週の振り返りを書こう...</span>
+      <span class="weekly-chev" id="weekly-chev">▼</span>
+    </div>
+    <div class="weekly-body" id="weekly-body">
+      <textarea class="weekly-ta" id="weekly-ta" rows="3" placeholder="今週の気づき・改善点・感謝など..." oninput="saveWeekly(this.value)" maxlength="200"></textarea>
+    </div>
   </div>
 
   <div class="dow-box" id="dow-box" style="display:none">
@@ -1055,7 +1087,12 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
   let timeBadge='';
   if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
-  const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
+  const dots7=habit7Days(h.id);
+  const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${dots7.map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
+  const createdDaysAgo=Math.floor((Date.now()-new Date(h.createdAt))/86400000);
+  const doneThisWeek=dots7.filter(Boolean).length;
+  const isLowRate=!isPaused&&createdDaysAgo>=7&&doneThisWeek===0;
+  const lowRateLbl=isLowRate?'<span class="low-rate-lbl">要注意</span>':'';
   const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
   const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
@@ -1071,7 +1108,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1868,6 +1905,30 @@ function toggleHabitDetail(id,e){
   }
 }
 
+// ── Cycle 31: weekly reflection note ──
+function _weeklyKey(){const now=new Date();const m=new Date(now);m.setDate(m.getDate()-((m.getDay()+6)%7));return 'rh_week_'+toStr(m);}
+let _weeklyOpen=false;
+function initWeekly(){
+  const val=localStorage.getItem(_weeklyKey())||'';
+  const ta=document.getElementById('weekly-ta');
+  const prev=document.getElementById('weekly-preview');
+  if(ta)ta.value=val;
+  if(prev){prev.textContent=val||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val);}
+}
+function toggleWeekly(){
+  _weeklyOpen=!_weeklyOpen;
+  const body=document.getElementById('weekly-body');
+  const chev=document.getElementById('weekly-chev');
+  if(body)body.classList.toggle('open',_weeklyOpen);
+  if(chev)chev.classList.toggle('open',_weeklyOpen);
+  if(_weeklyOpen){const ta=document.getElementById('weekly-ta');if(ta)setTimeout(()=>ta.focus(),60);}
+}
+function saveWeekly(val){
+  localStorage.setItem(_weeklyKey(),val);
+  const prev=document.getElementById('weekly-preview');
+  if(prev){prev.textContent=val.trim()||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val.trim());}
+}
+
 // ── init ──
 load();
 initTheme();
@@ -1876,6 +1937,7 @@ initCompactView();
 initEmojiPresets();
 initTemplates();
 initIntention();
+initWeekly();
 initReminder();
 render();
 // ── Cycle 24: PWA theme-color meta tag sync ──
