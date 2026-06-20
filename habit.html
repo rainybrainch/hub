@@ -444,6 +444,21 @@
     .progress-footer{position:fixed;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,.07);z-index:150;pointer-events:none}
     .progress-footer-fill{height:100%;width:0;transition:width .5s cubic-bezier(.34,1.56,.64,1),background .5s}
     body.light .progress-footer{background:rgba(0,0,0,.08)}
+
+    /* Cycle 28: habit template picker in modal */
+    .tmpl-section{margin-bottom:14px}
+    .tmpl-toggle{font-size:11px;color:var(--muted);cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:6px;user-select:none;width:100%;background:none;border:none;font-family:"Zen Maru Gothic",sans-serif;letter-spacing:.05em;text-align:left}
+    .tmpl-toggle:hover{color:var(--white)}
+    .tmpl-chev{font-size:9px;transition:transform .2s;display:inline-block}
+    .tmpl-chev.open{transform:rotate(180deg)}
+    .tmpl-grid{display:none;flex-wrap:wrap;gap:5px;padding-top:8px}
+    .tmpl-grid.open{display:flex}
+    .tmpl-item{padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:4px}
+    .tmpl-item:hover{color:var(--white);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
+    body.light .tmpl-toggle{color:rgba(0,0,0,.45)}
+    body.light .tmpl-toggle:hover{color:#1a1a2e}
+    body.light .tmpl-item{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .tmpl-item:hover{color:#1a1a2e;border-color:rgba(0,0,0,.25);background:rgba(0,0,0,.03)}
   </style>
 </head>
 <body>
@@ -569,6 +584,10 @@
       <input class="modal-emoji-inp" id="emoji-inp" type="text" placeholder="🎯" maxlength="4" oninput="onEmojiInput(this.value)" title="絵文字アイコン（任意）">
       <div class="emoji-presets" id="emoji-presets"></div>
     </div>
+    <div class="tmpl-section" id="tmpl-section">
+      <button class="tmpl-toggle" onclick="toggleTemplates()" type="button">📋 テンプレートから選ぶ <span class="tmpl-chev" id="tmpl-chev">▼</span></button>
+      <div class="tmpl-grid" id="tmpl-grid"></div>
+    </div>
     <div class="cat-grid">
       <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
       <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
@@ -592,6 +611,17 @@ const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 // Cycle 15: preset emoji for habit icons
 const EMOJI_PRESETS=['📚','📖','✏️','💪','🏃','🧘','🎨','🎵','📝','💡','🌱','⭐','🎯','🔔','🌅','🏆','💎','🔥','⚡','💤','🥗','💊','🛌','🧠'];
+// Cycle 28: habit template presets
+const HABIT_TEMPLATES=[
+  {name:'読書30分',category:'学習',emoji:'📚'},{name:'英語学習',category:'学習',emoji:'🗣'},
+  {name:'プログラミング',category:'学習',emoji:'💻'},{name:'資格勉強',category:'学習',emoji:'📖'},
+  {name:'筋トレ',category:'運動',emoji:'💪'},{name:'ウォーキング',category:'運動',emoji:'🚶'},
+  {name:'ヨガ',category:'運動',emoji:'🧘'},{name:'ランニング',category:'運動',emoji:'🏃'},
+  {name:'日記',category:'自己改善',emoji:'📝'},{name:'瞑想',category:'自己改善',emoji:'💆'},
+  {name:'早起き',category:'自己改善',emoji:'🌅'},{name:'感謝日記',category:'自己改善',emoji:'❤️'},
+  {name:'YouTube動画制作',category:'創作',emoji:'🎬'},{name:'絵を描く',category:'創作',emoji:'🎨'},
+  {name:'音楽練習',category:'創作',emoji:'🎵'},{name:'ブログ執筆',category:'創作',emoji:'✍️'},
+];
 const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
@@ -659,6 +689,39 @@ function spawnBurst(x,y){
   }
   document.body.appendChild(wrap);
   setTimeout(()=>wrap.remove(),700);
+}
+
+// ── Cycle 28: dynamic document title ──
+function updateDocTitle(){
+  const active=habits.filter(h=>!h.paused);
+  if(!active.length){document.title='習慣トラッカー | RAINYBRAIN';return;}
+  const td=today(),dc=completions[td]||{};
+  const done=active.filter(h=>dc[h.id]).length,total=active.length;
+  document.title=done===total?`🎉 全完了! | 習慣トラッカー`:`${done}/${total}完了 | 習慣トラッカー`;
+}
+
+// ── Cycle 28: habit template picker ──
+let _tmplOpen=false;
+function toggleTemplates(){
+  _tmplOpen=!_tmplOpen;
+  const g=document.getElementById('tmpl-grid'),c=document.getElementById('tmpl-chev');
+  if(g)g.classList.toggle('open',_tmplOpen);
+  if(c)c.classList.toggle('open',_tmplOpen);
+}
+function selectTemplate(i){
+  const t=HABIT_TEMPLATES[i];if(!t)return;
+  const inp=document.getElementById('habit-inp');
+  const emojiEl=document.getElementById('emoji-inp');
+  if(inp)inp.value=t.name;
+  if(emojiEl){emojiEl.value=t.emoji;onEmojiInput(t.emoji);}
+  selCat(t.category);validateModal();
+  _tmplOpen=false;
+  const g=document.getElementById('tmpl-grid'),c=document.getElementById('tmpl-chev');
+  if(g)g.classList.remove('open');if(c)c.classList.remove('open');
+}
+function initTemplates(){
+  const el=document.getElementById('tmpl-grid');if(!el)return;
+  el.innerHTML=HABIT_TEMPLATES.map((t,i)=>`<button class="tmpl-item" onclick="selectTemplate(${i})" type="button">${t.emoji} ${t.name}</button>`).join('');
 }
 
 // ── Cycle 15: emoji icon helpers ──
@@ -1031,6 +1094,7 @@ function render(){
   renderList();
   updateFabBadge();
   updateProgressFooter();
+  updateDocTitle();
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -1138,6 +1202,8 @@ function openModal(id=null){
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
+    // Cycle 28: hide template picker in edit mode
+    const ts=document.getElementById('tmpl-section');if(ts)ts.style.display='none';
   }else{
     inp.value='';if(noteEl)noteEl.value='';
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
@@ -1145,6 +1211,11 @@ function openModal(id=null){
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
+    // Cycle 28: reset template picker state
+    _tmplOpen=false;
+    const tg=document.getElementById('tmpl-grid'),tc=document.getElementById('tmpl-chev'),ts=document.getElementById('tmpl-section');
+    if(tg)tg.classList.remove('open');if(tc)tc.classList.remove('open');
+    if(ts)ts.style.display='';
   }
   setTimeout(()=>inp.focus(),300);
 }
@@ -1612,6 +1683,7 @@ initTheme();
 updateSoundBtn();
 initCompactView();
 initEmojiPresets();
+initTemplates();
 initIntention();
 initReminder();
 render();
