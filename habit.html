@@ -315,6 +315,31 @@
     /* Cycle 18: check particle burst */
     @keyframes burstDot{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
     .chk-burst-dot{position:absolute;width:5px;height:5px;border-radius:50%;transform-origin:center;animation:burstDot .55s cubic-bezier(.2,.8,.3,1) forwards}
+
+    /* Cycle 19: today's focus section */
+    .focus-section{background:linear-gradient(135deg,rgba(245,200,66,.08),rgba(245,200,66,.03));border:1px solid rgba(245,200,66,.25);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+    .focus-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+    .habit.focus-habit{border-color:rgba(245,200,66,.35)!important;background:rgba(245,200,66,.05)!important}
+    body.light .habit.focus-habit{border-color:rgba(245,200,66,.5)!important;background:rgba(245,200,66,.08)!important}
+    .star-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .star-btn:hover{color:var(--gold);background:rgba(245,200,66,.1)}
+    .star-btn.starred{color:var(--gold)}
+    body.light .star-btn{color:rgba(0,0,0,.18)}
+    body.compact .star-btn{display:none}
+    /* Cycle 19: monthly stats card */
+    .month-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px}
+    .month-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+    .month-hdr-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .month-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
+    .month-chev.open{transform:rotate(180deg)}
+    .month-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+    .month-body.open{max-height:180px}
+    .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px}
+    .month-val{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:var(--gold);line-height:1;margin-bottom:2px;text-align:center}
+    .month-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-align:center}
+    .month-best{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    body.light .month-box{border-color:rgba(0,0,0,.08)}
+    body.light .month-best{border-top-color:rgba(0,0,0,.06)}
   </style>
 </head>
 <body>
@@ -376,6 +401,8 @@
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
   </div>
+
+  <div class="month-box" id="month-box" style="display:none"></div>
 
   <div class="ranking-box" id="ranking-box" style="display:none"></div>
 
@@ -710,11 +737,30 @@ function renderChart(){
   }
 }
 
+// Cycle 19: habit card HTML builder (shared by focus section and category sections)
+function _hCard(h,dc,col,focusIds){
+  const completedVal=dc[h.id];
+  const isDone=!!completedVal;
+  const cnt=habitTotalCount(h.id);
+  const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
+  const hs=habitStreak(h.id);
+  const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  let timeBadge='';
+  if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
+  const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
+  const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
+  const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
+  const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+  const isStarred=focusIds.includes(h.id);
+  const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
+  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${starBtn}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+}
+
 function renderList(){
   const el=document.getElementById('list');
   const td=today(),dc=completions[td]||{};
+  const focusIds=getFocusIds();
   let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
-  // Cycle 14: apply real-time search filter
   if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
 
   if(!list.length){
@@ -724,8 +770,16 @@ function renderList(){
     return;
   }
 
-  const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
   let html='';
+  // Cycle 19: focus section at top
+  const focused=list.filter(h=>focusIds.includes(h.id));
+  if(focused.length){
+    html+='<div class="focus-section"><div class="focus-ttl">📌 今日のフォーカス</div>';
+    focused.forEach(h=>html+=_hCard(h,dc,CAT_COLORS[h.category]||'#fff',focusIds));
+    html+='</div>';
+  }
+
+  const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
   for(const cat of cats){
     let ch=list.filter(h=>h.category===cat);
     if(!ch.length)continue;
@@ -733,28 +787,7 @@ function renderList(){
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
     html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span></div>`;
-    for(const h of ch){
-      const completedVal=dc[h.id];
-      const isDone=!!completedVal;
-      const cnt=habitTotalCount(h.id);
-      const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
-      const hs=habitStreak(h.id);
-      const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
-      // cycle 9: show completion time badge
-      let timeBadge='';
-      if(isDone&&typeof completedVal==='string'){
-        const d=new Date(completedVal);
-        timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;
-      }
-      // cycle 11: 7-day dot calendar
-      const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
-      // cycle 12: habit note/memo
-      const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
-      // cycle 15: emoji icon
-      const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
-      const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
-    }
+    ch.forEach(h=>html+=_hCard(h,dc,col,focusIds));
     html+='</div>';
   }
   el.innerHTML=html;
@@ -781,6 +814,7 @@ function render(){
   renderChart();
   renderWeekComparison();
   renderDayOfWeekChart();
+  renderMonthStats();
   renderWeeklyRanking();
   renderMotto();
   renderTimeline();
@@ -1168,6 +1202,47 @@ function updateCompactBtn(){
 function initCompactView(){
   if(compactView)document.body.classList.add('compact');
   updateCompactBtn();
+}
+
+// ── Cycle 19: Today's Focus ──
+function _focusKey(){return 'rh_focus_'+today()}
+function getFocusIds(){try{return JSON.parse(localStorage.getItem(_focusKey())||'[]')}catch{return[]}}
+function toggleFocus(id,e){
+  e.stopPropagation();
+  const ids=getFocusIds();
+  const idx=ids.indexOf(id);
+  if(idx>=0)ids.splice(idx,1);
+  else if(ids.length<3)ids.push(id);
+  localStorage.setItem(_focusKey(),JSON.stringify(ids));
+  renderList();
+}
+
+// ── Cycle 19: Monthly stats card ──
+let _mOpen=false;
+function toggleMonthBox(){
+  _mOpen=!_mOpen;
+  const b=document.getElementById('month-body-el');
+  const ch=document.getElementById('month-chev-el');
+  if(b)b.classList.toggle('open',_mOpen);
+  if(ch)ch.classList.toggle('open',_mOpen);
+}
+function renderMonthStats(){
+  const el=document.getElementById('month-box');
+  if(!el||!habits.length){if(el)el.style.display='none';return}
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth(),day=now.getDate();
+  let total=0;const hc={};habits.forEach(h=>hc[h.id]=0);
+  for(let d=1;d<=day;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dc=completions[ds]||{};
+    habits.forEach(h=>{if(dc[h.id]){total++;hc[h.id]++;}});
+  }
+  const possible=habits.length*day;
+  const rate=possible?Math.round(total/possible*100):0;
+  let best=null,bestCnt=0;
+  habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
+  const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  el.style.display='';
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
 }
 
 // ── init ──
