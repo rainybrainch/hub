@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d1117" id="meta-theme-color">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="習慣トラッカー">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>習慣トラッカー | RAINYBRAIN</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -411,6 +416,10 @@
     body.compact .reorder-btn{display:none}
     /* Cycle 23: reminder button active state */
     .hdr-btn.reminder-on{color:var(--gold)!important}
+
+    /* Cycle 24: swipe-to-complete gesture visual feedback */
+    .habit.swipe-right{background:rgba(76,175,125,.1)!important;border-color:rgba(76,175,125,.3)!important}
+    body.light .habit.swipe-right{background:rgba(76,175,125,.14)!important;border-color:rgba(76,175,125,.38)!important}
   </style>
 </head>
 <body>
@@ -710,7 +719,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.22',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.24',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -849,7 +858,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
   const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
   const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
-  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
 }
 
 function renderList(){
@@ -889,6 +898,7 @@ function renderList(){
     html+='</div>';
   }
   el.innerHTML=html;
+  initSwipeGestures();
 }
 
 // Cycle 16: today's completed habit timeline
@@ -1113,6 +1123,7 @@ function toggleTheme(){
 function updateThemeBtn(){
   const btn=document.getElementById('theme-btn');
   if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀️';
+  syncThemeColor();
 }
 
 // ── sort undone (cycle 7) ──
@@ -1520,6 +1531,46 @@ initEmojiPresets();
 initIntention();
 initReminder();
 render();
+// ── Cycle 24: PWA theme-color meta tag sync ──
+function syncThemeColor(){
+  const mc=document.getElementById('meta-theme-color');
+  if(mc)mc.content=document.body.classList.contains('light')?'#f0f2f5':'#0d1117';
+}
+
+// ── Cycle 24: swipe-to-complete gesture for habit cards ──
+function initSwipeGestures(){
+  document.querySelectorAll('#list .habit[data-id]').forEach(el=>{
+    if(el._swipeInited)return;
+    el._swipeInited=true;
+    let sx=0,sy=0,dx=0,moving=false;
+    const id=el.dataset.id;
+    const THRESH=64;
+    el.addEventListener('touchstart',e=>{
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;moving=false;
+    },{passive:true});
+    el.addEventListener('touchmove',e=>{
+      const fx=e.touches[0].clientX-sx,fy=e.touches[0].clientY-sy;
+      if(!moving&&Math.abs(fy)>Math.abs(fx)+8)return;
+      if(fx<0)return;
+      moving=true;dx=fx;
+      el.style.transform=`translateX(${Math.min(90,dx)}px)`;
+      el.style.transition='none';
+      el.classList.toggle('swipe-right',dx>=THRESH);
+    },{passive:true});
+    el.addEventListener('touchend',e=>{
+      el.style.transition='transform .25s ease';
+      el.style.transform='';
+      el.classList.remove('swipe-right');
+      if(moving&&dx>=THRESH){
+        e.preventDefault();
+        const h=habits.find(x=>x.id===id);
+        if(h&&!h.paused)toggle(id,{currentTarget:el,target:el});
+      }
+      dx=0;moving=false;
+    },{passive:false});
+  });
+}
+
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(document.getElementById('overlay').classList.contains('open'))closeModal();

@@ -256,6 +256,21 @@
         "deployedAt": "2026-06-20T07:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 24,
+      "timestamp": "2026-06-20T08:00:00Z",
+      "version": "v2.24",
+      "changes": [
+        "PWAインストール対応メタタグ: <meta name='theme-color'>（#0d1117/ライト時#f0f2f5にテーマ連動）・<meta name='apple-mobile-web-app-capable'>・<meta name='apple-mobile-web-app-status-bar-style'>・<meta name='apple-mobile-web-app-title'>・<meta name='mobile-web-app-capable'>を追加。iOS/Androidのホーム画面に追加した際にネイティブアプリ同様のフルスクリーン表示・ステータスバー統合が実現。updateThemeBtn()内でsyncThemeColor()を呼び出しテーマ切替とOSテーマ連動時にtheme-colorを自動更新。",
+        "スワイプ-to-完了ジェスチャー: 各習慣カードに右スワイプで完了切替ができるタッチジェスチャーを追加。initSwipeGestures()関数をrenderList()後に呼び出し、#list内の全 .habit[data-id]要素にtouchstart/touchmove/touchendリスナーを登録（重複登録を_swipeInitedフラグで防止）。スワイプ距離64px以上で.swipe-rightクラス付与（緑色ヒント）、touchendで閾値超過時にtoggle()を起動＋e.preventDefault()で合成clickを抑制。垂直スクロールとの競合はtouchStartのxy差分で早期判定。左スワイプは無効化。一時停止中習慣は除外。"
+      ],
+      "notes": "PWAメタタグはhtmlファイル1本のまま追加できる最小コストの改善で、特にiOS Safariの「ホーム画面に追加」を利用するユーザーに恩恵が大きい。ステータスバーがblack-translucentになることでヘッダーのblur/半透明の恩恵をフルスクリーン時にも維持できる。スワイプジェスチャーはモバイルユーザーの主要操作（習慣チェック）を親指1本で素早く行えるようにする根本的なUX改善。タップよりもスワイプの方が誤操作が少なくモバイル環境での連続チェックが快適になる。habit要素にdata-id属性を追加することでイベント委任なしでも各カードのIDを安全に取得できる設計。touchend に passive:false を指定してe.preventDefault()でブラウザの合成clickを遮断し、toggle()の二重呼び出しを防ぐ。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-20T08:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
