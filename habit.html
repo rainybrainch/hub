@@ -420,6 +420,12 @@
     /* Cycle 24: swipe-to-complete gesture visual feedback */
     .habit.swipe-right{background:rgba(76,175,125,.1)!important;border-color:rgba(76,175,125,.3)!important}
     body.light .habit.swipe-right{background:rgba(76,175,125,.14)!important;border-color:rgba(76,175,125,.38)!important}
+
+    /* Cycle 25: streak visual glow motivator */
+    .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.3)!important}
+    .habit.streak-hot:not(.done):not(.paused){border-color:rgba(245,200,66,.55)!important;box-shadow:0 0 10px rgba(245,200,66,.12)}
+    body.light .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.45)!important}
+    body.light .habit.streak-hot:not(.done):not(.paused){border-color:rgba(245,200,66,.7)!important;box-shadow:0 0 10px rgba(245,200,66,.18)}
   </style>
 </head>
 <body>
@@ -430,7 +436,7 @@
   <a href="index.html" class="back">← Hub</a>
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
-  <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
+  <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
@@ -717,13 +723,30 @@ function updateBestStreak(current){
   return best;
 }
 
-// cycle 5: JSON export
+// cycle 5+25: JSON/CSV export
 function exportData(){
-  const data={version:'2.24',exportedAt:new Date().toISOString(),habits,completions};
+  const isJson=confirm('エクスポート形式を選択\n\n[OK] JSON — 完全バックアップ（インポート可能）\n[キャンセル] CSV — スプレッドシート用（Excelなど）');
+  if(isJson)_exportJSON();else _exportCSV();
+}
+function _exportJSON(){
+  const data={version:'2.25',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download=`habit-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+function _exportCSV(){
+  if(!habits.length){alert('習慣データがありません。');return;}
+  const dates=Object.keys(completions).sort();
+  if(!dates.length){alert('完了履歴がありません。');return;}
+  const header=['日付',...habits.map(h=>`"${(h.emoji?h.emoji+' ':'')+h.name}"`)].join(',');
+  const rows=dates.map(d=>{const dc=completions[d]||{};return[d,...habits.map(h=>dc[h.id]?'1':'0')].join(',');});
+  const csv=[header,...rows].join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`habit-data-${today()}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -847,6 +870,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
   const hs=habitStreak(h.id);
   const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
   let timeBadge='';
   if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
   const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${habit7Days(h.id).map(d=>`<span class="h-dot${d?' done':''}"></span>`).join('')}</div>`;
@@ -858,7 +882,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
   const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
   const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
-  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
 }
 
 function renderList(){
