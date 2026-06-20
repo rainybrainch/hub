@@ -272,6 +272,20 @@
     body.light .emoji-preset{border-color:rgba(0,0,0,.1)}
     body.light .emoji-preset:hover{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.2)}
     body.light .emoji-preset.sel{background:rgba(245,200,66,.25);border-color:rgba(245,200,66,.5)}
+
+    /* Cycle 16: progress ring glow on 100% */
+    @keyframes ringGlow{from{filter:drop-shadow(0 0 3px var(--green))}to{filter:drop-shadow(0 0 9px var(--green))}}
+    .progress-ring-wrap.ring-complete{animation:ringGlow 1.4s ease-in-out infinite alternate}
+
+    /* Cycle 16: today's timeline */
+    .timeline-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;margin-bottom:20px}
+    .timeline-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .timeline-item:last-child{border-bottom:none;padding-bottom:0}
+    .tl-time{font-size:11px;color:var(--green);font-weight:700;min-width:36px;flex-shrink:0;font-variant-numeric:tabular-nums}
+    .tl-emoji{font-size:14px;flex-shrink:0;line-height:1}
+    .tl-name{font-size:13px;font-weight:700}
+    body.light .timeline-box{border-color:rgba(0,0,0,.08)}
+    body.light .timeline-item{border-bottom-color:rgba(0,0,0,.05)}
   </style>
 </head>
 <body>
@@ -330,6 +344,11 @@
   </div>
 
   <div class="motto-box" id="motto-box"></div>
+
+  <div class="timeline-box" id="timeline-box" style="display:none">
+    <div class="chart-ttl">⏱ 今日のタイムライン</div>
+    <div id="timeline-list"></div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" data-cat="all" onclick="setFilter('all')">全て</button>
@@ -586,9 +605,16 @@ function renderStats(){
   const badge=document.getElementById('streak-badge');
   badge.textContent=`🔥 ${streak}日連続達成中`;
   badge.classList.toggle('fire',streak>=3);
-  // cycle 4: update progress ring
+  // cycle 4 + 16: update progress ring with dynamic color
   const rf=document.getElementById('ring-fill');
-  if(rf)rf.style.strokeDashoffset=(138.23*(1-rate/100)).toFixed(2);
+  if(rf){
+    rf.style.strokeDashoffset=(138.23*(1-rate/100)).toFixed(2);
+    rf.style.stroke=rate===100?'var(--green)':rate>=50?'var(--gold)':'var(--sky)';
+    const rv=document.getElementById('s-today');
+    if(rv)rv.className='ring-val '+(rate===100?'green':rate>=50?'gold':'sky');
+    const pw=document.querySelector('.progress-ring-wrap');
+    if(pw)pw.classList.toggle('ring-complete',rate===100);
+  }
 }
 
 let chartView='week';
@@ -679,12 +705,28 @@ function renderList(){
   el.innerHTML=html;
 }
 
+// Cycle 16: today's completed habit timeline
+function renderTimeline(){
+  const td=today(),dc=completions[td]||{};
+  const done=habits
+    .filter(h=>dc[h.id]&&typeof dc[h.id]==='string')
+    .map(h=>({...h,ts:new Date(dc[h.id])}))
+    .sort((a,b)=>a.ts-b.ts);
+  const box=document.getElementById('timeline-box');
+  if(!box)return;
+  box.style.display=done.length?'':'none';
+  if(!done.length)return;
+  const list=document.getElementById('timeline-list');
+  if(list)list.innerHTML=done.map(h=>`<div class="timeline-item"><span class="tl-time">${String(h.ts.getHours()).padStart(2,'0')}:${String(h.ts.getMinutes()).padStart(2,'0')}</span>${h.emoji?`<span class="tl-emoji">${h.emoji}</span>`:''}<span class="tl-name">${esc(h.name)}</span></div>`).join('');
+}
+
 function render(){
   renderHeader();
   renderStats();
   renderChart();
   renderWeekComparison();
   renderMotto();
+  renderTimeline();
   renderList();
 }
 
