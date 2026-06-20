@@ -301,6 +301,20 @@
     body.light .ranking-item{border-bottom-color:rgba(0,0,0,.05)}
     body.light .rank-cnt{color:rgba(0,0,0,.4)}
     body.light .rank-bar{background:rgba(0,0,0,.08)}
+
+    /* Cycle 18: weekday performance chart */
+    .dow-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+    .dow-bars{display:flex;gap:4px;align-items:flex-end;height:56px}
+    .dow-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .dow-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:4px;position:relative;overflow:hidden;min-height:40px}
+    .dow-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .dow-lbl{font-size:9px;font-weight:700;color:var(--muted)}
+    body.light .dow-box{border-color:rgba(0,0,0,.08)}
+    body.light .dow-bar-wrap{background:rgba(0,0,0,.06)}
+
+    /* Cycle 18: check particle burst */
+    @keyframes burstDot{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+    .chk-burst-dot{position:absolute;width:5px;height:5px;border-radius:50%;transform-origin:center;animation:burstDot .55s cubic-bezier(.2,.8,.3,1) forwards}
   </style>
 </head>
 <body>
@@ -352,6 +366,11 @@
       </div>
     </div>
     <div id="chart"></div>
+  </div>
+
+  <div class="dow-box" id="dow-box" style="display:none">
+    <div class="chart-ttl">📈 曜日別 平均達成率（過去4週）</div>
+    <div class="dow-bars" id="dow-chart"></div>
   </div>
 
   <div class="streak-row">
@@ -471,6 +490,25 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 // ── Cycle 15: haptic vibration feedback ──
 function vib(pattern){if(navigator.vibrate)navigator.vibrate(pattern)}
 
+// ── Cycle 18: particle burst on habit check ──
+function spawnBurst(x,y){
+  const cols=['#4CAF7D','#5BC8E8','#F5C842','#9B6DD6'];
+  const wrap=document.createElement('div');
+  wrap.style.cssText=`position:fixed;left:${x}px;top:${y}px;pointer-events:none;z-index:999`;
+  for(let i=0;i<8;i++){
+    const s=document.createElement('span');
+    const angle=(i/8)*Math.PI*2,dist=16+Math.random()*14;
+    s.className='chk-burst-dot';
+    s.style.background=cols[i%cols.length];
+    s.style.animationDelay=`${(Math.random()*40).toFixed(0)}ms`;
+    s.style.setProperty('--tx',`${(Math.cos(angle)*dist).toFixed(1)}px`);
+    s.style.setProperty('--ty',`${(Math.sin(angle)*dist).toFixed(1)}px`);
+    wrap.appendChild(s);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),700);
+}
+
 // ── Cycle 15: emoji icon helpers ──
 function initEmojiPresets(){
   const el=document.getElementById('emoji-presets');
@@ -553,7 +591,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.17',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.18',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -715,7 +753,7 @@ function renderList(){
       // cycle 15: emoji icon
       const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
       const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
-      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}')"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+      html+=`<div class="habit${isDone?' done':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
     }
     html+='</div>';
   }
@@ -742,6 +780,7 @@ function render(){
   renderStats();
   renderChart();
   renderWeekComparison();
+  renderDayOfWeekChart();
   renderWeeklyRanking();
   renderMotto();
   renderTimeline();
@@ -749,13 +788,17 @@ function render(){
 }
 
 // ── actions ──
-function toggle(id){
+function toggle(id,evt){
   const td=today();
   if(!completions[td])completions[td]={};
   const wasCompleted=!!completions[td][id];
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
-  if(!wasCompleted){playTick();vib(50);checkHabitMilestone(id);}
+  if(!wasCompleted){
+    playTick();vib(50);checkHabitMilestone(id);
+    // cycle 18: particle burst from checkbox position
+    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r)spawnBurst(r.left+r.width/2,r.top+r.height/2);}
+  }
   saveC();
   render();
   // cycle 2: celebration check
@@ -1077,6 +1120,37 @@ function renderWeeklyRanking(){
       const em=x.h.emoji?`${x.h.emoji} `:'';
       return `<div class="ranking-item"><span class="rank-badge">${medals[i]}</span><span class="rank-name">${em}${esc(x.h.name)}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${pct}%"></div></div><span class="rank-cnt">${x.cnt}/7日</span></div>`;
     }).join('');
+}
+
+// ── Cycle 18: weekday performance chart ──
+function calcDayOfWeekStats(){
+  const raw=Array(7).fill(0).map(()=>({sum:0,cnt:0}));
+  for(let i=1;i<=28;i++){
+    const dow=daysAgo(i).getDay();
+    const r=dayRate(dateAgo(i));
+    raw[dow].sum+=r;raw[dow].cnt++;
+  }
+  return raw.map(s=>s.cnt?Math.round(s.sum/s.cnt*100):null);
+}
+function renderDayOfWeekChart(){
+  const box=document.getElementById('dow-box'),el=document.getElementById('dow-chart');
+  if(!box||!el)return;
+  const stats=calcDayOfWeekStats(); // indexed by JS day-of-week: 0=Sun
+  const order=[1,2,3,4,5,6,0]; // display Mon→Sun
+  const vals=order.map(i=>stats[i]);
+  const defined=vals.filter(v=>v!==null);
+  if(!defined.length){box.style.display='none';return;}
+  box.style.display='';
+  const max=Math.max(...defined,1);
+  const bestIdx=vals.reduce((bi,v,i)=>v!==null&&(vals[bi]===null||v>vals[bi])?i:bi,0);
+  const worstIdx=vals.reduce((wi,v,i)=>v!==null&&(vals[wi]===null||v<vals[wi])?i:wi,0);
+  el.innerHTML=order.map((dow,i)=>{
+    const v=vals[i]??0;
+    const pct=Math.round(v/max*100);
+    const color=i===bestIdx?'var(--green)':i===worstIdx?'rgba(232,53,74,.8)':'var(--gold)';
+    const lblStyle=i===bestIdx?' style="color:var(--green)"':i===worstIdx?' style="color:var(--red)"':'';
+    return `<div class="dow-col"><div class="dow-bar-wrap"><div class="dow-fill" style="height:${pct}%;background:${color}"></div></div><span class="dow-lbl"${lblStyle}>${DAYS[dow]}</span></div>`;
+  }).join('');
 }
 
 // ── Cycle 13: compact view mode ──
