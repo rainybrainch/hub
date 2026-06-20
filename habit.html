@@ -401,6 +401,16 @@
     body.light .intention-ta{color:#1a1a2e;border-top-color:rgba(0,0,0,.07)}
     body.light .intention-ta::placeholder{color:rgba(0,0,0,.35)}
     body.light .intention-preview.has-text{color:#1a1a2e}
+
+    /* Cycle 23: custom reorder mode */
+    .reorder-btn{background:none;border:none;color:rgba(255,255,255,.28);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1;font-weight:700}
+    .reorder-btn:hover:not([disabled]){color:var(--sky);background:rgba(91,200,232,.12)}
+    .reorder-btn[disabled]{opacity:.15;cursor:default}
+    body.light .reorder-btn{color:rgba(0,0,0,.22)}
+    body:not(.reorder-mode) .reorder-btn{display:none}
+    body.compact .reorder-btn{display:none}
+    /* Cycle 23: reminder button active state */
+    .hdr-btn.reminder-on{color:var(--gold)!important}
   </style>
 </head>
 <body>
@@ -413,6 +423,7 @@
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
+  <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
@@ -502,6 +513,7 @@
 
   <div class="sort-row">
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
+    <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
   </div>
   <div class="search-row">
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
@@ -550,7 +562,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '';
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false;
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -818,7 +830,7 @@ function renderChart(){
 }
 
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
-function _hCard(h,dc,col,focusIds){
+function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const completedVal=dc[h.id];
   const isDone=!!completedVal;
   const isPaused=!!h.paused;
@@ -836,7 +848,8 @@ function _hCard(h,dc,col,focusIds){
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
   const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
-  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+  const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
+  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
 }
 
 function renderList(){
@@ -864,14 +877,15 @@ function renderList(){
 
   const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
   for(const cat of cats){
-    let ch=list.filter(h=>h.category===cat);
-    if(!ch.length)continue;
-    if(sortUndone)ch=[...ch].sort((a,b)=>{if(a.paused!==b.paused)return a.paused?1:-1;return(dc[a.id]?1:0)-(dc[b.id]?1:0);});
-    else ch=[...ch].sort((a,b)=>a.paused&&!b.paused?1:!a.paused&&b.paused?-1:0);
+    const rawCh=list.filter(h=>h.category===cat);
+    if(!rawCh.length)continue;
+    let ch;
+    if(sortUndone)ch=[...rawCh].sort((a,b)=>{if(a.paused!==b.paused)return a.paused?1:-1;return(dc[a.id]?1:0)-(dc[b.id]?1:0);});
+    else ch=[...rawCh].sort((a,b)=>a.paused&&!b.paused?1:!a.paused&&b.paused?-1:0);
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
     html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span></div>`;
-    ch.forEach(h=>html+=_hCard(h,dc,col,focusIds));
+    ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
     html+='</div>';
   }
   el.innerHTML=html;
@@ -1107,6 +1121,24 @@ function toggleSortUndone(){
   const btn=document.getElementById('sort-undone-btn');
   if(btn)btn.classList.toggle('active',sortUndone);
   renderList();
+}
+
+// ── Cycle 23: custom reorder within category ──
+function toggleReorderMode(){
+  reorderMode=!reorderMode;
+  document.body.classList.toggle('reorder-mode',reorderMode);
+  const btn=document.getElementById('reorder-mode-btn');
+  if(btn)btn.classList.toggle('active',reorderMode);
+  renderList();
+}
+function moveHabit(id,dir){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  const catH=habits.filter(x=>x.category===h.category);
+  const pos=catH.findIndex(x=>x.id===id);
+  const np=pos+dir;if(np<0||np>=catH.length)return;
+  const ia=habits.indexOf(catH[pos]),ib=habits.indexOf(catH[np]);
+  [habits[ia],habits[ib]]=[habits[ib],habits[ia]];
+  saveH();renderList();
 }
 
 // cycle 6: JSON import
@@ -1437,6 +1469,48 @@ function saveIntention(val){
   if(prev){prev.textContent=val.trim()||'今日の意図を書こう...';prev.classList.toggle('has-text',!!val.trim());}
 }
 
+// ── Cycle 23: daily notification reminder ──
+function initReminder(){
+  updateReminderBtn();
+  setInterval(checkReminder,60000);
+  checkReminder();
+}
+function toggleReminder(){
+  const cur=localStorage.getItem('rh_reminder');
+  if(cur){
+    localStorage.removeItem('rh_reminder');
+    updateReminderBtn();
+    return;
+  }
+  if(!('Notification' in window)){alert('このブラウザは通知に対応していません。');return;}
+  const time=prompt('毎日のリマインダー時刻を設定してください\n（例: 08:00 / 21:30）','08:00');
+  if(!time)return;
+  if(!/^\d{1,2}:\d{2}$/.test(time)){alert('形式が正しくありません（例: 08:00）');return;}
+  const setIt=()=>{localStorage.setItem('rh_reminder',time);updateReminderBtn();};
+  if(Notification.permission==='granted')setIt();
+  else if(Notification.permission==='denied')alert('通知がブロックされています。ブラウザ設定から許可してください。');
+  else Notification.requestPermission().then(p=>{if(p==='granted')setIt();});
+}
+function checkReminder(){
+  const time=localStorage.getItem('rh_reminder');if(!time)return;
+  if(Notification.permission!=='granted')return;
+  const now=new Date();
+  const cur=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  if(cur!==time)return;
+  const key='rh_reminder_last',td=today();
+  if(localStorage.getItem(key)===td)return;
+  localStorage.setItem(key,td);
+  const rate=todayRate();
+  const msg=rate===100?'今日の全習慣クリア！素晴らしい🎉':`今日の達成率: ${rate}% — 習慣を記録しよう💪`;
+  try{new Notification('📅 習慣トラッカー',{body:msg});}catch(e){}
+}
+function updateReminderBtn(){
+  const btn=document.getElementById('reminder-btn');if(!btn)return;
+  const time=localStorage.getItem('rh_reminder');
+  btn.classList.toggle('reminder-on',!!time);
+  btn.title=time?`リマインダー: 毎日${time}（クリックで解除）`:'デイリーリマインダーを設定';
+}
+
 // ── init ──
 load();
 initTheme();
@@ -1444,6 +1518,7 @@ updateSoundBtn();
 initCompactView();
 initEmojiPresets();
 initIntention();
+initReminder();
 render();
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
