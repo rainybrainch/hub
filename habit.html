@@ -65,7 +65,7 @@
 
     /* Habit list */
     .habit-sec{margin-bottom:24px}
-    .sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
     .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .sec-name{font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
     .sec-count{font-size:11px;color:var(--muted)}
@@ -434,10 +434,21 @@
     /* Cycle 26: long-press ripple feedback */
     @keyframes lpRipple{0%{box-shadow:0 0 0 0 rgba(245,200,66,.45)}100%{box-shadow:0 0 0 12px rgba(245,200,66,0)}}
     .habit.lp-active{animation:lpRipple .5s ease-out forwards}
+
+    /* Cycle 27: collapsible category sections */
+    .sec-chev{font-size:9px;color:var(--muted);transition:transform .2s;display:inline-block;margin-left:4px;flex-shrink:0}
+    .sec-chev.closed{transform:rotate(-90deg)}
+    .sec-habits{overflow:hidden;transition:max-height .35s ease}
+    .sec-habits.closed{max-height:0!important}
+    /* Cycle 27: sticky bottom progress bar */
+    .progress-footer{position:fixed;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,.07);z-index:150;pointer-events:none}
+    .progress-footer-fill{height:100%;width:0;transition:width .5s cubic-bezier(.34,1.56,.64,1),background .5s}
+    body.light .progress-footer{background:rgba(0,0,0,.08)}
   </style>
 </head>
 <body>
 
+<div class="progress-footer" id="progress-footer"><div class="progress-footer-fill" id="progress-footer-fill"></div></div>
 <canvas id="cfv"></canvas>
 
 <header class="hdr">
@@ -917,6 +928,7 @@ function renderList(){
   }
 
   const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
+  const catCol=getCatCollapsed();
   for(const cat of cats){
     const rawCh=list.filter(h=>h.category===cat);
     if(!rawCh.length)continue;
@@ -925,9 +937,10 @@ function renderList(){
     else ch=[...rawCh].sort((a,b)=>a.paused&&!b.paused?1:!a.paused&&b.paused?-1:0);
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
-    html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span></div>`;
+    const isClosed=!!catCol[cat];
+    html+=`<div class="habit-sec"><div class="sec-hdr" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span><span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*90+20+'px'}">`;
     ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
-    html+='</div>';
+    html+='</div></div>';
   }
   el.innerHTML=html;
   initSwipeGestures();
@@ -1017,6 +1030,7 @@ function render(){
   renderTimeline();
   renderList();
   updateFabBadge();
+  updateProgressFooter();
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -1639,6 +1653,25 @@ function initSwipeGestures(){
       dx=0;moving=false;
     },{passive:false});
   });
+}
+
+// ── Cycle 27: collapsible category sections ──
+function _colKey(){return 'rh_cat_col'}
+function getCatCollapsed(){try{return JSON.parse(localStorage.getItem(_colKey())||'{}')}catch{return{}}}
+function toggleCatCollapse(cat,e){
+  e.stopPropagation();
+  const st=getCatCollapsed();
+  st[cat]=!st[cat];
+  localStorage.setItem(_colKey(),JSON.stringify(st));
+  renderList();
+}
+// ── Cycle 27: sticky bottom progress bar ──
+function updateProgressFooter(){
+  const fill=document.getElementById('progress-footer-fill');
+  if(!fill)return;
+  const rate=todayRate();
+  fill.style.width=rate+'%';
+  fill.style.background=rate===100?'var(--green)':rate>=50?'var(--gold)':'var(--sky)';
 }
 
 document.addEventListener('keydown',e=>{
