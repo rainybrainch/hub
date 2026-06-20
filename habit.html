@@ -426,6 +426,14 @@
     .habit.streak-hot:not(.done):not(.paused){border-color:rgba(245,200,66,.55)!important;box-shadow:0 0 10px rgba(245,200,66,.12)}
     body.light .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.45)!important}
     body.light .habit.streak-hot:not(.done):not(.paused){border-color:rgba(245,200,66,.7)!important;box-shadow:0 0 10px rgba(245,200,66,.18)}
+
+    /* Cycle 26: FAB remaining-task badge */
+    .fab-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:10px;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;border:2px solid var(--dark);transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .15s;pointer-events:none}
+    .fab-badge.zero{transform:scale(0);opacity:0}
+    body.light .fab-badge{border-color:#f0f2f5}
+    /* Cycle 26: long-press ripple feedback */
+    @keyframes lpRipple{0%{box-shadow:0 0 0 0 rgba(245,200,66,.45)}100%{box-shadow:0 0 0 12px rgba(245,200,66,0)}}
+    .habit.lp-active{animation:lpRipple .5s ease-out forwards}
   </style>
 </head>
 <body>
@@ -537,7 +545,7 @@
   <div id="list"></div>
 </div>
 
-<button class="fab" onclick="openModal()" aria-label="習慣を追加">＋</button>
+<button class="fab" onclick="openModal()" aria-label="習慣を追加">＋<span class="fab-badge zero" id="fab-badge"></span></button>
 
 <div class="overlay" id="overlay" onclick="bgClose(event)">
   <div class="modal">
@@ -923,6 +931,33 @@ function renderList(){
   }
   el.innerHTML=html;
   initSwipeGestures();
+  initLongPress();
+}
+
+// ── Cycle 26: long-press to open edit modal ──
+function initLongPress(){
+  document.querySelectorAll('#list .habit[data-id]').forEach(el=>{
+    if(el._lpInited)return;
+    el._lpInited=true;
+    let timer=null,moved=false,sx=0,sy=0;
+    const id=el.dataset.id;
+    el.addEventListener('touchstart',e=>{
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;moved=false;
+      timer=setTimeout(()=>{
+        if(!moved){
+          el.classList.add('lp-active');
+          setTimeout(()=>el.classList.remove('lp-active'),500);
+          openModal(id);vib(40);
+        }
+      },500);
+    },{passive:true});
+    el.addEventListener('touchmove',e=>{
+      const dx=Math.abs(e.touches[0].clientX-sx),dy=Math.abs(e.touches[0].clientY-sy);
+      if(dx>8||dy>8){moved=true;clearTimeout(timer);}
+    },{passive:true});
+    el.addEventListener('touchend',()=>clearTimeout(timer),{passive:true});
+    el.addEventListener('touchcancel',()=>clearTimeout(timer),{passive:true});
+  });
 }
 
 // Cycle 16: today's completed habit timeline
@@ -981,6 +1016,17 @@ function render(){
   renderAchievements();
   renderTimeline();
   renderList();
+  updateFabBadge();
+}
+
+// ── Cycle 26: FAB remaining-task badge ──
+function updateFabBadge(){
+  const el=document.getElementById('fab-badge');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const remaining=habits.filter(h=>!h.paused&&!dc[h.id]).length;
+  el.textContent=remaining||'';
+  el.classList.toggle('zero',remaining===0);
 }
 
 // ── actions ──
