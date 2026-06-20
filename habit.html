@@ -340,6 +340,17 @@
     .month-best{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     body.light .month-box{border-color:rgba(0,0,0,.08)}
     body.light .month-best{border-top-color:rgba(0,0,0,.06)}
+
+    /* Cycle 20: monthly trend chart */
+    .trend-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+    .trend-rows{display:flex;flex-direction:column;gap:7px}
+    .trend-row{display:flex;align-items:center;gap:8px}
+    .trend-month{font-size:11px;font-weight:700;color:var(--muted);min-width:28px;flex-shrink:0;text-align:right}
+    .trend-bar-wrap{flex:1;height:12px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+    .trend-bar-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+    .trend-pct{font-size:11px;font-weight:700;color:var(--muted);min-width:30px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+    body.light .trend-box{border-color:rgba(0,0,0,.08)}
+    body.light .trend-bar-wrap{background:rgba(0,0,0,.06)}
   </style>
 </head>
 <body>
@@ -396,6 +407,11 @@
   <div class="dow-box" id="dow-box" style="display:none">
     <div class="chart-ttl">📈 曜日別 平均達成率（過去4週）</div>
     <div class="dow-bars" id="dow-chart"></div>
+  </div>
+
+  <div class="trend-box" id="trend-box" style="display:none">
+    <div class="chart-ttl">📉 月別達成率トレンド</div>
+    <div class="trend-rows" id="trend-rows"></div>
   </div>
 
   <div class="streak-row">
@@ -808,12 +824,41 @@ function renderTimeline(){
   if(list)list.innerHTML=done.map(h=>`<div class="timeline-item"><span class="tl-time">${String(h.ts.getHours()).padStart(2,'0')}:${String(h.ts.getMinutes()).padStart(2,'0')}</span>${h.emoji?`<span class="tl-emoji">${h.emoji}</span>`:''}<span class="tl-name">${esc(h.name)}</span></div>`).join('');
 }
 
+// ── Cycle 20: monthly trend chart ──
+function renderMonthlyTrend(){
+  const box=document.getElementById('trend-box'),rowsEl=document.getElementById('trend-rows');
+  if(!box||!rowsEl||!habits.length){if(box)box.style.display='none';return;}
+  const now=new Date();
+  const months=[];
+  for(let m=3;m>=0;m--){
+    const d=new Date(now.getFullYear(),now.getMonth()-m,1);
+    const yr=d.getFullYear(),mn=d.getMonth();
+    const daysInMonth=new Date(yr,mn+1,0).getDate();
+    let total=0,cnt=0;
+    for(let day=1;day<=daysInMonth;day++){
+      if(new Date(yr,mn,day)>now)break;
+      const ds=`${yr}-${String(mn+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      total+=dayRate(ds);cnt++;
+    }
+    if(cnt>0)months.push({label:`${mn+1}月`,avg:Math.round(total/cnt*100)});
+  }
+  if(!months.some(m=>m.avg>0)){box.style.display='none';return;}
+  box.style.display='';
+  const max=Math.max(...months.map(m=>m.avg),1);
+  rowsEl.innerHTML=months.map(m=>{
+    const pct=Math.round(m.avg/max*100);
+    const color=m.avg>=80?'var(--green)':m.avg>=50?'var(--gold)':'var(--sky)';
+    return `<div class="trend-row"><span class="trend-month">${m.label}</span><div class="trend-bar-wrap"><div class="trend-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="trend-pct">${m.avg}%</span></div>`;
+  }).join('');
+}
+
 function render(){
   renderHeader();
   renderStats();
   renderChart();
   renderWeekComparison();
   renderDayOfWeekChart();
+  renderMonthlyTrend();
   renderMonthStats();
   renderWeeklyRanking();
   renderMotto();
@@ -1256,7 +1301,15 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
+    return;
   }
+  // Cycle 20: keyboard shortcuts (N=新規追加, T=テーマ切替, /=検索, C=コンパクト)
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
+  if(document.getElementById('overlay').classList.contains('open'))return;
+  if(e.key==='n'||e.key==='N')openModal();
+  else if(e.key==='t'||e.key==='T')toggleTheme();
+  else if(e.key==='/'||e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-inp')?.focus();}
+  else if(e.key==='c'||e.key==='C')toggleCompactView();
 });
 </script>
 </body>
