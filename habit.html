@@ -506,6 +506,29 @@
     body.light .kbd-desc{color:rgba(0,0,0,.5)}
     body.light .kbd-close{background:rgba(0,0,0,.06);color:#1a1a2e}
     body.light .kbd-close:hover{background:rgba(0,0,0,.1)}
+
+    /* Cycle 30: per-habit 28-day heatmap detail panel */
+    .habit-wrap{margin-bottom:8px}
+    .habit-wrap .habit{margin-bottom:0}
+    .habit-wrap.expanded .habit{border-radius:12px 12px 0 0;border-bottom-color:transparent}
+    .info-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .info-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .info-btn.open{color:var(--sky)}
+    body.light .info-btn{color:rgba(0,0,0,.18)}
+    body.compact .info-btn{display:none}
+    .habit-detail{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-top:none;border-radius:0 0 12px 12px;max-height:0;overflow:hidden;transition:max-height .35s ease}
+    .habit-detail.open{max-height:140px}
+    body.compact .habit-detail{display:none!important}
+    body.light .habit-detail{border-color:rgba(0,0,0,.08)}
+    .hd-inner{padding:10px 14px 12px}
+    .mini-hm{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px}
+    .mhm-cell{aspect-ratio:1;border-radius:2px;transition:transform .1s}
+    .mhm-cell:hover{transform:scale(1.3)}
+    .hd-stats{display:flex;gap:14px}
+    .hd-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .hd-stat-val{font-family:"Dela Gothic One",sans-serif;font-size:13px;color:var(--gold);line-height:1}
+    .hd-stat-lbl{font-size:9px;color:var(--muted);letter-spacing:.06em}
+    body.light .hd-stat-val{color:var(--gold-d)}
   </style>
 </head>
 <body>
@@ -1045,7 +1068,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const qNote=isDone?getCompletionNote(h.id):'';
   const noteBtnHtml=isDone?`<button class="note-btn${qNote?' has-note':''}" onclick="openNoteModal('${h.id}',event)" title="${qNote?esc(qNote):'メモを追加'}" aria-label="メモ">${qNote?'📝':'✎'}</button>`:'';
   const quickNoteHtml=qNote?`<span class="habit-quick-note">${esc(qNote)}</span>`:'';
-  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+  // Cycle 30: habit detail panel
+  const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
+  const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1082,7 +1108,7 @@ function renderList(){
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
     const isClosed=!!catCol[cat];
-    html+=`<div class="habit-sec"><div class="sec-hdr" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span><span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*90+20+'px'}">`;
+    html+=`<div class="habit-sec"><div class="sec-hdr" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span><span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*250+20+'px'}">`;
     ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
     html+='</div></div>';
   }
@@ -1796,6 +1822,51 @@ function deleteNote(){
 // ── Cycle 29: keyboard shortcuts help ──
 function openKbdHelp(){document.getElementById('kbd-ovl').classList.add('open');}
 function closeKbdHelp(){document.getElementById('kbd-ovl').classList.remove('open');}
+
+// ── Cycle 30: per-habit 28-day heatmap detail panel ──
+let _expandedHabits=new Set();
+function _habitBestStreak(id){
+  let best=0,cur=0;
+  for(let i=365;i>=0;i--){
+    if((completions[dateAgo(i)]||{})[id]){cur++;if(cur>best)best=cur;}
+    else cur=0;
+  }
+  return best;
+}
+function _habitDetailHtml(id){
+  const isLight=document.body.classList.contains('light');
+  const emptyBg=isLight?'rgba(0,0,0,.07)':'rgba(255,255,255,.08)';
+  const cells=[];
+  for(let i=27;i>=0;i--){
+    const ds=dateAgo(i),done=!!(completions[ds]||{})[id];
+    const d=daysAgo(i);
+    cells.push(`<div class="mhm-cell" style="background:${done?'var(--green)':emptyBg}" title="${d.getMonth()+1}/${d.getDate()}${done?' ✓':''}"></div>`);
+  }
+  const total=habitTotalCount(id);
+  const streak=habitStreak(id);
+  const best=_habitBestStreak(id);
+  let cnt30=0;
+  for(let i=0;i<30;i++)if((completions[dateAgo(i)]||{})[id])cnt30++;
+  const rate30=Math.round(cnt30/30*100);
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div></div></div>`;
+}
+function toggleHabitDetail(id,e){
+  e.stopPropagation();
+  const wrapper=e.currentTarget.closest('.habit-wrap');
+  const detail=wrapper?.querySelector('.habit-detail');
+  if(!detail)return;
+  const isOpen=_expandedHabits.has(id);
+  if(isOpen)_expandedHabits.delete(id);
+  else{_expandedHabits.add(id);detail.innerHTML=_habitDetailHtml(id);}
+  detail.classList.toggle('open',!isOpen);
+  wrapper?.classList.toggle('expanded',!isOpen);
+  e.currentTarget.classList.toggle('open',!isOpen);
+  const sec=wrapper?.closest('.sec-habits');
+  if(sec&&!sec.classList.contains('closed')){
+    const ws=sec.querySelectorAll('.habit-wrap');
+    sec.style.maxHeight=(ws.length*250+20)+'px';
+  }
+}
 
 // ── init ──
 load();
