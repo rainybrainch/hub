@@ -351,6 +351,21 @@
     .trend-pct{font-size:11px;font-weight:700;color:var(--muted);min-width:30px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
     body.light .trend-box{border-color:rgba(0,0,0,.08)}
     body.light .trend-bar-wrap{background:rgba(0,0,0,.06)}
+
+    /* Cycle 21: smooth theme transitions */
+    body{transition:background-color .3s}
+    .hdr,.stat,.chart-box,.dow-box,.trend-box,.ranking-box,.timeline-box,.month-box,.motto-box{transition:background .25s,border-color .25s}
+
+    /* Cycle 21: habit pause / resume */
+    .habit.paused{opacity:.38}
+    .paused-lbl{font-size:9px;color:var(--muted);padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;line-height:1.5;flex-shrink:0;letter-spacing:.04em}
+    body.light .paused-lbl{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    .pause-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .pause-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .pause-btn.on{color:var(--gold)}
+    body.light .pause-btn{color:rgba(0,0,0,.15)}
+    body.compact .pause-btn{display:none}
+    body.compact .paused-lbl{display:none}
   </style>
 </head>
 <body>
@@ -602,9 +617,10 @@ function defaults(){
 
 // ── stats ──
 function dayRate(dateStr){
-  if(!habits.length)return 0;
+  const active=habits.filter(h=>!h.paused);
+  if(!active.length)return 0;
   const dc=completions[dateStr]||{};
-  return habits.filter(h=>dc[h.id]).length/habits.length;
+  return active.filter(h=>dc[h.id]).length/active.length;
 }
 function todayRate(){return Math.round(dayRate(today())*100)}
 
@@ -634,7 +650,7 @@ function updateBestStreak(current){
 
 // cycle 5: JSON export
 function exportData(){
-  const data={version:'2.18',exportedAt:new Date().toISOString(),habits,completions};
+  const data={version:'2.21',exportedAt:new Date().toISOString(),habits,completions};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -757,6 +773,7 @@ function renderChart(){
 function _hCard(h,dc,col,focusIds){
   const completedVal=dc[h.id];
   const isDone=!!completedVal;
+  const isPaused=!!h.paused;
   const cnt=habitTotalCount(h.id);
   const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
   const hs=habitStreak(h.id);
@@ -769,7 +786,9 @@ function _hCard(h,dc,col,focusIds){
   const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
-  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${starBtn}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+  const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
+  const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
+  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
 }
 
 function renderList(){
@@ -787,8 +806,8 @@ function renderList(){
   }
 
   let html='';
-  // Cycle 19: focus section at top
-  const focused=list.filter(h=>focusIds.includes(h.id));
+  // Cycle 19: focus section at top (paused habits excluded)
+  const focused=list.filter(h=>focusIds.includes(h.id)&&!h.paused);
   if(focused.length){
     html+='<div class="focus-section"><div class="focus-ttl">📌 今日のフォーカス</div>';
     focused.forEach(h=>html+=_hCard(h,dc,CAT_COLORS[h.category]||'#fff',focusIds));
@@ -799,7 +818,8 @@ function renderList(){
   for(const cat of cats){
     let ch=list.filter(h=>h.category===cat);
     if(!ch.length)continue;
-    if(sortUndone)ch=[...ch].sort((a,b)=>(dc[a.id]?1:0)-(dc[b.id]?1:0));
+    if(sortUndone)ch=[...ch].sort((a,b)=>{if(a.paused!==b.paused)return a.paused?1:-1;return(dc[a.id]?1:0)-(dc[b.id]?1:0);});
+    else ch=[...ch].sort((a,b)=>a.paused&&!b.paused?1:!a.paused&&b.paused?-1:0);
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
     html+=`<div class="habit-sec"><div class="sec-hdr"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span></div>`;
@@ -868,6 +888,7 @@ function render(){
 
 // ── actions ──
 function toggle(id,evt){
+  const _hh=habits.find(x=>x.id===id);if(_hh&&_hh.paused)return;
   const td=today();
   if(!completions[td])completions[td]={};
   const wasCompleted=!!completions[td][id];
@@ -914,6 +935,14 @@ function undoDelete(){
   clearTimeout(_delTimer);
   habits.splice(_delIdx,0,_delHabit);
   saveH();_hideSb();render();
+}
+
+// Cycle 21: pause / resume a habit (excluded from rate calculations while paused)
+function togglePause(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h)return;
+  h.paused=!h.paused;
+  saveH();celebrated=false;render();
 }
 
 // Cycle 10: weekly summary copy
@@ -1184,7 +1213,7 @@ function renderWeeklyRanking(){
   const el=document.getElementById('ranking-box');
   if(!el)return;
   if(!habits.length){el.style.display='none';return;}
-  const scores=habits.map(h=>{
+  const scores=habits.filter(h=>!h.paused).map(h=>{
     let cnt=0;
     for(let i=0;i<7;i++)if((completions[dateAgo(i)]||{})[h.id])cnt++;
     return{h,cnt};
