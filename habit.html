@@ -459,6 +459,53 @@
     body.light .tmpl-toggle:hover{color:#1a1a2e}
     body.light .tmpl-item{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
     body.light .tmpl-item:hover{color:#1a1a2e;border-color:rgba(0,0,0,.25);background:rgba(0,0,0,.03)}
+
+    /* Cycle 29: completion quick note */
+    .note-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .note-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .note-btn.has-note{color:var(--sky)}
+    body.light .note-btn{color:rgba(0,0,0,.18)}
+    body.compact .note-btn{display:none}
+    .habit-quick-note{font-size:10px;color:var(--sky);display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+    body.light .habit-quick-note{color:#1e8aab}
+    body.compact .habit-quick-note{display:none}
+    /* note modal */
+    .note-ovl{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:350;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .note-ovl.open{opacity:1;pointer-events:auto}
+    .note-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;width:calc(100% - 48px);max-width:340px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+    .note-ovl.open .note-modal{transform:scale(1)}
+    .note-ttl{font-family:"Dela Gothic One",sans-serif;font-size:15px;margin-bottom:12px}
+    .note-ta{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;resize:none;outline:none;transition:border-color .15s;line-height:1.6}
+    .note-ta:focus{border-color:rgba(91,200,232,.4)}
+    .note-ta::placeholder{color:var(--muted)}
+    .note-char-hint{font-size:10px;color:var(--muted);text-align:right;margin-top:4px;margin-bottom:12px}
+    .note-actions{display:flex;gap:8px}
+    .note-save-btn{flex:1;padding:12px;border-radius:12px;background:var(--sky);border:none;color:var(--dark);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:opacity .15s}
+    .note-save-btn:hover{opacity:.88}
+    .note-del-btn{padding:12px 14px;border-radius:12px;background:rgba(232,53,74,.12);border:1px solid rgba(232,53,74,.2);color:var(--red);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+    .note-del-btn:hover{opacity:.8}
+    body.light .note-ta{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .note-ta::placeholder{color:rgba(0,0,0,.35)}
+    body.light .note-ta:focus{border-color:rgba(91,200,232,.4)}
+
+    /* Cycle 29: keyboard shortcuts help */
+    .kbd-ovl{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .kbd-ovl.open{opacity:1;pointer-events:auto}
+    .kbd-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:22px 20px;width:calc(100% - 48px);max-width:360px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:80vh;overflow-y:auto}
+    .kbd-ovl.open .kbd-modal{transform:scale(1)}
+    .kbd-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px;margin-bottom:16px}
+    .kbd-table{width:100%;border-collapse:collapse}
+    .kbd-table td{padding:6px 4px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+    .kbd-table tr:last-child td{border-bottom:none}
+    .kbdkey{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:1px 7px;font-family:monospace;font-size:11px;font-weight:700;white-space:nowrap;color:var(--gold);line-height:1.7}
+    .kbd-desc{color:var(--muted);padding-left:10px}
+    .kbd-close{margin-top:16px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+    .kbd-close:hover{background:rgba(255,255,255,.12)}
+    body.light .kbd-table td{border-bottom-color:rgba(0,0,0,.06)}
+    body.light .kbdkey{background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.15);color:var(--gold-d)}
+    body.light .kbd-desc{color:rgba(0,0,0,.5)}
+    body.light .kbd-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .kbd-close:hover{background:rgba(0,0,0,.1)}
   </style>
 </head>
 <body>
@@ -476,6 +523,7 @@
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
+  <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 
@@ -604,6 +652,35 @@
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
   <button class="snackbar-undo" onclick="undoDelete()">元に戻す</button>
+</div>
+
+<!-- Cycle 29: completion quick note modal -->
+<div class="note-ovl" id="note-ovl" onclick="bgNoteClose(event)">
+  <div class="note-modal">
+    <div class="note-ttl">📝 今日のメモ</div>
+    <textarea class="note-ta" id="note-ta" rows="3" maxlength="50" placeholder="今日の内容を一言メモ..." oninput="updNoteChar()"></textarea>
+    <div class="note-char-hint"><span id="note-char-cnt">0</span>/50文字</div>
+    <div class="note-actions">
+      <button class="note-save-btn" onclick="saveNote()">保存する</button>
+      <button class="note-del-btn" onclick="deleteNote()">削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cycle 29: keyboard shortcuts help modal -->
+<div class="kbd-ovl" id="kbd-ovl" onclick="if(event.target===this)closeKbdHelp()">
+  <div class="kbd-modal">
+    <div class="kbd-ttl">⌨️ キーボードショートカット</div>
+    <table class="kbd-table">
+      <tr><td><kbd class="kbdkey">N</kbd></td><td class="kbd-desc">新しい習慣を追加</td></tr>
+      <tr><td><kbd class="kbdkey">T</kbd></td><td class="kbd-desc">ダーク / ライトテーマ切替</td></tr>
+      <tr><td><kbd class="kbdkey">/</kbd> または <kbd class="kbdkey">F</kbd></td><td class="kbd-desc">習慣を検索</td></tr>
+      <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
+      <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
+      <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
+    </table>
+    <button class="kbd-close" onclick="closeKbdHelp()">閉じる（ESCでも）</button>
+  </div>
 </div>
 
 <script>
@@ -964,7 +1041,11 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
   const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
   const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
-  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
+  // Cycle 29: completion quick note
+  const qNote=isDone?getCompletionNote(h.id):'';
+  const noteBtnHtml=isDone?`<button class="note-btn${qNote?' has-note':''}" onclick="openNoteModal('${h.id}',event)" title="${qNote?esc(qNote):'メモを追加'}" aria-label="メモ">${qNote?'📝':'✎'}</button>`:'';
+  const quickNoteHtml=qNote?`<span class="habit-quick-note">${esc(qNote)}</span>`:'';
+  return `<div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div>`;
 }
 
 function renderList(){
@@ -1677,6 +1758,45 @@ function updateReminderBtn(){
   btn.title=time?`リマインダー: 毎日${time}（クリックで解除）`:'デイリーリマインダーを設定';
 }
 
+// ── Cycle 29: completion quick note ──
+let _noteHabitId=null;
+function getCompletionNote(id){return(completions[today()]||{})[id+'_note']||'';}
+function openNoteModal(id,e){
+  e.stopPropagation();
+  _noteHabitId=id;
+  const h=habits.find(x=>x.id===id);
+  const ttl=document.querySelector('.note-ttl');
+  if(ttl&&h)ttl.textContent=`📝 ${h.emoji?h.emoji+' ':''}${h.name}`;
+  const ta=document.getElementById('note-ta');
+  if(ta){ta.value=getCompletionNote(id);updNoteChar();setTimeout(()=>ta.focus(),100);}
+  document.getElementById('note-ovl').classList.add('open');
+}
+function bgNoteClose(e){if(e.target===document.getElementById('note-ovl'))closeNoteModal();}
+function closeNoteModal(){document.getElementById('note-ovl').classList.remove('open');_noteHabitId=null;}
+function updNoteChar(){
+  const ta=document.getElementById('note-ta'),cnt=document.getElementById('note-char-cnt');
+  if(ta&&cnt)cnt.textContent=ta.value.length;
+}
+function saveNote(){
+  if(!_noteHabitId)return;
+  const ta=document.getElementById('note-ta');
+  const text=(ta?ta.value:'').trim().substring(0,50);
+  const td=today(),key=_noteHabitId+'_note';
+  if(!completions[td])completions[td]={};
+  if(text)completions[td][key]=text;else delete completions[td][key];
+  saveC();closeNoteModal();renderList();
+}
+function deleteNote(){
+  if(!_noteHabitId)return;
+  const td=today(),key=_noteHabitId+'_note';
+  if(completions[td])delete completions[td][key];
+  saveC();closeNoteModal();renderList();
+}
+
+// ── Cycle 29: keyboard shortcuts help ──
+function openKbdHelp(){document.getElementById('kbd-ovl').classList.add('open');}
+function closeKbdHelp(){document.getElementById('kbd-ovl').classList.remove('open');}
+
 // ── init ──
 load();
 initTheme();
@@ -1748,17 +1868,21 @@ function updateProgressFooter(){
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
+    if(document.getElementById('note-ovl').classList.contains('open')){closeNoteModal();return;}
+    if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
     return;
   }
-  // Cycle 20: keyboard shortcuts (N=新規追加, T=テーマ切替, /=検索, C=コンパクト)
+  // Cycle 20+29: keyboard shortcuts
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
   if(document.getElementById('overlay').classList.contains('open'))return;
+  if(document.getElementById('note-ovl').classList.contains('open'))return;
   if(e.key==='n'||e.key==='N')openModal();
   else if(e.key==='t'||e.key==='T')toggleTheme();
   else if(e.key==='/'||e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-inp')?.focus();}
   else if(e.key==='c'||e.key==='C')toggleCompactView();
+  else if(e.key==='?'||e.key==='？')openKbdHelp();
 });
 </script>
 </body>
