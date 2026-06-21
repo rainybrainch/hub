@@ -56,15 +56,14 @@
         <div class="app-icon"><img src="icons/ask1.png" alt="ASK1"></div>
         <span class="app-name">ASK1</span>
       </a>
+      <a class="app-item" href="ask2.html" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/ask2.png" alt="ASK2"></div>
+        <span class="app-name">ASK2</span>
+      </a>
       <a class="app-item" href="https://rainybrainch.github.io/comment-studio/ai-comment-personas.html" target="_blank" rel="noopener">
         <div class="app-icon"><img src="icons/comment-persona.png" alt="AMENET人格スタジオ"></div>
         <span class="app-name">AMENET<br>人格スタジオ</span>
       </a>
-      <a class="app-item" href="https://drive.google.com/drive/u/1/home" target="_blank" rel="noopener">
-        <div class="app-icon"><img src="icons/google-drive.webp" alt="Google Drive"></div>
-        <span class="app-name">Google<br>Drive</span>
-      </a>
-    </div>
   </section>
 
   <div class="divider"></div>
@@ -95,6 +94,10 @@
       <a class="app-item" href="https://rainybrainch.github.io/live/streams/index.html" target="_blank" rel="noopener">
         <div class="app-icon"><img src="icons/streams.png" alt="Channel OS"></div>
         <span class="app-name">Channel OS</span>
+      </a>
+      <a class="app-item" href="https://drive.google.com/drive/u/1/home" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/google-drive.webp" alt="Google Drive"></div>
+        <span class="app-name">Google<br>Drive</span>
       </a>
     </div>
   </section>
@@ -139,6 +142,10 @@
       <a class="app-item" href="https://rb-world-academy.vercel.app" target="_blank" rel="noopener">
         <div class="app-icon"><img src="icons/all-academy.webp" alt="オールアカデミー"></div>
         <span class="app-name">オール<br>アカデミー</span>
+      </a>
+      <a class="app-item" href="https://chatgpt.com/g/g-6a37b9b5093c81918fe10b6ad2611165-oruakatemi-jiao-yu-man-hua-ai" target="_blank" rel="noopener">
+        <div class="app-icon"><img src="icons/all-academy-v.png" alt="オルアカV漫画AI"></div>
+        <span class="app-name">オルアカV<br>漫画AI</span>
       </a>
       <a class="app-item" href="https://chatgpt.com/g/g-6a32293a0ce88191bc1e8ddf359b678d-oruakatemiman-hua-ai" target="_blank" rel="noopener">
         <div class="app-icon"><img src="icons/all-academy-en.png" alt="英語オルアカ漫画AI"></div>
@@ -412,6 +419,68 @@ async function nkSend() {
   const text = inp.value.trim();
   if (!text || nkBusy) return;
   inp.value = '';
+  
+  // 隠しコマンド処理
+  if (text.startsWith('/')) {
+    nkBusy = true;
+    nkAddMsg('usr', text);
+    
+    let response = '';
+    switch (text.toLowerCase()) {
+      case '/help':
+        response = '🐱 ネコネコのコマンド一覧:
+/help - このリストを表示
+/ask2 - ASK2 へのリンク
+/hub - Hub について
+/habit - 習慣アプリを開く
+/secret - 秘密のメッセージ
+/clear - チャット履歴をリセット';
+        break;
+      case '/ask2':
+        response = '📅 ASK2: 毎日の市場分析と漫画を記録するカレンダー
+👉 https://rainybrainch.github.io/hub/ask2.html';
+        break;
+      case '/hub':
+        response = '🌊 RAINYBRAIN Hub は、RBAIのアプリ・ツール・プラットフォームを集約したポータルサイトにゃ!
+各プロジェクトへの入口が整理されています。';
+        break;
+      case '/secret':
+        response = '🎉 秘密のメッセージ: にゃ〜ん！あなたはボクの特別な友達にゃ！🐱✨';
+        break;
+      case '雨域':
+      case '/uwiki':
+        response = '🌊 雨域（Uwiki）: パーソナルOS プラットフォーム
+📚 16ページ実装済み（dreams/cases/gravity/personas/yomu など）
+👉 https://uwiki.vercel.app/';
+        break;
+      case '百層世界':
+      case '/hyakuso':
+        window.open('hyakuso.html', '_blank');
+        response = '🏔️ 百層世界（HundredLayerWorld）を開いたにゃ!
+🎮 8フィールド・100層・タスク連携・AI文字磨き実装済み';
+        break;
+      case '/habit':
+        window.open('habit.html', '_blank');
+        response = '📅 習慣アプリを開いたにゃ!
+毎日の習慣を記録して、小さな成功を積み重ねてにゃ🌱';
+        break;
+            case '/clear':
+        nkHistory = [];
+        nkMsgs.innerHTML = '';
+        response = '✓ チャット履歴をリセットしたにゃ!';
+        break;
+      default:
+        response = '❓ わからないコマンドにゃ… /help でコマンド一覧を見てにゃ!';
+    }
+    
+    nkAddMsg('bot', response);
+    nkHistory.push({ role: 'assistant', content: response });
+    nkBusy = false;
+    document.getElementById('nk-send').disabled = false;
+    document.getElementById('nk-inp').focus();
+    return;
+  }
+  
   nkBusy = true;
   document.getElementById('nk-send').disabled = true;
   nkAddMsg('usr', text);

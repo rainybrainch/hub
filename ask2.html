@@ -1,547 +1,84 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASK2 - 豈取律縺ｮ蟶ょｴ蛻・梵縺ｨ貍ｫ逕ｻ</title>
+  <title>ASK2 - 毎日の市場分析と漫画</title>
   <link rel="icon" href="hub-icon.png" type="image/png">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    :root {
-      --bg-primary: #0d1117;
-      --bg-secondary: #1a1f3a;
-      --bg-tertiary: rgba(26, 31, 58, 0.5);
-      --text-primary: #fff;
-      --text-secondary: rgba(255, 255, 255, 0.6);
-      --border-color: rgba(91, 200, 232, 0.2);
-      --accent: #5BC8E8;
-      --accent-hover: #6dd9ff;
-      --error: #E8354A;
-      --success: #4CAF7D;
-      --input-bg: rgba(255, 255, 255, 0.05);
-    }
-
-    body.light-mode {
-      --bg-primary: #f8fafc;
-      --bg-secondary: #ffffff;
-      --bg-tertiary: rgba(229, 231, 235, 0.5);
-      --text-primary: #1e293b;
-      --text-secondary: rgba(30, 41, 59, 0.6);
-      --border-color: rgba(91, 200, 232, 0.3);
-      --accent: #0891b2;
-      --accent-hover: #06b6d4;
-      --error: #dc2626;
-      --success: #16a34a;
-      --input-bg: rgba(30, 41, 59, 0.05);
-    }
-
-    body {
-      font-family: "Zen Maru Gothic", "Segoe UI", sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      padding: 20px;
-      transition: background 0.3s, color 0.3s;
-    }
-
+    body { font-family: "Zen Maru Gothic", "Segoe UI", sans-serif; background: linear-gradient(135deg, #0d1117 0%, #1a1f3a 100%); color: #fff; min-height: 100vh; padding: 20px; }
     .container { max-width: 1200px; margin: 0 auto; }
-
-    .login-screen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(13, 17, 23, 0.95);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 1000;
-    }
-    .login-screen.light-mode {
-      background: rgba(248, 250, 252, 0.95);
-    }
+    .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .login-screen.hidden { display: none; }
-
-    .login-box {
-      background: var(--bg-secondary);
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      width: 100%; max-width: 400px;
-      border: 1px solid var(--border-color);
-    }
-    .login-box h1 {
-      font-size: 32px; margin-bottom: 30px;
-      color: var(--accent);
-      text-align: center;
-    }
-
+    .login-box { background: #1a1f3a; padding: 40px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); width: 100%; max-width: 400px; border: 1px solid rgba(91, 200, 232, 0.2); }
+    .login-box h1 { font-size: 32px; margin-bottom: 30px; color: #5BC8E8; text-align: center; }
     .form-group { margin-bottom: 20px; }
-    .form-group label {
-      display: block; font-size: 12px; font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--accent);
-    }
-    .form-group input {
-      width: 100%; padding: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      background: var(--input-bg);
-      color: var(--text-primary);
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(91, 200, 232, 0.1);
-    }
-
-    .btn {
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-primary {
-      width: 100%;
-      background: var(--accent);
-      color: var(--bg-primary);
-      margin-bottom: 12px;
-    }
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-    }
-    .btn-secondary {
-      width: 100%;
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--accent);
-    }
-    .btn-secondary:hover {
-      background: rgba(91, 200, 232, 0.1);
-    }
-
-    .main-content { display: none; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #5BC8E8; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(91, 200, 232, 0.3); border-radius: 6px; background: rgba(255, 255, 255, 0.05); color: #fff; }
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .btn-primary { background: #5BC8E8; color: #0d1117; margin-bottom: 12px; }
+    .btn-secondary { background: rgba(91, 200, 232, 0.2); color: #5BC8E8; border: 1px solid #5BC8E8; }
+    .main-content { display: block; }
     .main-content.visible { display: block; }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border-color);
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .header h1 {
-      font-size: 28px;
-      color: var(--accent);
-    }
-    .header-right {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .user-info {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .theme-toggle {
-      padding: 8px 16px;
-      background: var(--input-bg);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-    .theme-toggle:hover {
-      background: rgba(91, 200, 232, 0.1);
-    }
-
-    .btn-logout {
-      padding: 8px 16px;
-      background: transparent;
-      color: var(--error);
-      border: 1px solid var(--error);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-    .btn-export, .btn-import, .btn-report, .btn-history {
-      padding: 8px 12px;
-      background: rgba(76, 175, 125, 0.2);
-      color: #4CAF7D;
-      border: 1px solid #4CAF7D;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-    .btn-export:hover, .btn-import:hover, .btn-report:hover, .btn-history:hover {
-      background: rgba(76, 175, 125, 0.4);
-      transform: translateY(-2px);
-    }
-    .modal-small {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 30px;
-      max-width: 500px;
-      max-height: 80vh;
-      overflow-y: auto;
-      z-index: 1000;
-    }
-    .modal-small.visible { display: block; }
-    #reportContent { white-space: pre-wrap; font-family: monospace; font-size: 12px; }
-        .btn-export,.btn-import,.btn-report{padding:8px 12px;background:rgba(76,175,125,0.2);color:#4CAF7D;border:1px solid #4CAF7D;border-radius:4px;cursor:pointer;font-size:12px;margin:0 4px;}.btn-export:hover,.btn-import:hover,.btn-report:hover{background:rgba(76,175,125,0.4);} @media(max-width:640px){.header-right{flex-direction:column;width:100%;}.header{flex-direction:column;}.calendar-nav{flex-wrap:wrap;}.day{min-height:60px;font-size:11px;}.modal-content{max-width:95vw;padding:15px;}.modal-section textarea{min-height:80px;}.image-container{gap:8px;}.image-container img{max-width:120px;}} .btn-logout:hover {
-      background: rgba(232, 53, 74, 0.1);
-    }
-
-    .calendar-section {
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 30px;
-      margin-bottom: 30px;
-    }
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .calendar-nav {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-    .calendar-nav button {
-      padding: 8px 16px;
-      background: var(--input-bg);
-      color: var(--accent);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 14px;
-    }
-    .calendar-nav button:hover {
-      border-color: var(--accent);
-      background: rgba(91, 200, 232, 0.05);
-    }
-    .month-year {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-primary);
-      min-width: 180px;
-      text-align: center;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 12px;
-    }
-
-    .weekday {
-      text-align: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent);
-      padding: 12px 0;
-    }
-
-    .day {
-      aspect-ratio: 1;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 10px;
-      background: var(--input-bg);
-      cursor: pointer;
-      min-height: 100px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .day:hover {
-      border-color: var(--accent);
-      background: rgba(91, 200, 232, 0.1);
-      transform: translateY(-2px);
-    }
-    .day.other-month {
-      opacity: 0.3;
-    }
-    .day.today {
-      border-color: var(--accent);
-      background: rgba(91, 200, 232, 0.15);
-      box-shadow: 0 0 0 2px rgba(91, 200, 232, 0.3);
-    }
-    .day.has-data {
-      border-color: var(--success);
-      background: rgba(76, 175, 125, 0.1);
-    }
-    .day-number {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .day-indicator {
-      font-size: 20px;
-      margin-top: 4px;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    body.light-mode .modal {
-      background: rgba(0, 0, 0, 0.4);
-    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(91, 200, 232, 0.2); }
+    .header h1 { font-size: 28px; color: #5BC8E8; }
+    .header-right { display: flex; gap: 15px; align-items: center; }
+    .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+    .btn-logout { padding: 8px 16px; background: rgba(232, 53, 74, 0.2); color: #E8354A; border: 1px solid #E8354A; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .calendar-nav { display: flex; gap: 15px; }
+    .calendar-nav button { padding: 8px 16px; background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); border-radius: 4px; cursor: pointer; }
+    .month-year { font-size: 24px; font-weight: 700; color: #fff; min-width: 200px; text-align: center; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; }
+    .weekday { text-align: center; font-size: 12px; font-weight: 700; color: #5BC8E8; padding: 12px 0; }
+    .day { aspect-ratio: 1; border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 8px; padding: 10px; background: rgba(255, 255, 255, 0.02); cursor: pointer; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .day:hover { border-color: #5BC8E8; background: rgba(91, 200, 232, 0.05); }
+    .day.other-month { opacity: 0.3; }
+    .day.today { border-color: #5BC8E8; background: rgba(91, 200, 232, 0.1); }
+    .day.has-data { border-color: #4CAF7D; background: rgba(76, 175, 125, 0.1); }
+    .day-number { font-size: 14px; font-weight: 700; color: #fff; }
+    .day-indicator { font-size: 20px; margin-top: 4px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 999; align-items: center; justify-content: center; }
     .modal.visible { display: flex; }
-
-    .modal-content {
-      background: var(--bg-secondary);
-      border-radius: 12px;
-      padding: 30px;
-      width: 100%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      border: 1px solid var(--border-color);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .modal-header h2 {
-      font-size: 20px;
-      color: var(--accent);
-    }
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--text-primary);
-      font-size: 24px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .modal-close:hover {
-      color: var(--error);
-    }
-
-    .modal-section {
-      margin-bottom: 25px;
-    }
-    .modal-section h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 12px;
-      text-transform: uppercase;
-    }
-    .modal-section textarea {
-      width: 100%;
-      padding: 12px;
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      color: var(--text-primary);
-      font-family: "Zen Maru Gothic", sans-serif;
-      min-height: 100px;
-      resize: vertical;
-      transition: all 0.2s;
-    }
-    .modal-section textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(91, 200, 232, 0.1);
-    }
-
-    .image-upload-zone {
-      border: 2px dashed var(--border-color);
-      border-radius: 8px;
-      padding: 30px;
-      text-align: center;
-      cursor: pointer;
-      background: var(--input-bg);
-      transition: all 0.2s;
-    }
-    .image-upload-zone:hover {
-      border-color: var(--accent);
-      background: rgba(91, 200, 232, 0.05);
-    }
-    .image-upload-zone.drag-over {
-      border-color: var(--accent);
-      background: rgba(91, 200, 232, 0.15);
-    }
-    .image-container {
-      margin-top: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .image-item {
-      position: relative;
-      display: inline-block;
-    }
-    .image-container img {
-      max-width: 150px;
-      max-height: 150px;
-      border-radius: 4px;
-      border: 1px solid var(--border-color);
-    }
-    .image-delete {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: var(--error);
-      color: white;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .image-delete:hover {
-      transform: scale(1.1);
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 25px;
-    }
-    .modal-actions button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-save {
-      background: var(--accent);
-      color: var(--bg-primary);
-    }
-    .btn-save:hover {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-    }
-    .btn-cancel {
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--accent);
-    }
-    .btn-cancel:hover{
-      background: rgba(91, 200, 232, 0.1);
-    }
-
-    
-    .search-results { background: rgba(26,31,58,0.5); border: 1px solid rgba(91,200,232,0.2); border-radius: 8px; padding: 10px; margin: 10px 0; display: none; }
-    .search-results.show { display: block; }
-    .search-item { padding: 8px; background: rgba(255,255,255,0.02); margin: 5px 0; border-radius: 4px; cursor: pointer; }
-    .search-item:hover { background: rgba(91,200,232,0.1); }
-.error-msg {
-      color: var(--error);
-      font-size: 12px;
-      margin-top: 10px;
-    }
-
-    
-    @media (max-width: 1024px) {
-        .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .day { min-height: 70px; font-size: 12px; }
-        .modal-content { max-width: 90vw; }
-    }
-    @media (max-width: 768px) {
-        .header { flex-direction: column; gap: 10px; }
-        .header h1 { font-size: 18px; }
-        .header-right { width: 100%; flex-wrap: wrap; }
-        .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .day { min-height: 50px; font-size: 10px; padding: 5px; }
-        .modal-content { max-width: 95vw; padding: 15px; }
-        .modal-section textarea { min-height: 80px; }
-        .image-container { gap: 8px; }
-        .image-container img { max-width: 100px; max-height: 100px; }
-    }
-    @media (max-width: 480px) {
-        body { padding: 10px; }
-        .header { flex-direction: column; }
-        .header h1 { font-size: 16px; }
-        .header-right { flex-direction: column; gap: 8px; }
-        button { font-size: 10px; padding: 6px; }
-        .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .day { min-height: 40px; font-size: 9px; }
-        .day-number { font-size: 11px; }
-        .day-indicator { font-size: 16px; margin-top: 2px; }
-        .modal-content { max-width: 98vw; padding: 10px; }
-        .modal-section h3 { font-size: 12px; }
-        .modal-section textarea { min-height: 60px; font-size: 14px; }
-    }
-@media (max-width: 768px) {
-      .header h1 { font-size: 20px; }
-      .header { flex-direction: column; align-items: flex-start; }
-      .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 8px; }
-      .day { min-height: 80px; font-size: 12px; }
-      .modal-content { padding: 20px; }
-    }
+    .modal-content { background: #1a1f3a; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(91, 200, 232, 0.2); }
+    .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 20px; color: #5BC8E8; }
+    .modal-close { background: none; border: none; color: #5BC8E8; font-size: 24px; cursor: pointer; }
+    .modal-section { margin-bottom: 25px; }
+    .modal-section h3 { font-size: 14px; font-weight: 700; color: #5BC8E8; margin-bottom: 12px; text-transform: uppercase; }
+    .modal-section textarea { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(91, 200, 232, 0.2); border-radius: 6px; color: #fff; font-family: "Zen Maru Gothic", sans-serif; min-height: 100px; resize: vertical; }
+    .image-upload-zone { border: 2px dashed rgba(91, 200, 232, 0.4); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; background: rgba(91, 200, 232, 0.05); }
+    .image-upload-zone.drag-over { border-color: #5BC8E8; background: rgba(91, 200, 232, 0.15); }
+    .image-container { margin-top: 12px; }
+    .image-container img { max-width: 100%; max-height: 300px; border-radius: 4px; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 25px; }
+    .modal-actions button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .btn-save { background: #5BC8E8; color: #0d1117; }
+    .btn-cancel { background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); }
+    .error-msg { color: #E8354A; font-size: 12px; margin-top: 10px; }
   </style>
 </head>
 <body>
   <div class="main-content" id="mainContent">
     <div class="container">
       <div class="header">
-        <h1>ASK2 - 豈取律縺ｮ蟶ょｴ蛻・梵縺ｨ貍ｫ逕ｻ</h1>
+        <h1>ASK2 - 毎日の市場分析と漫画</h1>
         <div class="header-right">
-          <div class="user-info">繝ｦ繝ｼ繧ｶ繝ｼ: <span id="userEmail">-</span></div>
-          <button class="theme-toggle" id="themeToggle">嫌 繝ｩ繧､繝医Δ繝ｼ繝・/button>
-          <button class="btn-logout" id="logoutBtn">繝ｭ繧ｰ繧｢繧ｦ繝・/button>
-        <button class="btn-export" id="exportBtn" title="JSON形式でエクスポート">💾 出力</button>
-          <button class="btn-import" id="importBtn" title="JSON形式でインポート">📥 読込</button>
-          <button class="btn-report" id="reportBtn" title="月間レポートを生成">📄 レポ</button>
-          <button class="btn-history" id="historyBtn" title="編集履歴">↩️ 履歴</button>
+          <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
+          <button class="btn-logout" id="logoutBtn">ログアウト</button>
+        <button id="exportBtn" onclick="(()=>{const d=JSON.stringify(currentData,null,2);const b=new Blob([d],{type:"application/json"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="ask2.json";a.click();})()">E</button><button id="importBtn">I</button><button id="reportBtn">R</button>
       </div>
 
       <div class="calendar-section">
         <div class="calendar-header">
           <div class="calendar-nav">
-            <button id="prevBtn">竊・蜑肴怦</button>
-            <div class="month-year" id="monthYear">2026蟷ｴ1譛・/div>
-            <button id="nextBtn">鄙梧怦 竊・/button>
+            <button id="prevBtn">← 前月</button>
+            <div class="month-year" id="monthYear">2026年1月</div>
+            <button id="nextBtn">翌月 →</button>
           </div>
         </div>
-        <div id="searchResults" class="search-results"></div>
         <div class="calendar-grid" id="calendarGrid"></div>
       </div>
     </div>
@@ -550,33 +87,33 @@
   <div class="modal" id="detailModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 id="modalDate">2026蟷ｴ1譛・譌･</h2>
+        <h2 id="modalDate">2026年1月1日</h2>
         <button class="modal-close" id="modalCloseBtn">&times;</button>
       </div>
 
       <div class="modal-section">
-        <h3>ASK1 隕∫ｴ・/h3>
-        <textarea id="ask1Summary" placeholder="ASK1縺ｮ隕∫ｴ・ｒ險伜・..."></textarea>
+        <h3>ASK1 要約</h3>
+        <textarea id="ask1Summary" placeholder="ASK1の要約を記入..."></textarea>
       </div>
 
       <div class="modal-section">
-        <h3>蟶ょｴ蛻・梵</h3>
-        <textarea id="marketAnalysis" placeholder="莉頑律縺ｮ蟶ょｴ蛻・梵繧定ｨ伜・..."></textarea>
+        <h3>市場分析</h3>
+        <textarea id="marketAnalysis" placeholder="今日の市場分析を記入..."></textarea>
       </div>
 
       <div class="modal-section">
-        <h3>貍ｫ逕ｻ逕ｻ蜒・/h3>
+        <h3>漫画</h3>
         <div class="image-upload-zone" id="mangaDropZone">
-          <p>名・・逕ｻ蜒上ｒ繝峨Λ繝・げ&繝峨Ο繝・・</p>
-          <p>縺ｾ縺溘・ 繧ｯ繝ｪ繝・け縺励※驕ｸ謚橸ｼ郁､・焚蜿ｯ・・/p>
-          <input type="file" id="mangaFileInput" accept="image/*" multiple style="display: none;">
+          <p>🖼️ 画像をドラッグ&ドロップ</p>
+          <p>または クリックして選択</p>
+          <input type="file" id="mangaFileInput" accept="image/*" style="display: none;">
         </div>
         <div class="image-container" id="mangaDisplay"></div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn-save" id="saveBtn">菫晏ｭ・/button>
-        <button class="btn-cancel" id="cancelBtn">繧ｭ繝｣繝ｳ繧ｻ繝ｫ</button>
+        <button class="btn-save" id="saveBtn">保存</button>
+        <button class="btn-cancel" id="cancelBtn">キャンセル</button>
       </div>
       <div class="error-msg" id="modalError"></div>
     </div>
@@ -587,32 +124,6 @@
     let currentDate = new Date();
     let selectedDate = null;
     let currentData = {};
-    let currentImages = [];
-
-    // Theme management
-    function initTheme() {
-      const savedTheme = localStorage.getItem('ask2_theme') || 'dark';
-      if (savedTheme === 'light') {
-        document.body.classList.add('light-mode');
-        document.querySelector('.login-screen')?.classList.add('light-mode');
-        document.getElementById('themeToggle').textContent = '捲 繝繝ｼ繧ｯ繝｢繝ｼ繝・;
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-
-      const themeToggle = document.getElementById('themeToggle');
-      if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-          document.body.classList.toggle('light-mode');
-          document.querySelector('.login-screen')?.classList.toggle('light-mode');
-          const isLight = document.body.classList.contains('light-mode');
-          localStorage.setItem('ask2_theme', isLight ? 'light' : 'dark');
-          themeToggle.textContent = isLight ? '捲 繝繝ｼ繧ｯ繝｢繝ｼ繝・ : '嫌 繝ｩ繧､繝医Δ繝ｼ繝・;
-        });
-      }
-    });
 
     function checkAuth() {
       currentUser = { email: 'rainybrain.ch@gmail.com', uid: 'ask2' };
@@ -636,7 +147,7 @@
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
 
-      document.getElementById('monthYear').textContent = `${year}蟷ｴ${month + 1}譛・;
+      document.getElementById('monthYear').textContent = `${year}年${month + 1}月`;
 
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -645,7 +156,7 @@
       const grid = document.getElementById('calendarGrid');
       grid.innerHTML = '';
 
-      ['譌･', '譛・, '轣ｫ', '豌ｴ', '譛ｨ', '驥・, '蝨・].forEach(day => {
+      ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
         const el = document.createElement('div');
         el.className = 'weekday';
         el.textContent = day;
@@ -681,7 +192,7 @@
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
         if (currentData[dateStr]) {
           el.classList.add('has-data');
-          el.innerHTML = `<div class="day-number">${date}</div><div class="day-indicator">統</div>`;
+          el.innerHTML = `<div class="day-number">${date}</div><div class="day-indicator">📝</div>`;
         } else {
           el.innerHTML = `<div class="day-number">${date}</div>`;
         }
@@ -697,46 +208,30 @@
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
 
       const data = currentData[dateStr] || {};
-      currentImages = data.images || [];
 
-      document.getElementById('modalDate').textContent = `${year}蟷ｴ${month + 1}譛・{date}譌･`;
+      document.getElementById('modalDate').textContent = `${year}年${month + 1}月${date}日`;
       document.getElementById('ask1Summary').value = data.ask1Summary || '';
       document.getElementById('marketAnalysis').value = data.marketAnalysis || '';
 
-      renderImages();
+      const mangaDisplay = document.getElementById('mangaDisplay');
+      if (data.manga) {
+        mangaDisplay.innerHTML = `<img src="${data.manga}" alt="漫画">`;
+      } else {
+        mangaDisplay.innerHTML = '';
+      }
+
       setupImageUpload();
       document.getElementById('detailModal').classList.add('visible');
-    }
-
-    function renderImages() {
-      const container = document.getElementById('mangaDisplay');
-      container.innerHTML = '';
-      currentImages.forEach((img, idx) => {
-        const item = document.createElement('div');
-        item.className = 'image-item';
-        item.innerHTML = `
-          <img src="${img}" alt="逕ｻ蜒・>
-          <button class="image-delete" data-idx="${idx}">ﾃ・/button>
-        `;
-        container.appendChild(item);
-
-        item.querySelector('.image-delete').addEventListener('click', () => {
-          currentImages.splice(idx, 1);
-          renderImages();
-        });
-      });
     }
 
     document.getElementById('modalCloseBtn').addEventListener('click', () => {
       document.getElementById('detailModal').classList.remove('visible');
       selectedDate = null;
-      currentImages = [];
     });
 
     document.getElementById('cancelBtn').addEventListener('click', () => {
       document.getElementById('detailModal').classList.remove('visible');
       selectedDate = null;
-      currentImages = [];
     });
 
     function setupImageUpload() {
@@ -756,13 +251,13 @@
         e.preventDefault();
         dropZone.classList.remove('drag-over');
         if (e.dataTransfer.files.length > 0) {
-          Array.from(e.dataTransfer.files).forEach(file => handleImageFile(file));
+          handleImageFile(e.dataTransfer.files[0]);
         }
       };
 
       fileInput.onchange = (e) => {
         if (e.target.files.length > 0) {
-          Array.from(e.target.files).forEach(file => handleImageFile(file));
+          handleImageFile(e.target.files[0]);
         }
       };
     }
@@ -789,9 +284,14 @@
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedBase64 = canvas.toDataURL('image/webp', 0.8);
-          currentImages.push(compressedBase64);
-          renderImages();
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+          const mangaDisplay = document.getElementById('mangaDisplay');
+          mangaDisplay.innerHTML = `<img src="${compressedBase64}" alt="漫画">`;
+
+          const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+          currentData[dateStr] = currentData[dateStr] || {};
+          currentData[dateStr].manga = compressedBase64;
         };
 
         img.src = e.target.result;
@@ -808,11 +308,11 @@
       currentData[dateStr] = {
         ask1Summary: document.getElementById('ask1Summary').value,
         marketAnalysis: document.getElementById('marketAnalysis').value,
-        images: currentImages,
+        manga: currentData[dateStr]?.manga || null,
         timestamp: new Date().toISOString()
       };
 
-      localStorage.setItem('ask2_data', JSON.stringify(currentData));autoBackup(); autoBackup();
+      localStorage.setItem('ask2_data', JSON.stringify(currentData));
 
       document.getElementById('detailModal').classList.remove('visible');
       renderCalendar();
@@ -835,156 +335,7 @@
       renderCalendar();
     });
 
-
-    let editHistory = [];
-    const MAX_HISTORY = 20;
-
-    function saveToHistory() {
-      editHistory.push(JSON.parse(JSON.stringify(currentData)));
-      if (editHistory.length > MAX_HISTORY) editHistory.shift();
-    }
-
-    function undo() {
-      if (editHistory.length > 0) {
-        currentData = editHistory.pop();
-        localStorage.setItem('ask2_data', JSON.stringify(currentData));autoBackup(); autoBackup();
-        renderCalendar();
-      }
-    }
-
-    function exportData() {
-      const dataStr = JSON.stringify(currentData, null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ask2_backup_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importData() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const imported = JSON.parse(event.target.result);
-            saveToHistory();
-            currentData = imported;
-            localStorage.setItem('ask2_data', JSON.stringify(currentData));autoBackup(); autoBackup();
-            autoBackup();
-            renderCalendar();
-            alert('✅ データをインポートしました');
-          } catch (err) {
-            alert('❌ ファイルフォーマットが正しくありません');
-          }
-        };
-        reader.readAsText(file);
-      };
-      input.click();
-    }
-
-    function generateReport() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const daysInMonth = new Date(year, month, 0).getDate();
-      let report = `ASK2 月間レポート
-${year}年${month}月
-
-`;
-      let filledDays = 0;
-      let totalImages = 0;
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-        const data = currentData[dateStr];
-        if (data) {
-          filledDays++;
-          const imgCount = (data.images || []).length;
-          totalImages += imgCount;
-          report += `【${dateStr}】
-`;
-          if (data.ask1Summary) report += `ASK1: ${data.ask1Summary.substring(0, 40)}
-`;
-          if (data.marketAnalysis) report += `分析: ${data.marketAnalysis.substring(0, 40)}
-`;
-          if (imgCount > 0) report += `画像: ${imgCount}枚
-`;
-          report += '
-';
-        }
-      }
-      report += `
-統計
-記入率: ${Math.round((filledDays/daysInMonth)*100)}%
-画像: ${totalImages}枚
-`;
-      return report;
-    }
-
-    function showReport() {
-      const modal = document.getElementById('reportModal') || createReportModal();
-      const report = generateReport();
-      document.getElementById('reportContent').textContent = report;
-      modal.classList.add('visible');
-    }
-
-    function createReportModal() {
-      const modal = document.createElement('div');
-      modal.id = 'reportModal';
-      modal.className = 'modal-small';
-      modal.innerHTML = `<button class="modal-small-close" onclick="this.parentElement.classList.remove('visible')">&times;</button><h3>月間レポート</h3><div id="reportContent"></div><button onclick="downloadReport()" style="margin-top:15px;padding:10px;background:var(--accent);color:var(--bg-primary);border:none;border-radius:6px;cursor:pointer;">ダウンロード</button>`;
-      document.body.appendChild(modal);
-      return modal;
-    }
-
-    function downloadReport() {
-      const report = generateReport();
-      const blob = new Blob([report], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ask2_report_${new Date().toISOString().split('T')[0]}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function autoBackup() {
-      const backup = { data: currentData, timestamp: new Date().toISOString() };
-      localStorage.setItem('ask2_backup', JSON.stringify(backup));
-    }
-
-    function attachToolbarButtons() {
-      const exportBtn = document.getElementById('exportBtn');
-      const importBtn = document.getElementById('importBtn');
-      const reportBtn = document.getElementById('reportBtn');
-      const historyBtn = document.getElementById('historyBtn');
-      
-      if (exportBtn) exportBtn.addEventListener('click', exportData);
-      if (importBtn) importBtn.addEventListener('click', importData);
-      if (reportBtn) reportBtn.addEventListener('click', showReport);
-      if (historyBtn) historyBtn.addEventListener('click', undo);
-      
-      document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
-      });
-    }
-    
-    attachToolbarButtons();
-let editHistory=[];function saveToHistory(){editHistory.push(JSON.parse(JSON.stringify(currentData)));if(editHistory.length>20)editHistory.shift();}function undo(){if(editHistory.length>0){currentData=editHistory.pop();localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}}function exportData(){const s=JSON.stringify(currentData,null,2);const b=new Blob([s],{type:"application/json"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=`ask2_${new Date().toISOString().split("T")[0]}.json`;a.click();URL.revokeObjectURL(u);}function importData(){const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=(e)=>{const f=e.target.files[0];const r=new FileReader();r.onload=(ev)=>{try{const d=JSON.parse(ev.target.result);currentData=d;localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}catch{alert("Error");}};r.readAsText(f);};i.click();}function generateReport(){const y=currentDate.getFullYear();const m=currentDate.getMonth()+1;const d=new Date(y,m,0).getDate();let r=`${y}年${m}月 レポート
-
-`;let c=0;let t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}r+=`記入:${c}/${d}日
-画像:${t}枚
-記入率:${Math.round(c*100/d)}%`;return r;}function showReport(){const t=generateReport();alert(t);}function autoBackup(){localStorage.setItem("ask2_backup",JSON.stringify({data:currentData,time:new Date().toISOString()}));}function attachToolbar(){const e=document.getElementById("exportBtn");const i=document.getElementById("importBtn");const r=document.getElementById("reportBtn");if(e)e.onclick=exportData;if(i)i.onclick=importData;if(r)r.onclick=showReport;document.addEventListener("keydown",(ev)=>{if(ev.ctrlKey&&ev.key==="z"){ev.preventDefault();undo();}});} attachToolbar();
-    function enhancedSearch(){const q=document.getElementById('searchBox').value.toLowerCase();const results=document.getElementById('searchResults');if(!q){results.classList.remove('show');return;}const items=[];for(const[date,data]of Object.entries(currentData)){const text=(data.ask1Summary+' '+data.marketAnalysis).toLowerCase();if(text.includes(q)){items.push({date,text:data.ask1Summary||data.marketAnalysis||'(no text)',imgs:(data.images||[]).length});}}if(items.length){results.innerHTML=items.map(i=>`<div class="search-item" onclick="goToDate('${i.date}')">${i.date} - ${i.text.substring(0,30)}... (画像${i.imgs}枚)</div>`).join('');results.classList.add('show');}else{results.innerHTML='<div style="text-align:center;color:gray;">検索結果なし</div>';results.classList.add('show');}}
-    function goToDate(dateStr){const[y,m,d]=dateStr.split('-');currentDate=new Date(parseInt(y),parseInt(m)-1,parseInt(d));renderCalendar();openDetailModal(parseInt(d),parseInt(m)-1,parseInt(y));}
-    document.getElementById('searchBox')?.addEventListener('input',enhancedSearch);
-    checkAuth();
+let history=[];function undo(){if(history.length>0){currentData=history.pop();localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}}document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z")undo();});document.getElementById("reportBtn")?.addEventListener("click",()=>{const y=currentDate.getFullYear(),m=currentDate.getMonth()+1,d=new Date(y,m,0).getDate();let c=0,t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}alert(`${m}月:${c}/${d}日入力,画像${t}枚,入力率${Math.round(c*100/d)}%`);});checkAuth();
   </script>
 </body>
-<!-- CYCLE4 ADDED -->
 </html>
