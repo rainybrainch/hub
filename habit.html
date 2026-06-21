@@ -566,6 +566,28 @@
     body.light .batch-btn:hover{border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.08);color:var(--green)}
     body.light .batch-btn.all-done{color:var(--green);border-color:rgba(76,175,125,.35);background:rgba(76,175,125,.08)}
     body.compact .batch-btn{display:none}
+
+    /* Cycle 33: next milestone preview widget */
+    .ms-widget{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .ms-widget-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+    .ms-widget-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .ms-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
+    .ms-chev.closed{transform:rotate(-90deg)}
+    .ms-body{padding-top:10px}
+    .ms-body.closed{display:none}
+    .ms-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+    .ms-scroll::-webkit-scrollbar{display:none}
+    .ms-card{flex-shrink:0;background:var(--dark3);border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:9px 11px;min-width:110px;max-width:134px}
+    .ms-name{font-size:12px;font-weight:700;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+    .ms-bar-wrap{height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-bottom:5px}
+    .ms-bar-fill{height:100%;border-radius:2px;background:var(--gold);transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+    .ms-rem{font-size:10px;font-weight:700;color:var(--gold);line-height:1.5}
+    .ms-cur{font-size:9px;color:var(--muted);line-height:1.5}
+    body.light .ms-widget{border-color:rgba(0,0,0,.08)}
+    body.light .ms-card{border-color:rgba(0,0,0,.1)}
+    body.light .ms-bar-wrap{background:rgba(0,0,0,.1)}
+    /* Cycle 33: hover highlight for desktop */
+    @media(hover:hover){.habit:hover:not(.done):not(.paused){background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.1)}body.light .habit:hover:not(.done):not(.paused){background:rgba(0,0,0,.02);border-color:rgba(0,0,0,.12)}}
   </style>
 </head>
 <body>
@@ -654,6 +676,16 @@
   <div class="motto-box" id="motto-box"></div>
 
   <div class="ach-box" id="ach-box"></div>
+
+  <div class="ms-widget" id="ms-widget" style="display:none">
+    <div class="ms-widget-hdr" onclick="toggleMsWidget()">
+      <span class="ms-widget-ttl">🎯 次のマイルストーン</span>
+      <span class="ms-chev" id="ms-chev">▼</span>
+    </div>
+    <div class="ms-body" id="ms-body">
+      <div class="ms-scroll" id="ms-scroll"></div>
+    </div>
+  </div>
 
   <div class="intention-box" id="intention-box">
     <div class="intention-hdr" onclick="toggleIntention()">
@@ -1254,6 +1286,7 @@ function render(){
   renderWeeklyRanking();
   renderMotto();
   renderAchievements();
+  renderMilestoneWidget();
   renderTimeline();
   renderList();
   updateFabBadge();
@@ -2037,6 +2070,38 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='c'||e.key==='C')toggleCompactView();
   else if(e.key==='?'||e.key==='？')openKbdHelp();
 });
+
+// ── Cycle 33: next milestone preview widget ──
+let _msOpen=true;
+function toggleMsWidget(){
+  _msOpen=!_msOpen;
+  const body=document.getElementById('ms-body');
+  const ch=document.getElementById('ms-chev');
+  if(body)body.classList.toggle('closed',!_msOpen);
+  if(ch)ch.classList.toggle('closed',!_msOpen);
+}
+function renderMilestoneWidget(){
+  const el=document.getElementById('ms-widget');
+  const sc=document.getElementById('ms-scroll');
+  if(!el||!sc)return;
+  const items=[];
+  habits.filter(h=>!h.paused).forEach(h=>{
+    const s=habitStreak(h.id);
+    if(s<1)return;
+    const next=MILESTONES.find(m=>m>s);
+    if(!next)return;
+    const prev=MILESTONES.filter(m=>m<=s).pop()||0;
+    const pct=Math.round((s-prev)/(next-prev)*100);
+    items.push({h,s,next,pct,rem:next-s});
+  });
+  items.sort((a,b)=>b.pct-a.pct);
+  if(!items.length){el.style.display='none';return;}
+  el.style.display='';
+  sc.innerHTML=items.map(({h,s,next,pct,rem})=>{
+    const nm=esc((h.emoji?h.emoji+' ':'')+h.name);
+    return `<div class="ms-card"><div class="ms-name">${nm}</div><div class="ms-bar-wrap"><div class="ms-bar-fill" style="width:${pct}%"></div></div><div class="ms-rem">あと${rem}日 → 🎯${next}日</div><div class="ms-cur">現在${s}日連続</div></div>`;
+  }).join('');
+}
 
 // ── Cycle 32: category batch complete ──
 function batchComplete(cat,e){
