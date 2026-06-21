@@ -359,7 +359,7 @@
 
     /* Cycle 21: smooth theme transitions */
     body{transition:background-color .3s}
-    .hdr,.stat,.chart-box,.dow-box,.trend-box,.ranking-box,.timeline-box,.month-box,.motto-box{transition:background .25s,border-color .25s}
+    .hdr,.stat,.chart-box,.dow-box,.trend-box,.ranking-box,.timeline-box,.month-box,.motto-box,.tod-box{transition:background .25s,border-color .25s}
 
     /* Cycle 21: habit pause / resume */
     .habit.paused{opacity:.38}
@@ -588,6 +588,17 @@
     body.light .ms-bar-wrap{background:rgba(0,0,0,.1)}
     /* Cycle 33: hover highlight for desktop */
     @media(hover:hover){.habit:hover:not(.done):not(.paused){background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.1)}body.light .habit:hover:not(.done):not(.paused){background:rgba(0,0,0,.02);border-color:rgba(0,0,0,.12)}}
+
+    /* Cycle 34: time-of-day achievement pattern widget */
+    .tod-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+    .tod-bars{display:flex;gap:8px;align-items:flex-end;height:56px;margin-bottom:6px}
+    .tod-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .tod-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:4px;position:relative;overflow:hidden;min-height:40px}
+    .tod-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .tod-lbl{font-size:9px;font-weight:700;color:var(--muted);text-align:center;line-height:1.4}
+    .tod-peak{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-style:italic}
+    body.light .tod-box{border-color:rgba(0,0,0,.08)}
+    body.light .tod-bar-wrap{background:rgba(0,0,0,.06)}
   </style>
 </head>
 <body>
@@ -605,6 +616,7 @@
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
+  <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -696,6 +708,12 @@
     <div class="intention-body" id="intention-body">
       <textarea class="intention-ta" id="intention-ta" rows="3" placeholder="今日やり遂げたいこと、気持ち、目標を自由に書こう..." oninput="saveIntention(this.value)" maxlength="200"></textarea>
     </div>
+  </div>
+
+  <div class="tod-box" id="tod-box" style="display:none">
+    <div class="chart-ttl">🕐 時間帯別 達成パターン（過去30日）</div>
+    <div class="tod-bars" id="tod-chart"></div>
+    <div class="tod-peak" id="tod-peak"></div>
   </div>
 
   <div class="timeline-box" id="timeline-box" style="display:none">
@@ -1287,6 +1305,7 @@ function render(){
   renderMotto();
   renderAchievements();
   renderMilestoneWidget();
+  renderTimeOfDayChart();
   renderTimeline();
   renderList();
   updateFabBadge();
@@ -1703,6 +1722,33 @@ function renderDayOfWeekChart(){
     const lblStyle=i===bestIdx?' style="color:var(--green)"':i===worstIdx?' style="color:var(--red)"':'';
     return `<div class="dow-col"><div class="dow-bar-wrap"><div class="dow-fill" style="height:${pct}%;background:${color}"></div></div><span class="dow-lbl"${lblStyle}>${DAYS[dow]}</span></div>`;
   }).join('');
+}
+
+// ── Cycle 34: time-of-day achievement pattern analysis ──
+function renderTimeOfDayChart(){
+  const box=document.getElementById('tod-box'),el=document.getElementById('tod-chart'),peakEl=document.getElementById('tod-peak');
+  if(!box||!el)return;
+  const bands=[{label:'🌅 朝',range:[5,12],cnt:0},{label:'🌞 昼',range:[12,18],cnt:0},{label:'🌙 夜',range:[18,24],cnt:0},{label:'🌃 深夜',range:[0,5],cnt:0}];
+  let total=0;
+  for(let i=0;i<30;i++){
+    const dc=completions[dateAgo(i)]||{};
+    for(const[k,v] of Object.entries(dc)){
+      if(typeof v!=='string'||k.endsWith('_note'))continue;
+      const h=new Date(v).getHours();
+      for(const b of bands){const[s,e]=b.range;if(h>=s&&h<e){b.cnt++;total++;break;}}
+    }
+  }
+  if(!total){box.style.display='none';return;}
+  box.style.display='';
+  const max=Math.max(...bands.map(b=>b.cnt),1);
+  const colors=['var(--gold)','var(--sky)','var(--purple)','rgba(155,109,214,.55)'];
+  el.innerHTML=bands.map((b,i)=>{
+    const pct=Math.round(b.cnt/max*100);
+    return `<div class="tod-col"><div class="tod-bar-wrap"><div class="tod-fill" style="height:${pct}%;background:${colors[i]}" title="${b.cnt}回"></div></div><span class="tod-lbl">${b.label}</span></div>`;
+  }).join('');
+  const peakBand=bands.reduce((a,b)=>b.cnt>a.cnt?b:a);
+  const peakPct=Math.round(peakBand.cnt/total*100);
+  if(peakEl)peakEl.textContent=`${peakBand.label}型（${peakPct}%の習慣をこの時間帯に達成）`;
 }
 
 // ── Cycle 13: compact view mode ──
@@ -2129,6 +2175,22 @@ window.addEventListener('scroll',()=>{
   const b=document.getElementById('scroll-top');
   if(b)b.classList.toggle('show',window.scrollY>250);
 },{passive:true});
+
+// ── Cycle 34: reset today's completions ──
+function resetToday(){
+  const td=today(),dc=completions[td]||{};
+  const doneCount=habits.filter(h=>!!dc[h.id]).length;
+  if(!doneCount)return;
+  if(!confirm(`今日のチェック（${doneCount}件）を全て解除しますか？`))return;
+  const notes={};
+  for(const[k,v] of Object.entries(dc)){if(k.endsWith('_note'))notes[k]=v;}
+  completions[td]=notes;
+  celebrated=false;saveC();render();
+  const b=document.getElementById('banner');
+  b.textContent=`🔄 ${doneCount}件のチェックをリセットしました`;
+  b.classList.add('show');
+  setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
+}
 </script>
 </body>
 </html>
