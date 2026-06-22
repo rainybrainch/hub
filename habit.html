@@ -616,6 +616,21 @@
     body.light .challenge-card:hover{background:rgba(91,200,232,.1)}
     @keyframes highlightPulse{0%,100%{box-shadow:none;border-color:rgba(255,255,255,.06)}50%{box-shadow:0 0 0 3px rgba(91,200,232,.35);border-color:rgba(91,200,232,.5)}}
     .habit.highlight-pulse{animation:highlightPulse 0.7s ease 3}
+
+    /* Cycle 36: today's pace indicator */
+    .pace-box{display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 14px;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .pace-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+    .pace-val{font-family:"Dela Gothic One",sans-serif;font-size:18px;line-height:1}
+    .pace-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-align:center}
+    .pace-sep{width:1px;height:28px;background:rgba(255,255,255,.08);flex-shrink:0}
+    .pace-msg{font-size:11px;color:var(--muted);text-align:center;flex:1;padding:0 4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    body.light .pace-box{border-color:rgba(0,0,0,.08)}
+    body.light .pace-sep{background:rgba(0,0,0,.08)}
+    /* Cycle 36: ranking view tabs */
+    .ranking-view-tabs{display:flex;gap:4px}
+    .ranking-view-tab{padding:3px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s}
+    .ranking-view-tab.active{background:var(--gold);border-color:transparent;color:var(--dark)}
+    body.light .ranking-view-tab{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
   </style>
 </head>
 <body>
@@ -660,6 +675,9 @@
       <div class="stat-lbl">累計完了</div>
     </div>
   </div>
+
+  <!-- Cycle 36: today's pace indicator -->
+  <div class="pace-box" id="pace-box" style="display:none"></div>
 
   <div class="chart-box">
     <div class="chart-hdr">
@@ -845,7 +863,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day';
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -1313,9 +1331,29 @@ function renderMonthlyTrend(){
   }).join('');
 }
 
+// ── Cycle 36: today's pace indicator ──
+function renderPaceBox(){
+  const el=document.getElementById('pace-box');
+  if(!el||!habits.length){if(el)el.style.display='none';return;}
+  const td=today(),dc=completions[td]||{};
+  const active=habits.filter(h=>!h.paused);
+  if(!active.length){el.style.display='none';return;}
+  const remaining=active.filter(h=>!dc[h.id]).length;
+  const now=new Date();
+  const secsLeft=(23-now.getHours())*3600+(59-now.getMinutes())*60+(59-now.getSeconds());
+  const hoursLeft=Math.floor(secsLeft/3600);
+  const minsLeft=Math.floor((secsLeft%3600)/60);
+  const timeStr=hoursLeft>0?`${hoursLeft}h${minsLeft>0?String(minsLeft).padStart(2,'0')+'m':''}`:minsLeft+'m';
+  el.style.display='';
+  const paceColor=remaining===0?'var(--green)':hoursLeft<2?'var(--red)':hoursLeft<6?'var(--gold)':'var(--sky)';
+  const msg=remaining===0?'今日の習慣完了！🎉':remaining===1?'あと1件で全完了！':hoursLeft<2?`急いで！残り${remaining}件`:'ペース継続中';
+  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div><div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
+}
+
 function render(){
   renderHeader();
   renderStats();
+  renderPaceBox();
   renderChart();
   renderWeekComparison();
   renderDayOfWeekChart();
@@ -1692,25 +1730,37 @@ function checkHabitMilestone(id){
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 
-// ── Cycle 17: weekly top habit ranking ──
+// ── Cycle 17+36: weekly top habit ranking with all-time tab ──
+function setRankingView(v){rankingView=v;renderWeeklyRanking();}
 function renderWeeklyRanking(){
   const el=document.getElementById('ranking-box');
   if(!el)return;
   if(!habits.length){el.style.display='none';return;}
-  const scores=habits.filter(h=>!h.paused).map(h=>{
-    let cnt=0;
-    for(let i=0;i<7;i++)if((completions[dateAgo(i)]||{})[h.id])cnt++;
-    return{h,cnt};
-  }).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).slice(0,3);
+  const active=habits.filter(h=>!h.paused);
+  let scores;
+  if(rankingView==='alltime'){
+    scores=active.map(h=>{
+      const days=Math.max(1,Math.floor((Date.now()-new Date(h.createdAt))/86400000)+1);
+      const cnt=habitTotalCount(h.id);
+      return{h,cnt,rate:Math.round(cnt/days*100)};
+    }).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).slice(0,3);
+  }else{
+    scores=active.map(h=>{
+      let cnt=0;for(let i=0;i<7;i++)if((completions[dateAgo(i)]||{})[h.id])cnt++;
+      return{h,cnt,rate:Math.round(cnt/7*100)};
+    }).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).slice(0,3);
+  }
   if(!scores.length){el.style.display='none';return;}
   el.style.display='';
   const medals=['🥇','🥈','🥉'];
   const max=scores[0].cnt;
-  el.innerHTML='<div class="ranking-ttl">🏅 今週のトップ習慣</div>'+
+  const tabsHtml=`<div class="ranking-view-tabs"><button class="ranking-view-tab${rankingView==='7day'?' active':''}" onclick="setRankingView('7day')">今週</button><button class="ranking-view-tab${rankingView==='alltime'?' active':''}" onclick="setRankingView('alltime')">全期間</button></div>`;
+  el.innerHTML=`<div class="ranking-ttl" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span>🏅 トップ習慣</span>${tabsHtml}</div>`+
     scores.map((x,i)=>{
       const pct=Math.round(x.cnt/max*100);
       const em=x.h.emoji?`${x.h.emoji} `:'';
-      return `<div class="ranking-item"><span class="rank-badge">${medals[i]}</span><span class="rank-name">${em}${esc(x.h.name)}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${pct}%"></div></div><span class="rank-cnt">${x.cnt}/7日</span></div>`;
+      const cntStr=rankingView==='alltime'?`${x.cnt}日 (${x.rate}%)`:`${x.cnt}/7日`;
+      return `<div class="ranking-item"><span class="rank-badge">${medals[i]}</span><span class="rank-name">${em}${esc(x.h.name)}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${pct}%"></div></div><span class="rank-cnt">${cntStr}</span></div>`;
     }).join('');
 }
 
@@ -2060,6 +2110,7 @@ initIntention();
 initWeekly();
 initReminder();
 render();
+setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
 function syncThemeColor(){
   const mc=document.getElementById('meta-theme-color');
