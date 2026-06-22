@@ -770,6 +770,7 @@
   <div class="sort-row">
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
     <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
+    <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px" title="全カテゴリーを折りたたむ/展開（Zキー）">≡ 全折</button>
   </div>
   <div class="search-row">
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
@@ -837,6 +838,8 @@
       <tr><td><kbd class="kbdkey">/</kbd> または <kbd class="kbdkey">F</kbd></td><td class="kbd-desc">習慣を検索</td></tr>
       <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
       <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
+      <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">全カテゴリーを折りたたむ / 展開</td></tr>
+      <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
     </table>
     <button class="kbd-close" onclick="closeKbdHelp()">閉じる（ESCでも）</button>
@@ -1258,6 +1261,7 @@ function renderList(){
     html+='</div></div>';
   }
   el.innerHTML=html;
+  updateCollapseAllBtn();
   initSwipeGestures();
   initLongPress();
 }
@@ -1562,6 +1566,23 @@ function toggleSortUndone(){
   const btn=document.getElementById('sort-undone-btn');
   if(btn)btn.classList.toggle('active',sortUndone);
   renderList();
+}
+
+// ── Cycle 37: collapse-all / expand-all toggle (Z key) ──
+function toggleCollapseAll(){
+  const cats=['学習','運動','創作','自己改善'];
+  const st=getCatCollapsed();
+  const anyOpen=cats.some(c=>!st[c]);
+  cats.forEach(c=>st[c]=anyOpen);
+  localStorage.setItem(_colKey(),JSON.stringify(st));
+  renderList();
+}
+function updateCollapseAllBtn(){
+  const cats=['学習','運動','創作','自己改善'];
+  const st=getCatCollapsed();
+  const allClosed=cats.every(c=>st[c]);
+  const btn=document.getElementById('collapse-all-btn');
+  if(btn){btn.textContent=allClosed?'≡ 全開':'≡ 全折';btn.classList.toggle('active',allClosed);}
 }
 
 // ── Cycle 23: custom reorder within category ──
@@ -2187,6 +2208,15 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='/'||e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-inp')?.focus();}
   else if(e.key==='c'||e.key==='C')toggleCompactView();
   else if(e.key==='?'||e.key==='？')openKbdHelp();
+  else if(e.key==='z'||e.key==='Z')toggleCollapseAll();
+  else if(e.key==='d'||e.key==='D'){
+    const td=today(),dc=completions[td]||{};
+    const active=habits.filter(h=>!h.paused);
+    const undone=active.filter(h=>!dc[h.id]);
+    if(!undone.length)return;
+    const seed=parseInt(td.replace(/-/g,''))%undone.length;
+    toggle(undone[seed].id,null);
+  }
 });
 
 // ── Cycle 33: next milestone preview widget ──
