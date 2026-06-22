@@ -599,6 +599,23 @@
     .tod-peak{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-style:italic}
     body.light .tod-box{border-color:rgba(0,0,0,.08)}
     body.light .tod-bar-wrap{background:rgba(0,0,0,.06)}
+
+    /* Cycle 35: today's challenge widget */
+    .challenge-box{background:var(--dark2);border:1px solid rgba(91,200,232,.18);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+    .challenge-ttl{font-size:11px;font-weight:700;color:var(--sky);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .challenge-card{background:rgba(91,200,232,.06);border:1px dashed rgba(91,200,232,.25);border-radius:10px;padding:11px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;-webkit-tap-highlight-color:transparent}
+    .challenge-card:hover{background:rgba(91,200,232,.12);border-color:rgba(91,200,232,.45)}
+    .challenge-card:active{transform:scale(.98)}
+    .challenge-name{font-size:14px;font-weight:700;line-height:1.4}
+    .challenge-hint{font-size:10px;color:var(--sky);opacity:.75;margin-top:2px}
+    .challenge-arrow{color:var(--sky);font-size:18px;opacity:.6;flex-shrink:0;margin-left:10px;transition:transform .2s}
+    .challenge-card:hover .challenge-arrow{transform:translateX(4px);opacity:1}
+    .challenge-done{text-align:center;color:var(--green);font-weight:700;font-size:13px;padding:6px 0}
+    body.light .challenge-box{border-color:rgba(91,200,232,.25)}
+    body.light .challenge-card{background:rgba(91,200,232,.04);border-color:rgba(91,200,232,.2)}
+    body.light .challenge-card:hover{background:rgba(91,200,232,.1)}
+    @keyframes highlightPulse{0%,100%{box-shadow:none;border-color:rgba(255,255,255,.06)}50%{box-shadow:0 0 0 3px rgba(91,200,232,.35);border-color:rgba(91,200,232,.5)}}
+    .habit.highlight-pulse{animation:highlightPulse 0.7s ease 3}
   </style>
 </head>
 <body>
@@ -684,6 +701,9 @@
   <div class="month-box" id="month-box" style="display:none"></div>
 
   <div class="ranking-box" id="ranking-box" style="display:none"></div>
+
+  <!-- Cycle 35: today's challenge widget -->
+  <div class="challenge-box" id="challenge-box" style="display:none"></div>
 
   <div class="motto-box" id="motto-box"></div>
 
@@ -1308,6 +1328,7 @@ function render(){
   renderTimeOfDayChart();
   renderTimeline();
   renderList();
+  renderChallenge();
   updateFabBadge();
   updateProgressFooter();
   updateDocTitle();
@@ -2176,6 +2197,42 @@ window.addEventListener('scroll',()=>{
   if(b)b.classList.toggle('show',window.scrollY>250);
 },{passive:true});
 
+// ── Cycle 35: today's challenge widget ──
+function renderChallenge(){
+  const el=document.getElementById('challenge-box');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const active=habits.filter(h=>!h.paused);
+  if(!active.length){el.style.display='none';return;}
+  const allDone=active.every(h=>!!dc[h.id]);
+  if(allDone){
+    el.style.display='';
+    el.innerHTML=`<div class="challenge-ttl">🎯 今日のチャレンジ</div><div class="challenge-done">🏆 全チャレンジ達成！おめでとう！</div>`;
+    return;
+  }
+  const undone=active.filter(h=>!dc[h.id]);
+  if(!undone.length){el.style.display='none';return;}
+  const seed=parseInt(td.replace(/-/g,''))%undone.length;
+  const pick=undone[seed];
+  el.style.display='';
+  const nm=esc((pick.emoji?pick.emoji+' ':'')+pick.name);
+  el.innerHTML=`<div class="challenge-ttl">🎯 今日のチャレンジ</div><div class="challenge-card" onclick="scrollToHabit('${pick.id}')"><div><div class="challenge-name">${nm}</div><div class="challenge-hint">今日まずこれから始めよう！</div></div><span class="challenge-arrow">→</span></div>`;
+}
+function scrollToHabit(id){
+  const el=document.querySelector(`.habit[data-id="${id}"]`);
+  if(!el)return;
+  const sec=el.closest('.sec-habits');
+  if(sec&&sec.classList.contains('closed')){
+    const hdr=sec.previousElementSibling;
+    if(hdr&&hdr.classList.contains('sec-hdr'))hdr.click();
+  }
+  setTimeout(()=>{
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.add('highlight-pulse');
+    setTimeout(()=>el.classList.remove('highlight-pulse'),2200);
+  },sec&&sec.classList.contains('closed')?400:0);
+}
+
 // ── Cycle 34: reset today's completions ──
 function resetToday(){
   const td=today(),dc=completions[td]||{};
@@ -2189,7 +2246,7 @@ function resetToday(){
   const b=document.getElementById('banner');
   b.textContent=`🔄 ${doneCount}件のチェックをリセットしました`;
   b.classList.add('show');
-  setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
+  setTimeout(()=>{b.classList.remove('show');setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';},400);},2500);
 }
 </script>
 </body>
