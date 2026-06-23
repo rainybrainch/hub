@@ -692,6 +692,19 @@
     body.light .mood-week{border-top-color:rgba(0,0,0,.06)}
     body.light .mood-insight{border-top-color:rgba(0,0,0,.05)}
 
+    /* Cycle 54: mood correlation table & daily tip */
+    .mood-corr-section{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)}
+    .mood-corr-ttl{font-size:9px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px}
+    .mood-corr-row{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+    .mood-corr-ico{font-size:13px;flex-shrink:0;width:18px;text-align:center;line-height:1}
+    .mood-corr-bar-w{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+    .mood-corr-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+    .mood-corr-pct{font-size:10px;font-weight:700;color:var(--muted);flex-shrink:0;min-width:24px;text-align:right}
+    .mood-tip{font-size:11px;color:var(--muted);padding:6px 10px;margin-top:7px;background:rgba(255,255,255,.03);border-radius:8px;line-height:1.55;font-style:italic;border-left:2px solid rgba(245,200,66,.3)}
+    body.light .mood-corr-section{border-top-color:rgba(0,0,0,.06)}
+    body.light .mood-corr-bar-w{background:rgba(0,0,0,.08)}
+    body.light .mood-tip{background:rgba(0,0,0,.025);border-left-color:rgba(245,200,66,.45)}
+
     /* Cycle 42: sticky header progress badge */
     .hdr-progress{font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:3px 8px;border-radius:10px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.25);color:var(--gold);transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;flex-shrink:0;line-height:1.5}
     .hdr-progress.done{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.3);color:var(--green)}
@@ -3000,6 +3013,35 @@ function setMood(idx){
   localStorage.setItem(_moodKey(),String(idx));
   renderMoodBox();
 }
+
+// ── Cycle 54: mood correlation + daily tip ──
+const MOOD_TIPS=[
+  '気分が辛い日こそ、一番小さな習慣だけでも続けよう。🌱',
+  '少し落ち込んでいても、行動が気分を変えていく。💪',
+  '普通の日の積み重ねが、やがて大きな変化を生む。📈',
+  '気分が良い日は少し余分に頑張ってみよう！🚀',
+  '最高の気分！この勢いで全習慣を制覇しよう！🏆',
+];
+function _buildMoodCorrHtml(){
+  const counts=Array(5).fill(0),sums=Array(5).fill(0);
+  for(let i=1;i<=30;i++){
+    const ds=dateAgo(i),m=localStorage.getItem(_moodKey(ds));
+    if(m===null)continue;
+    const mi=+m;
+    if(mi>=0&&mi<=4){counts[mi]++;sums[mi]+=dayRate(ds)*100;}
+  }
+  if(!counts.some(c=>c>0))return '';
+  const maxAvg=Math.max(...counts.map((c,i)=>c>0?sums[i]/c:0));
+  const rows=MOODS.map((m,i)=>{
+    if(!counts[i])return '';
+    const avg=Math.round(sums[i]/counts[i]);
+    const relW=maxAvg>0?Math.round(avg/maxAvg*100):0;
+    const col=avg>=70?'var(--green)':avg>=40?'var(--gold)':'var(--sky)';
+    return `<div class="mood-corr-row"><span class="mood-corr-ico">${m}</span><div class="mood-corr-bar-w"><div class="mood-corr-fill" style="width:${relW}%;background:${col}"></div></div><span class="mood-corr-pct">${avg}%</span></div>`;
+  }).join('');
+  return `<div class="mood-corr-section"><div class="mood-corr-ttl">気分別 平均達成率（過去30日）</div>${rows}</div>`;
+}
+
 function renderMoodBox(){
   const btnsEl=document.getElementById('mood-btns');
   const histEl=document.getElementById('mood-history');
@@ -3008,12 +3050,12 @@ function renderMoodBox(){
   btnsEl.innerHTML=MOODS.map((m,i)=>`<button class="mood-btn${cur===String(i)?' sel':''}" onclick="setMood(${i})" title="${MOOD_LABELS[i]}">${m}</button>`).join('');
   if(!histEl)return;
   const week=Array.from({length:7},(_,i)=>{const ds=dateAgo(6-i);return{ds,lbl:i===6?'今':DAYS[daysAgo(6-i).getDay()],mood:localStorage.getItem(_moodKey(ds))};});
-  const hasAny=week.some(d=>d.mood!==null);
+  const hasAny=week.some(d=>d.mood!==null)||cur!==null;
   if(!hasAny){histEl.innerHTML='';return;}
-  const weekHtml='<div class="mood-week">'+week.map(d=>`<div class="mood-wd"><span class="mood-wd-ico">${d.mood!==null?MOODS[+d.mood]:'·'}</span><span class="mood-wd-lbl">${d.lbl}</span></div>`).join('')+'</div>';
-  const goodDays=week.filter(d=>d.mood!==null&&+d.mood>=3);
-  const insightHtml=goodDays.length>=2?`<div class="mood-insight">気分良好日の平均習慣達成率 ${Math.round(goodDays.reduce((s,d)=>s+dayRate(d.ds)*100,0)/goodDays.length)}%</div>`:'';
-  histEl.innerHTML=weekHtml+insightHtml;
+  const weekHtml=week.some(d=>d.mood!==null)?'<div class="mood-week">'+week.map(d=>`<div class="mood-wd"><span class="mood-wd-ico">${d.mood!==null?MOODS[+d.mood]:'·'}</span><span class="mood-wd-lbl">${d.lbl}</span></div>`).join('')+'</div>':'';
+  const tipHtml=cur!==null?`<div class="mood-tip">${MOOD_TIPS[+cur]}</div>`:'';
+  const corrHtml=_buildMoodCorrHtml();
+  histEl.innerHTML=weekHtml+tipHtml+corrHtml;
 }
 
 // ── Cycle 32: category batch complete ──
