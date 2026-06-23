@@ -58,6 +58,9 @@
     body.light-mode .calendar-section { background: rgba(91, 200, 232, 0.05) !important; }
     body.light-mode .day { background: rgba(255, 255, 255, 0.5) !important; }
     .theme-toggle { cursor: pointer; font-size: 16px; }
+    .search-box { flex: 1; min-width: 150px; padding: 8px 12px; background: rgba(91, 200, 232, 0.1); border: 1px solid rgba(91, 200, 232, 0.3); border-radius: 4px; color: #5BC8E8; font-size: 12px; }
+    .search-box::placeholder { color: rgba(91, 200, 232, 0.6); }
+    .day.highlight { background: rgba(255, 200, 0, 0.2) !important; border-color: #FFD700 !important; }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
     .calendar-nav { display: flex; gap: 15px; align-items: center; }
@@ -145,6 +148,7 @@
     <div class="container">
       <div class="header" role="banner">
         <h1>ASK2 - 毎日の市場分析と漫画</h1>
+        <input type="text" id="searchBox" class="search-box" placeholder="🔍 この月から検索..." />
         <div class="header-right" role="toolbar" aria-label="ユーザー操作">
           <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
@@ -518,6 +522,22 @@
         renderCalendar();
         showToast('🗑️ すべてのデータが削除されました', 'success');
       }
+    });
+
+    document.getElementById('searchBox').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll('.day').forEach(el => {
+        el.classList.remove('highlight');
+        if (query && !el.classList.contains('other-month')) {
+          const dateStr = el.textContent;
+          const y = currentDate.getFullYear(), m = currentDate.getMonth() + 1;
+          const fullDateStr = `${y}-${String(m).padStart(2, '0')}-${el.querySelector('.day-number')?.textContent || ''}`;
+          const data = currentData[fullDateStr];
+          if (data && (data.ask1Summary?.toLowerCase().includes(query) || data.marketAnalysis?.toLowerCase().includes(query))) {
+            el.classList.add('highlight');
+          }
+        }
+      });
     });
 
     document.getElementById('prevBtn').addEventListener('click', () => {
