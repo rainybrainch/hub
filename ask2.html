@@ -102,6 +102,18 @@
       .calendar-nav { flex-wrap: wrap; }
       .day { min-height: 60px; font-size: 12px; }
     }
+    @media (max-width: 576px) {
+      body { padding: 14px; }
+      .header { flex-direction: column; margin-bottom: 16px; }
+      .header h1 { font-size: 16px; }
+      .header-right { width: 100%; gap: 8px; }
+      .user-info { font-size: 11px; }
+      .calendar-section { padding: 16px; }
+      .month-year { font-size: 20px; }
+      .calendar-nav { gap: 10px; }
+      .calendar-nav button { padding: 6px 12px; font-size: 12px; }
+      .day { min-height: 56px; padding: 8px; }
+    }
     @media (max-width: 375px) {
       body { padding: 12px; }
       .header { margin-bottom: 20px; }
@@ -128,7 +140,7 @@
         <div class="header-right" role="toolbar" aria-label="ユーザー操作">
           <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
-          <button class="btn-utility" id="exportBtn" title="Export JSON" onclick="(()=>{const d=JSON.stringify(currentData,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ask2.json';a.click();})()">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button>
+          <button class="btn-utility" id="exportBtn" title="Export JSON">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button>
         </div>
       </div>
 
@@ -426,6 +438,8 @@
       }
     });
 
+    document.getElementById('exportBtn').addEventListener('click', exportAsJSON);
+
     document.getElementById('prevBtn').addEventListener('click', () => {
       currentDate.setMonth(currentDate.getMonth() - 1);
       renderCalendar();
@@ -436,7 +450,7 @@
       renderCalendar();
     });
 
-    function showToast(msg,type='success'){const container=document.getElementById('toastContainer');const toast=document.createElement('div');toast.className=`toast ${type}`;toast.textContent=msg;container.appendChild(toast);setTimeout(()=>{toast.classList.add('closing');setTimeout(()=>container.removeChild(toast),300);},3000);}let history=[];function undo(){if(history.length>0){currentData=history.pop();localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}}document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z")undo();});document.getElementById("importBtn")?.addEventListener("click",()=>{const input=document.createElement("input");input.type="file";input.accept=".json";input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const imported=JSON.parse(ev.target.result);currentData=Object.assign(currentData,imported);localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();showToast("✅ データをインポートしました","success");}catch(err){showToast("❌ JSON形式が不正です","error");}};reader.readAsText(file);};input.click();});document.getElementById("reportBtn")?.addEventListener("click",()=>{const y=currentDate.getFullYear(),m=currentDate.getMonth()+1,d=new Date(y,m,0).getDate();let c=0,t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}alert(`${m}月:${c}/${d}日入力,画像${t}枚,入力率${Math.round(c*100/d)}%`);});checkAuth();
+    function showToast(msg,type='success'){const container=document.getElementById('toastContainer');const toast=document.createElement('div');toast.className=`toast ${type}`;toast.textContent=msg;container.appendChild(toast);setTimeout(()=>{toast.classList.add('closing');setTimeout(()=>container.removeChild(toast),300);},3000);}function exportAsJSON(){const d=JSON.stringify(currentData,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ask2.json';a.click();showToast('✅ JSON をエクスポートしました');}function exportAsCSV(){const rows=[['日付','ASK1要約','市場分析']];const y=currentDate.getFullYear(),m=currentDate.getMonth()+1,d=new Date(y,m,0).getDate();for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da)rows.push([s,`"${(da.ask1Summary||'').replace(/"/g,'""')}"`,`"${(da.marketAnalysis||'').replace(/"/g,'""')}"`]);}const csv=rows.map(r=>r.join(',')).join('\n');const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=`ask2_${y}${String(m).padStart(2,"0")}.csv`;l.click();showToast('✅ CSV をエクスポートしました');}let history=[];function undo(){if(history.length>0){currentData=history.pop();localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}}document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z")undo();});document.getElementById("importBtn")?.addEventListener("click",()=>{const input=document.createElement("input");input.type="file";input.accept=".json";input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const imported=JSON.parse(ev.target.result);currentData=Object.assign(currentData,imported);localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();showToast("✅ データをインポートしました","success");}catch(err){showToast("❌ JSON形式が不正です","error");}};reader.readAsText(file);};input.click();});document.getElementById("reportBtn")?.addEventListener("click",()=>{const y=currentDate.getFullYear(),m=currentDate.getMonth()+1,d=new Date(y,m,0).getDate();let c=0,t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}alert(`${m}月:${c}/${d}日入力,画像${t}枚,入力率${Math.round(c*100/d)}%`);});checkAuth();
   </script>
 </body>
 </html>
