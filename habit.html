@@ -851,6 +851,19 @@
     .anniv-lbl{font-size:10px;font-weight:700;color:var(--purple);padding:2px 5px;background:rgba(155,109,214,.12);border:1px solid rgba(155,109,214,.25);border-radius:6px;line-height:1.5;flex-shrink:0}
     body.light .anniv-lbl{background:rgba(155,109,214,.15);border-color:rgba(155,109,214,.3)}
     body.compact .anniv-lbl{display:none}
+
+    /* Cycle 53: PWA install banner */
+    .pwa-banner{position:fixed;bottom:0;left:0;right:0;background:var(--dark2);border-top:1px solid rgba(255,255,255,.1);padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:300;transform:translateY(100%);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+    .pwa-banner.show{transform:translateY(0)}
+    .pwa-banner-ico{font-size:24px;flex-shrink:0}
+    .pwa-banner-txt{flex:1;font-size:12px;line-height:1.5}
+    .pwa-banner-ttl{font-weight:700;color:var(--white)}
+    .pwa-banner-sub{color:var(--muted);font-size:11px}
+    .pwa-install-btn{padding:8px 14px;border-radius:10px;background:var(--gold);border:none;color:var(--dark);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;font-weight:900;cursor:pointer;flex-shrink:0;transition:opacity .15s}
+    .pwa-install-btn:hover{opacity:.85}
+    .pwa-dismiss-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px;line-height:1;flex-shrink:0}
+    body.light .pwa-banner{background:#f0f4ff;border-top-color:rgba(0,0,0,.08)}
+    body.light .pwa-banner-ttl{color:#1a1a2e}
   </style>
 </head>
 <body>
@@ -2773,6 +2786,7 @@ function checkHabitAnniversaries(){
 
 // ── init ──
 load();
+pruneOldCompletions();
 initTheme();
 updateSoundBtn();
 initFocusModeBtn();
@@ -3217,6 +3231,40 @@ function showCalDay(ds){
   det.classList.add('show');
 }
 
+// ── Cycle 53: PWA install banner ──
+let _deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredInstall=e;
+  const dismissed=localStorage.getItem('rh_install_dismissed');
+  if(dismissed&&Date.now()-parseInt(dismissed)<7*86400000)return;
+  setTimeout(()=>showPwaBanner(),2000);
+});
+function showPwaBanner(){
+  const b=document.getElementById('pwa-banner');
+  if(b)b.classList.add('show');
+}
+function hidePwaBanner(permanent){
+  const b=document.getElementById('pwa-banner');
+  if(b)b.classList.remove('show');
+  if(permanent)localStorage.setItem('rh_install_dismissed',Date.now());
+}
+function installPwa(){
+  if(!_deferredInstall)return;
+  _deferredInstall.prompt();
+  _deferredInstall.userChoice.then(()=>{_deferredInstall=null;hidePwaBanner(true);});
+}
+
+// ── Cycle 53: auto-prune old completions data ──
+function pruneOldCompletions(){
+  const cutoff=dateAgo(400);
+  let pruned=0;
+  for(const k of Object.keys(completions)){
+    if(k<cutoff){delete completions[k];pruned++;}
+  }
+  if(pruned>0)saveC();
+}
+
 // ── Cycle 51: weekly goal achievement toast ──
 function checkWeeklyGoal(id){
   const h=habits.find(x=>x.id===id);
@@ -3229,5 +3277,15 @@ function checkWeeklyGoal(id){
   toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3500);
 }
 </script>
+
+<div class="pwa-banner" id="pwa-banner">
+  <div class="pwa-banner-ico">📱</div>
+  <div class="pwa-banner-txt">
+    <div class="pwa-banner-ttl">ホーム画面に追加しよう</div>
+    <div class="pwa-banner-sub">アプリとして快適に使えます</div>
+  </div>
+  <button class="pwa-install-btn" onclick="installPwa()">追加</button>
+  <button class="pwa-dismiss-btn" onclick="hidePwaBanner(true)" aria-label="閉じる">✕</button>
+</div>
 </body>
 </html>

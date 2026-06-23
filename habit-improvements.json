@@ -690,6 +690,21 @@
         "deployedAt": "2026-06-23T11:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 53,
+      "timestamp": "2026-06-23T12:00:00Z",
+      "version": "v2.53",
+      "changes": [
+        "PWAインストールバナー: beforeinstallpromptイベントをキャプチャしてアプリ起動2秒後に画面下部にスライドアップバナー（📱 ホーム画面に追加しよう）を表示。[追加]ボタンでネイティブインストールプロンプトを呼び出し、[✕]で7日間非表示にする（rh_install_dismissedキーで管理）。cubic-bezier(.34,1.56,.64,1)のスプリングアニメーションでスライドイン。ライト/ダーク両テーマ対応。既にインストール済みのブラウザ環境ではbeforeinstallpromptが発火しないため自動的に非表示。",
+        "LocalStorageデータ自動クリーンアップ: アプリ起動時（load()直後）にpruneOldCompletions()を実行し、400日以前のcompletionsエントリを自動削除。dateAgo(400)のカットオフより古いキーをObject.keys()でスキャンし削除後saveC()で保存。長期利用ユーザーのLocalStorageサイズ増大を防止し、週間チャート・ヒートマップなどの描画ループのパフォーマンスを維持。1年以上分のデータを保持するため振り返り機能への影響なし。"
+      ],
+      "notes": "PWAバナーはCycle 33のPWAマニフェスト（manifest.json + service worker）の上に乗る形でインストール誘導UXを追加。beforeinstallpromptはChrome/Edgeで発火するが、既にインストール済みかSafariの場合は発火しないため条件分岐なしで安全に動作する。7日クールダウンにより過剰に表示されるのを防ぎ、ユーザーが意図的に閉じた場合は1週間後に再表示する穏やかな誘導。ストレージ自動クリーンアップは400日（約13ヶ月）という保持期間で、1年分のデータを確実に保持しつつ無制限の蓄積を防ぐ。Object.keys()の線形スキャンのみで外部ライブラリ不要。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-23T12:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
