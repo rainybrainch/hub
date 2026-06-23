@@ -1,0 +1,19 @@
+{
+  "name": "ASK2 - 毎日の市場分析と漫画",
+  "short_name": "ASK2",
+  "description": "毎日の市場分析と漫画を記録するカレンダーアプリ",
+  "start_url": "/hub/ask2.html",
+  "scope": "/hub/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1a1f3a",
+  "theme_color": "#1a1f3a",
+  "screenshots": [
+    {
+      "src": "hub-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
