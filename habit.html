@@ -729,6 +729,28 @@
     @keyframes pbPop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
     .pb-lbl{animation:pbPop .45s cubic-bezier(.34,1.56,.64,1)}
     body.light .pb-lbl{background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.5)}
+
+    /* Cycle 47: last-done badge & weekly goal */
+    .last-done-lbl{font-size:9px;color:var(--muted);padding:1px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:5px;line-height:1.5;flex-shrink:0;font-variant-numeric:tabular-nums}
+    body.light .last-done-lbl{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.08)}
+    body.compact .last-done-lbl{display:none}
+    .wgoal-lbl{font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;line-height:1.5;flex-shrink:0;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .wgoal-lbl.met{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2)}
+    .wgoal-lbl.near{color:var(--gold);background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.2)}
+    .wgoal-lbl.behind{color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    body.light .wgoal-lbl.met{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.25)}
+    body.light .wgoal-lbl.near{background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.3)}
+    body.light .wgoal-lbl.behind{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}
+    body.compact .wgoal-lbl{display:none}
+    .wgoal-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .wgoal-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0}
+    .wgoal-btns{display:flex;gap:4px}
+    .wgoal-btn{width:34px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .wgoal-btn:hover{color:var(--white);border-color:rgba(255,255,255,.25)}
+    .wgoal-btn.sel{background:rgba(76,175,125,.18);border-color:var(--green);color:var(--green)}
+    body.light .wgoal-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
+    body.light .wgoal-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.25)}
+    body.light .wgoal-btn.sel{background:rgba(76,175,125,.12);border-color:var(--green);color:var(--green)}
   </style>
 </head>
 <body>
@@ -907,6 +929,10 @@
     <div class="modal-emoji-row">
       <input class="modal-emoji-inp" id="emoji-inp" type="text" placeholder="🎯" maxlength="4" oninput="onEmojiInput(this.value)" title="絵文字アイコン（任意）">
       <div class="emoji-presets" id="emoji-presets"></div>
+    </div>
+    <div class="wgoal-row">
+      <span class="wgoal-row-lbl">週目標</span>
+      <div class="wgoal-btns" id="wgoal-btns"></div>
     </div>
     <div class="tmpl-section" id="tmpl-section">
       <button class="tmpl-toggle" onclick="toggleTemplates()" type="button">📋 テンプレートから選ぶ <span class="tmpl-chev" id="tmpl-chev">▼</span></button>
@@ -1211,6 +1237,39 @@ function habit7Days(id){
   return Array.from({length:7},(_,i)=>!!( completions[dateAgo(6-i)]||{})[id]);
 }
 
+// Cycle 47: days since last completion (-1=never, 0=done today)
+function habitLastDone(id){
+  const td=today();
+  if((completions[td]||{})[id]) return 0;
+  for(let d=1;d<=365;d++){
+    if((completions[dateAgo(d)]||{})[id]) return d;
+  }
+  return -1;
+}
+
+// Cycle 47: count completions this week (Mon to today)
+function habitWeekDoneCount(id){
+  const dow=(new Date().getDay()+6)%7; // Mon=0
+  let cnt=0;
+  for(let d=0;d<=dow;d++){if((completions[dateAgo(d)]||{})[id])cnt++;}
+  return cnt;
+}
+
+// Cycle 47: weekly goal modal helpers
+let _selWeekGoal=7;
+function initWeekGoalBtns(){
+  const el=document.getElementById('wgoal-btns');if(!el)return;
+  const labels=[1,2,3,4,5,6,'毎日'];
+  el.innerHTML=labels.map((l,i)=>{
+    const v=i+1;
+    return `<button class="wgoal-btn${_selWeekGoal===v?' sel':''}" onclick="selWeekGoalBtn(${v})" type="button">${l}</button>`;
+  }).join('');
+}
+function selWeekGoalBtn(v){
+  _selWeekGoal=v;
+  document.querySelectorAll('.wgoal-btn').forEach((b,i)=>b.classList.toggle('sel',i+1===v));
+}
+
 // cycle 11: smart category auto-suggest based on habit name keywords
 function suggestCategory(name){
   for(const[cat,kws]of Object.entries(CAT_KEYWORDS)){
@@ -1410,6 +1469,17 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const doneThisWeek=dots7.filter(Boolean).length;
   const isLowRate=!isPaused&&createdDaysAgo>=7&&doneThisWeek===0;
   const lowRateLbl=isLowRate?'<span class="low-rate-lbl">要注意</span>':'';
+  // Cycle 47: last-done badge for uncompleted habits with history
+  let lastDoneLbl='';
+  if(!isDone&&!isPaused){const ld=habitLastDone(h.id);if(ld>0)lastDoneLbl=`<span class="last-done-lbl">${ld}日前</span>`;}
+  // Cycle 47: weekly goal badge
+  let wgoalLbl='';
+  if(h.weekGoal&&h.weekGoal<7&&!isPaused){
+    const wdone=habitWeekDoneCount(h.id);
+    const g=h.weekGoal;
+    const cls=wdone>=g?'met':wdone>=Math.ceil(g/2)?'near':'behind';
+    wgoalLbl=`<span class="wgoal-lbl ${cls}">週${wdone}/${g}</span>`;
+  }
   const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
   const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
@@ -1425,7 +1495,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${pbBadge}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1749,6 +1819,8 @@ function openModal(id=null){
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
     const ts=document.getElementById('tmpl-section');if(ts)ts.style.display='none';
+    // Cycle 47: set week goal
+    _selWeekGoal=h&&h.weekGoal?h.weekGoal:7;initWeekGoalBtns();
   }else{
     inp.value='';if(noteEl)noteEl.value='';
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
@@ -1761,6 +1833,8 @@ function openModal(id=null){
     const tg=document.getElementById('tmpl-grid'),tc=document.getElementById('tmpl-chev'),ts=document.getElementById('tmpl-section');
     if(tg)tg.classList.remove('open');if(tc)tc.classList.remove('open');
     if(ts)ts.style.display='';
+    // Cycle 47: reset week goal
+    _selWeekGoal=7;initWeekGoalBtns();
   }
   setTimeout(()=>inp.focus(),300);
 }
@@ -1783,11 +1857,12 @@ function saveHabit(){
   if(!name||!selCatVal)return;
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(_selWeekGoal<7)h.weekGoal=_selWeekGoal;else delete h.weekGoal;}
   }else{
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
     if(emoji)nh.emoji=emoji;
+    if(_selWeekGoal<7)nh.weekGoal=_selWeekGoal;
     habits.push(nh);
   }
   saveH();
@@ -2394,6 +2469,7 @@ updateSoundBtn();
 initFocusModeBtn();
 initCompactView();
 initEmojiPresets();
+initWeekGoalBtns();
 initTemplates();
 initIntention();
 initWeekly();
