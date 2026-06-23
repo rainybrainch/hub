@@ -332,6 +332,7 @@
     function openDetailModal(date, month, year) {
       selectedDate = new Date(year, month, date);
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+      localStorage.setItem('ask2_lastOpenedDate', dateStr);
 
       const data = currentData[dateStr] || {};
 
@@ -580,6 +581,10 @@
     document.getElementById('helpClose').addEventListener('click', () => {
       document.getElementById('helpModal').classList.remove('visible');
     });
+
+    document.getElementById('importBtn').addEventListener('dblclick', () => {
+      exportAsTSV();
+    }, true);
 
     document.getElementById('prevBtn').addEventListener('click', () => {
       currentDate.setMonth(currentDate.getMonth() - 1);
