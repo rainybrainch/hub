@@ -60,6 +60,13 @@
     .theme-toggle { cursor: pointer; font-size: 16px; }
     .search-box { flex: 1; min-width: 150px; padding: 8px 12px; background: rgba(91, 200, 232, 0.1); border: 1px solid rgba(91, 200, 232, 0.3); border-radius: 4px; color: #5BC8E8; font-size: 12px; }
     .search-box::placeholder { color: rgba(91, 200, 232, 0.6); }
+    .search-count { font-size: 11px; color: rgba(91, 200, 232, 0.7); margin-left: 8px; white-space: nowrap; }
+    .shortcut-modal { display: none; }
+    .shortcut-modal.visible { display: flex; }
+    .shortcut-content { max-height: 70vh; overflow-y: auto; }
+    .shortcut-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(91, 200, 232, 0.2); }
+    .shortcut-item:last-child { border-bottom: none; }
+    .shortcut-key { background: rgba(91, 200, 232, 0.2); padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 11px; color: #5BC8E8; display: inline-block; margin-right: 8px; }
     .day.highlight { background: rgba(255, 200, 0, 0.2) !important; border-color: #FFD700 !important; }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
@@ -148,11 +155,14 @@
     <div class="container">
       <div class="header" role="banner">
         <h1>ASK2 - 毎日の市場分析と漫画</h1>
-        <input type="text" id="searchBox" class="search-box" placeholder="🔍 この月から検索..." />
+        <div style="display: flex; align-items: center; flex: 1;">
+          <input type="text" id="searchBox" class="search-box" placeholder="🔍 この月から検索..." />
+          <div class="search-count" id="searchCount"></div>
+        </div>
         <div class="header-right" role="toolbar" aria-label="ユーザー操作">
           <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
-          <button class="btn-utility" id="exportBtn" title="Export JSON">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button><button class="btn-utility theme-toggle" id="themeBtn" title="Switch theme">🌙</button><button class="btn-utility" id="resetBtn" title="Reset all data">🗑️</button>
+          <button class="btn-utility" id="exportBtn" title="Export JSON">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button><button class="btn-utility theme-toggle" id="themeBtn" title="Switch theme">🌙</button><button class="btn-utility" id="resetBtn" title="Reset all data">🗑️</button><button class="btn-utility" id="helpBtn" title="Help & Shortcuts">❓</button>
         </div>
       </div>
 
@@ -170,6 +180,27 @@
   </div>
 
   <div id="toastContainer"></div>
+
+  <div class="modal shortcut-modal" id="helpModal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⌨️ キーボードショートカット</h2>
+        <button class="modal-close" id="helpClose">&times;</button>
+      </div>
+      <div class="shortcut-content">
+        <div class="shortcut-item"><span class="shortcut-key">Ctrl+Enter</span> モーダルでデータ保存</div>
+        <div class="shortcut-item"><span class="shortcut-key">Escape</span> モーダルを閉じる</div>
+        <div class="shortcut-item"><span class="shortcut-key">Ctrl+Z</span> 操作を戻す</div>
+        <div class="shortcut-item"><span class="shortcut-key">← → 矢印キー</span> 月を移動</div>
+        <div class="shortcut-item"><span class="shortcut-key">Tab</span> フォーカスを移動</div>
+        <h3 style="color:#5BC8E8;margin-top:16px;margin-bottom:8px;">💡 ヒント</h3>
+        <div class="shortcut-item">• 日付をクリックで詳細エディタを開く</div>
+        <div class="shortcut-item">• 画像はドラッグ&ドロップでアップロード</div>
+        <div class="shortcut-item">• データはブラウザに自動保存</div>
+        <div class="shortcut-item">• JSON/CSVでエクスポート可能</div>
+      </div>
+    </div>
+  </div>
 
   <div class="modal" id="detailModal" role="dialog" aria-labelledby="modalDate" aria-modal="true">
     <div class="modal-content">
@@ -526,18 +557,28 @@
 
     document.getElementById('searchBox').addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase();
+      let count = 0;
       document.querySelectorAll('.day').forEach(el => {
         el.classList.remove('highlight');
         if (query && !el.classList.contains('other-month')) {
-          const dateStr = el.textContent;
           const y = currentDate.getFullYear(), m = currentDate.getMonth() + 1;
           const fullDateStr = `${y}-${String(m).padStart(2, '0')}-${el.querySelector('.day-number')?.textContent || ''}`;
           const data = currentData[fullDateStr];
           if (data && (data.ask1Summary?.toLowerCase().includes(query) || data.marketAnalysis?.toLowerCase().includes(query))) {
             el.classList.add('highlight');
+            count++;
           }
         }
       });
+      document.getElementById('searchCount').textContent = query ? `${count}件` : '';
+    });
+
+    document.getElementById('helpBtn').addEventListener('click', () => {
+      document.getElementById('helpModal').classList.add('visible');
+    });
+
+    document.getElementById('helpClose').addEventListener('click', () => {
+      document.getElementById('helpModal').classList.remove('visible');
     });
 
     document.getElementById('prevBtn').addEventListener('click', () => {
