@@ -338,7 +338,11 @@
     .month-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
     .month-chev.open{transform:rotate(180deg)}
     .month-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
-    .month-body.open{max-height:180px}
+    .month-body.open{max-height:230px}
+    /* Cycle 45: perfect days row */
+    .month-perfect{font-size:11px;font-weight:700;color:var(--green);margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.05);text-align:center;letter-spacing:.02em}
+    .month-perfect b{font-family:"Dela Gothic One",sans-serif;font-size:15px}
+    body.light .month-perfect{border-top-color:rgba(0,0,0,.06)}
     .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px}
     .month-val{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:var(--gold);line-height:1;margin-bottom:2px;text-align:center}
     .month-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-align:center}
@@ -752,6 +756,7 @@
         <div class="ring-val gold" id="s-today">0%</div>
       </div>
       <div class="stat-lbl">今日の達成率</div>
+      <div class="stat-sub" id="s-yesterday"></div>
     </div>
     <div class="stat">
       <div class="stat-val sky" id="s-streak">0</div>
@@ -1227,6 +1232,9 @@ function renderHeader(){
 function renderStats(){
   const rate=todayRate(),streak=calcStreak(),best=updateBestStreak(streak);
   document.getElementById('s-today').textContent=rate+'%';
+  // Cycle 45: yesterday's completion rate sub-label
+  const yd=document.getElementById('s-yesterday');
+  if(yd){const yr=Math.round(dayRate(dateAgo(1))*100);yd.textContent=yr>0?`昨日: ${yr}%`:'昨日: -';}
   // Cycle 40: animate streak and total with count-up
   _animateStat(document.getElementById('s-streak'),streak);
   _animateStat(document.getElementById('s-total'),totalDone());
@@ -2113,18 +2121,23 @@ function renderMonthStats(){
   if(!el||!habits.length){if(el)el.style.display='none';return}
   const now=new Date(),y=now.getFullYear(),m=now.getMonth(),day=now.getDate();
   let total=0;const hc={};habits.forEach(h=>hc[h.id]=0);
+  // Cycle 45: count perfect days (all active habits done)
+  const active=habits.filter(h=>!h.paused);
+  let perfectDays=0;
   for(let d=1;d<=day;d++){
     const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dc=completions[ds]||{};
     habits.forEach(h=>{if(dc[h.id]){total++;hc[h.id]++;}});
+    if(active.length>0&&dayRate(ds)===1)perfectDays++;
   }
   const possible=habits.length*day;
   const rate=possible?Math.round(total/possible*100):0;
   let best=null,bestCnt=0;
   habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
   const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  const perfectHtml=active.length>0?`<div class="month-perfect">💯 完全達成日 <b>${perfectDays}</b> / ${day}日</div>`:'';
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${perfectHtml}${bestHtml}</div>`;
 }
 
 // ── Cycle 22: Achievement badges ──
