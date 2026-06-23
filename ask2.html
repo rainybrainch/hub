@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1a1f3a" />
+  <meta name="description" content="毎日の市場分析と漫画を記録するカレンダーアプリ" />
   <title>ASK2 - 毎日の市場分析と漫画</title>
   <link rel="icon" href="hub-icon.png" type="image/png">
   <style>
@@ -84,6 +86,22 @@
       .calendar-section { padding: 20px; }
       .calendar-nav { flex-wrap: wrap; }
       .day { min-height: 60px; font-size: 12px; }
+    }
+    @media (max-width: 375px) {
+      body { padding: 12px; }
+      .header { margin-bottom: 20px; }
+      .header h1 { font-size: 16px; }
+      .header-right { gap: 8px; }
+      .btn-utility, .btn-logout { padding: 6px 10px; font-size: 11px; }
+      .calendar-section { padding: 12px; }
+      .calendar-header { margin-bottom: 15px; }
+      .month-year { font-size: 18px; min-width: 120px; }
+      .calendar-nav button { padding: 6px 10px; font-size: 11px; }
+      .calendar-grid { gap: 8px; }
+      .day { min-height: 50px; padding: 6px; }
+      .day-number { font-size: 12px; }
+      .day-indicator { font-size: 16px; }
+      .weekday { font-size: 10px; padding: 8px 0; }
     }
   </style>
 </head>
