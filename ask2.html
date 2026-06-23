@@ -52,8 +52,9 @@
     .modal-section { margin-bottom: 25px; }
     .modal-section h3 { font-size: 14px; font-weight: 700; color: #5BC8E8; margin-bottom: 12px; text-transform: uppercase; }
     .modal-section textarea { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(91, 200, 232, 0.2); border-radius: 6px; color: #fff; font-family: "Zen Maru Gothic", sans-serif; min-height: 100px; resize: vertical; }
-    .image-upload-zone { border: 2px dashed rgba(91, 200, 232, 0.4); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; background: rgba(91, 200, 232, 0.05); }
-    .image-upload-zone.drag-over { border-color: #5BC8E8; background: rgba(91, 200, 232, 0.15); }
+    .image-upload-zone { border: 2px dashed rgba(91, 200, 232, 0.4); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; background: rgba(91, 200, 232, 0.05); transition: all 0.2s; }
+    .image-upload-zone:hover { border-color: #5BC8E8; background: rgba(91, 200, 232, 0.1); }
+    .image-upload-zone.drag-over { border-color: #5BC8E8; background: rgba(91, 200, 232, 0.2); transform: scale(1.02); }
     .image-container { margin-top: 12px; }
     .image-container img { max-width: 100%; max-height: 300px; border-radius: 4px; }
     .modal-actions { display: flex; gap: 12px; margin-top: 25px; }
@@ -238,7 +239,14 @@
 
       setupImageUpload();
       document.getElementById('detailModal').classList.add('visible');
+      document.getElementById('ask1Summary').focus();
     }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey && document.getElementById('detailModal').classList.contains('visible')) {
+        document.getElementById('saveBtn').click();
+      }
+    });
 
     document.getElementById('modalCloseBtn').addEventListener('click', () => {
       document.getElementById('detailModal').classList.remove('visible');
