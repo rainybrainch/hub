@@ -64,8 +64,11 @@
     .error-msg { color: #E8354A; font-size: 12px; margin-top: 10px; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(30px); opacity: 0; } }
     .modal.visible { animation: fadeIn 0.3s ease-out; }
+    .modal.closing { animation: fadeIn 0.3s ease-out reverse; }
     .modal-content { animation: slideUp 0.3s ease-out; }
+    .modal.closing .modal-content { animation: slideDown 0.3s ease-out; }
     @media (max-width: 768px) {
       .header { flex-direction: column; align-items: flex-start; }
       .header h1 { font-size: 18px; width: 100%; }
@@ -164,6 +167,7 @@
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
 
+      document.title = `ASK2 - ${year}年${month + 1}月`;
       document.getElementById('monthYear').textContent = `${year}年${month + 1}月`;
 
       const firstDay = new Date(year, month, 1);
@@ -248,15 +252,17 @@
       }
     });
 
-    document.getElementById('modalCloseBtn').addEventListener('click', () => {
-      document.getElementById('detailModal').classList.remove('visible');
-      selectedDate = null;
-    });
+    function closeModal() {
+      const modal = document.getElementById('detailModal');
+      modal.classList.add('closing');
+      setTimeout(() => {
+        modal.classList.remove('visible', 'closing');
+        selectedDate = null;
+      }, 300);
+    }
 
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-      document.getElementById('detailModal').classList.remove('visible');
-      selectedDate = null;
-    });
+    document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
     function setupImageUpload() {
       const dropZone = document.getElementById('mangaDropZone');
