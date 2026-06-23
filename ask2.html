@@ -79,33 +79,33 @@
 <body>
   <div class="main-content" id="mainContent">
     <div class="container">
-      <div class="header">
+      <div class="header" role="banner">
         <h1>ASK2 - 毎日の市場分析と漫画</h1>
-        <div class="header-right">
+        <div class="header-right" role="toolbar" aria-label="ユーザー操作">
           <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
           <button class="btn-utility" id="exportBtn" title="Export JSON" onclick="(()=>{const d=JSON.stringify(currentData,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ask2.json';a.click();})()">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button>
         </div>
       </div>
 
-      <div class="calendar-section">
+      <div class="calendar-section" role="region" aria-label="カレンダー">
         <div class="calendar-header">
           <div class="calendar-nav">
-            <button id="prevBtn">← 前月</button>
-            <div class="month-year" id="monthYear">2026年1月</div>
-            <button id="nextBtn">翌月 →</button>
+            <button id="prevBtn" aria-label="前月">← 前月</button>
+            <div class="month-year" id="monthYear" aria-live="polite">2026年1月</div>
+            <button id="nextBtn" aria-label="翌月">翌月 →</button>
           </div>
         </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="calendar-grid" id="calendarGrid" role="grid"></div>
       </div>
     </div>
   </div>
 
-  <div class="modal" id="detailModal">
+  <div class="modal" id="detailModal" role="dialog" aria-labelledby="modalDate" aria-modal="true">
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="modalDate">2026年1月1日</h2>
-        <button class="modal-close" id="modalCloseBtn">&times;</button>
+        <button class="modal-close" id="modalCloseBtn" aria-label="モーダルを閉じる">&times;</button>
       </div>
 
       <div class="modal-section">
