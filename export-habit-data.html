@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>習慣データエクスポート</title>
+  <style>
+    body { font-family: sans-serif; padding: 40px; background: #f0f0f0; }
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { color: #333; }
+    p { color: #666; line-height: 1.6; }
+    button { padding: 10px 20px; background: #4CAF7D; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #3a8a61; }
+    .status { margin-top: 20px; padding: 15px; border-radius: 4px; display: none; }
+    .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+    .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+    .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; display: block; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📅 習慣データエクスポート</h1>
+  <p>このページは <code>habit.html</code> の localStorage データを JSON ファイルにエクスポートします。</p>
+  <p><strong>用途</strong>：habit-cycle.py での自動分析に必要です。毎分自動実行が設定されている場合は、このページをブラウザで開き続ける必要があります。</p>
+
+  <h3>エクスポート方法</h3>
+  <ol>
+    <li>下のボタンをクリック → <code>habit-data.json</code> が同じディレクトリに保存されます</li>
+    <li>繰り返し実行可能（上書きされます）</li>
+    <li>ブラウザ開発者ツール → Application → Local Storage でも手動確認可</li>
+  </ol>
+
+  <button onclick="exportData()">🔽 今すぐエクスポート</button>
+  <button onclick="autoExport()" style="margin-left: 10px; background: #5BC8E8;">⏱ 1分ごとに自動エクスポート</button>
+  <button onclick="stopAutoExport()" style="margin-left: 10px; background: #ccc; color: #333;">⏹ 自動停止</button>
+
+  <div id="status"></div>
+
+  <h3>詳細</h3>
+  <p><strong>habit.html</strong> の <code>localStorage</code> キー: <code>habit_data</code></p>
+  <p><strong>出力ファイル</strong>: <code>habit-data.json</code> （このディレクトリ）</p>
+  <p><strong>形式</strong>:</p>
+  <pre style="background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto;">
+{
+  "habits": [
+    {
+      "id": "h_123456",
+      "name": "朝ラン",
+      "log": {
+        "2026-06-19": true,
+        "2026-06-18": true
+      }
+    }
+  ]
+}</pre>
+</div>
+
+<script>
+let autoExportInterval = null;
+
+function showStatus(message, type = 'info') {
+  const statusDiv = document.getElementById('status');
+  statusDiv.textContent = message;
+  statusDiv.className = `status ${type}`;
+}
+
+function exportData() {
+  try {
+    // localStorage から habit_data を読み込み
+    const dataStr = localStorage.getItem('habit_data');
+    if (!dataStr) {
+      showStatus('❌ 習慣データが見つかりません。habit.html で習慣を追加してください。', 'error');
+      return;
+    }
+
+    const data = JSON.parse(dataStr);
+
+    // JSON を ファイルに保存（ダウンロード）
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'habit-data.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // ステータス表示
+    const count = data.habits ? data.habits.length : 0;
+    showStatus(`✓ 習慣データをエクスポートしました (${count} 件)`, 'success');
+  } catch (error) {
+    showStatus(`❌ エラー: ${error.message}`, 'error');
+  }
+}
+
+function autoExport() {
+  if (autoExportInterval) {
+    showStatus('⏱ すでに自動実行中です', 'info');
+    return;
+  }
+
+  // 即座に1回実行
+  exportData();
+
+  // 1分ごとに実行
+  autoExportInterval = setInterval(() => {
+    exportData();
+    console.log(`[${new Date().toISOString()}] 自動エクスポート実行`);
+  }, 60000);
+
+  showStatus('✓ 1分ごとの自動エクスポートを開始しました。このタブを開き続けてください。', 'success');
+}
+
+function stopAutoExport() {
+  if (autoExportInterval) {
+    clearInterval(autoExportInterval);
+    autoExportInterval = null;
+    showStatus('⏹ 自動エクスポートを停止しました', 'info');
+  } else {
+    showStatus('自動実行は開始されていません', 'info');
+  }
+}
+
+// ページロード時のメッセージ
+window.addEventListener('load', () => {
+  showStatus('💡 ボタンをクリックしてデータをエクスポート、または自動実行を開始してください', 'info');
+});
+</script>
+</body>
+</html>
