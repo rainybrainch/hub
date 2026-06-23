@@ -721,6 +721,14 @@
     body.light .week-grade.grade-B{background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.38)}
     body.light .week-grade.grade-C{background:rgba(155,109,214,.1);border-color:rgba(155,109,214,.3)}
     body.light .week-grade.grade-D{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.22)}
+
+    /* Cycle 46: focus mode (hide completed) & per-habit PB badge */
+    .sort-btn.focus-on{background:rgba(76,175,125,.15);border-color:var(--green);color:var(--green)}
+    body.light .sort-btn.focus-on{background:rgba(76,175,125,.13);border-color:var(--green)}
+    .pb-lbl{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.35);color:var(--gold);white-space:nowrap;flex-shrink:0;line-height:1.5}
+    @keyframes pbPop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+    .pb-lbl{animation:pbPop .45s cubic-bezier(.34,1.56,.64,1)}
+    body.light .pb-lbl{background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.5)}
   </style>
 </head>
 <body>
@@ -877,6 +885,7 @@
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
     <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
     <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px">≡ 全折</button>
+    <button class="sort-btn" id="focus-mode-btn" onclick="toggleFocusMode()" style="margin-left:8px" title="完了済み習慣を非表示（H）">🎯 集中</button>
   </div>
   <div class="search-row">
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
@@ -946,6 +955,7 @@
       <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
       <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">カテゴリを全折りたたみ / 全展開</td></tr>
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
+      <tr><td><kbd class="kbdkey">H</kbd></td><td class="kbd-desc">完了済みを非表示（集中モード）</td></tr>
       <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
     </table>
@@ -974,6 +984,8 @@ const DAYS = ['日','月','火','水','木','金','土'];
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
 let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day';
+// Cycle 46: focus mode state
+let focusMode = localStorage.getItem('rh_fm') === '1';
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -1388,6 +1400,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const hs=habitStreak(h.id);
   const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
   const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
+  // Cycle 46: personal best streak badge
+  const pbBadge=hs>=3&&hs>=_habitBestStreak(h.id)?'<span class="pb-lbl">🏆PB</span>':'';
   let timeBadge='';
   if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
   const dots7=habit7Days(h.id);
@@ -1411,7 +1425,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${pbBadge}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1440,7 +1454,8 @@ function renderList(){
   const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
   const catCol=getCatCollapsed();
   for(const cat of cats){
-    const rawCh=list.filter(h=>h.category===cat);
+    // Cycle 46: focus mode hides completed (non-paused) habits
+    const rawCh=list.filter(h=>h.category===cat&&(!focusMode||!dc[h.id]||h.paused));
     if(!rawCh.length)continue;
     let ch;
     if(sortUndone)ch=[...rawCh].sort((a,b)=>{if(a.paused!==b.paused)return a.paused?1:-1;return(dc[a.id]?1:0)-(dc[b.id]?1:0);});
@@ -1817,6 +1832,19 @@ function toggleSortUndone(){
   const btn=document.getElementById('sort-undone-btn');
   if(btn)btn.classList.toggle('active',sortUndone);
   renderList();
+}
+
+// ── Cycle 46: focus mode (hide completed habits) ──
+function toggleFocusMode(){
+  focusMode=!focusMode;
+  localStorage.setItem('rh_fm',focusMode?'1':'0');
+  const btn=document.getElementById('focus-mode-btn');
+  if(btn)btn.classList.toggle('focus-on',focusMode);
+  renderList();
+}
+function initFocusModeBtn(){
+  const btn=document.getElementById('focus-mode-btn');
+  if(btn)btn.classList.toggle('focus-on',focusMode);
 }
 
 // ── Cycle 23: custom reorder within category ──
@@ -2363,6 +2391,7 @@ function saveWeekly(val){
 load();
 initTheme();
 updateSoundBtn();
+initFocusModeBtn();
 initCompactView();
 initEmojiPresets();
 initTemplates();
@@ -2486,6 +2515,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='c'||e.key==='C')toggleCompactView();
   else if(e.key==='z'||e.key==='Z')toggleCollapseAll();
   else if(e.key==='d'||e.key==='D')completeChallengeKey();
+  else if(e.key==='h'||e.key==='H')toggleFocusMode();
   else if(e.key==='?'||e.key==='？')openKbdHelp();
 });
 
