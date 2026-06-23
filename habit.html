@@ -794,6 +794,15 @@
     .insight-lbl{font-size:10px;color:var(--muted);margin-top:1px}
     body.light .insight-box{border-color:rgba(0,0,0,.08)}
     body.light .insight-item{background:rgba(0,0,0,.03)}
+    /* Cycle 50: habit trend badges ↑↓→ */
+    .habit-trend{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:1px 5px;border-radius:6px;margin-left:2px;line-height:1.4;letter-spacing:.02em}
+    .habit-trend.up{color:#4caf85;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.25)}
+    .habit-trend.down{color:var(--red);background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.2)}
+    .habit-trend.flat{color:var(--muted);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+    body.light .habit-trend.up{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.3)}
+    body.light .habit-trend.down{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.25)}
+    body.light .habit-trend.flat{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
+    body.compact .habit-trend{display:none}
   </style>
 </head>
 <body>
@@ -1299,6 +1308,17 @@ function habit7Days(id){
   return Array.from({length:7},(_,i)=>!!( completions[dateAgo(6-i)]||{})[id]);
 }
 
+// Cycle 50: trend comparison — last 7 days vs previous 7 days per-habit rate
+function habitTrend(id){
+  let cur=0,prev=0;
+  for(let i=0;i<7;i++){cur+=!!( completions[dateAgo(i)]||{})[id]?1:0;}
+  for(let i=7;i<14;i++){prev+=!!( completions[dateAgo(i)]||{})[id]?1:0;}
+  if(cur===0&&prev===0)return null;
+  if(cur>prev)return'up';
+  if(cur<prev)return'down';
+  return'flat';
+}
+
 // Cycle 47: days since last completion (-1=never, 0=done today)
 function habitLastDone(id){
   const td=today();
@@ -1554,6 +1574,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
   const hs=habitStreak(h.id);
   const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  // Cycle 50: trend badge
+  const tr=habitTrend(h.id);
+  const trendBadge=tr?`<span class="habit-trend ${tr}">${tr==='up'?'↑':tr==='down'?'↓':'→'}</span>`:'';
   const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
   // Cycle 46: personal best streak badge
   const pbBadge=hs>=3&&hs>=_habitBestStreak(h.id)?'<span class="pb-lbl">🏆PB</span>':'';
@@ -1598,7 +1621,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}${accentClass}" style="${accentStyle}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${diffBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}${accentClass}" style="${accentStyle}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${trendBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${diffBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2980,6 +3003,14 @@ function renderWeeklyGrade(){
   const tips={S:'90%以上達成 — 完璧！',A:'80%以上達成 — 優秀！',B:'65%以上達成 — 良好',C:'50%以上達成 — まずまず',D:'50%未満 — 要改善'};
   el.textContent=labels[grade];el.className=`week-grade grade-${grade}`;el.title=tips[grade];
 }
+
+// Cycle 50: auto-refresh when date changes (app open overnight)
+let _lastDate=today();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  const nd=today();
+  if(nd!==_lastDate){_lastDate=nd;celebrated=false;render();}
+});
 
 // ── Cycle 34: reset today's completions ──
 function resetToday(){
