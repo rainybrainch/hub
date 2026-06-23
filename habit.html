@@ -699,6 +699,24 @@
     .combo-toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(12px);background:linear-gradient(135deg,rgba(91,200,232,.25),rgba(155,109,214,.2));border:1px solid rgba(91,200,232,.4);color:var(--sky);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:8px 18px;border-radius:24px;z-index:430;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 4px 16px rgba(91,200,232,.2);backdrop-filter:blur(6px)}
     .combo-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     body.light .combo-toast{background:rgba(91,200,232,.15);border-color:rgba(91,200,232,.35);color:#1e8aab}
+
+    /* Cycle 44: XP floating text & level badge */
+    @keyframes xpFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-30px) scale(.78)}}
+    .xp-float{position:fixed;pointer-events:none;font-family:"Dela Gothic One",sans-serif;font-size:12px;color:var(--purple);z-index:601;animation:xpFloat .95s ease-out forwards;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.28)}
+    .xp-lv-badge{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(155,109,214,.1);border:1px solid rgba(155,109,214,.22);color:var(--purple);flex-shrink:0;cursor:default;transition:all .3s;line-height:1.5}
+    body.light .xp-lv-badge{background:rgba(155,109,214,.13);border-color:rgba(155,109,214,.32)}
+    /* Cycle 44: weekly performance grade badge */
+    .week-grade{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;flex-shrink:0;cursor:default;transition:all .3s;line-height:1.5}
+    .week-grade.grade-S{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.28);color:var(--green)}
+    .week-grade.grade-A{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.28);color:var(--sky)}
+    .week-grade.grade-B{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.28);color:var(--gold)}
+    .week-grade.grade-C{background:rgba(155,109,214,.1);border-color:rgba(155,109,214,.22);color:var(--purple)}
+    .week-grade.grade-D{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.18);color:var(--red)}
+    body.light .week-grade.grade-S{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.38)}
+    body.light .week-grade.grade-A{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.32)}
+    body.light .week-grade.grade-B{background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.38)}
+    body.light .week-grade.grade-C{background:rgba(155,109,214,.1);border-color:rgba(155,109,214,.3)}
+    body.light .week-grade.grade-D{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.22)}
   </style>
 </head>
 <body>
@@ -788,6 +806,8 @@
 
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
+    <span class="week-grade grade-C" id="week-grade" style="display:none" title="今週の達成グレード"></span>
+    <span class="xp-lv-badge" id="xp-lv-badge" title="経験値・レベル">🌱 Lv.1</span>
   </div>
 
   <!-- Cycle 38: mood tracker -->
@@ -1543,6 +1563,8 @@ function render(){
   updateProgressFooter();
   updateDocTitle();
   updateHeaderBadge();
+  updateXPBadge();
+  renderWeeklyGrade();
 }
 
 // ── Cycle 42: sticky header progress badge ──
@@ -1607,7 +1629,7 @@ function toggle(id,evt){
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
-    playTick();vib(50);checkHabitMilestone(id);triggerCombo();
+    playTick();vib(50);checkHabitMilestone(id);triggerCombo();earnXP(id,evt);
     // cycle 18: particle burst from checkbox position
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r)spawnBurst(r.left+r.width/2,r.top+r.height/2);}
   }
@@ -2608,6 +2630,70 @@ function scrollToHabit(id){
     el.classList.add('highlight-pulse');
     setTimeout(()=>el.classList.remove('highlight-pulse'),2200);
   },sec&&sec.classList.contains('closed')?400:0);
+}
+
+// ── Cycle 44: XP & Level System ──
+const XP_KEY='rh_xp';
+const XP_LEVELS=[0,100,250,500,900,1400,2000,2800,3800,5000];
+const XP_LV_EMOJI=['🌱','⭐','💫','🔥','💎','🏆','👑','🌟','🌀','⚡'];
+function getTotalXP(){return parseInt(localStorage.getItem(XP_KEY)||'0');}
+function _xpTodayKey(){return 'rh_xp_td_'+today();}
+function _getXpEarned(){try{return JSON.parse(localStorage.getItem(_xpTodayKey())||'[]');}catch{return[];}}
+function calcHabitXP(id){const s=habitStreak(id);return 10+Math.min(s*2,30);}
+function earnXP(id,evt){
+  const earned=_getXpEarned();
+  if(earned.includes(id))return;
+  const amount=calcHabitXP(id);
+  const oldXP=getTotalXP();
+  const newXP=oldXP+amount;
+  const oldLv=getXPLevel(oldXP);
+  const newLv=getXPLevel(newXP);
+  localStorage.setItem(XP_KEY,String(newXP));
+  earned.push(id);localStorage.setItem(_xpTodayKey(),JSON.stringify(earned));
+  if(evt){
+    const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');
+    const r=chk?chk.getBoundingClientRect():null;
+    if(r)spawnXPFloat(r.left+r.width/2+20,r.top-2,amount);
+  }
+  if(newLv>oldLv)setTimeout(()=>showXPLevelUp(newLv),420);
+}
+function getXPLevel(xp){for(let i=XP_LEVELS.length-1;i>=0;i--){if(xp>=XP_LEVELS[i])return i+1;}return 1;}
+function spawnXPFloat(x,y,amount){
+  const el=document.createElement('div');
+  el.className='xp-float';el.textContent=`+${amount}XP`;
+  el.style.left=Math.round(x)+'px';el.style.top=Math.round(y)+'px';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),960);
+}
+function showXPLevelUp(lv){
+  const toast=document.getElementById('milestone-toast');if(!toast)return;
+  const em=XP_LV_EMOJI[Math.min(lv-1,XP_LV_EMOJI.length-1)];
+  toast.textContent=`${em} レベルアップ！ Lv.${lv} 🎊`;
+  toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3500);
+}
+function updateXPBadge(){
+  const el=document.getElementById('xp-lv-badge');if(!el)return;
+  const xp=getTotalXP(),lv=getXPLevel(xp);
+  const em=XP_LV_EMOJI[Math.min(lv-1,XP_LV_EMOJI.length-1)];
+  el.textContent=`${em} Lv.${lv}`;
+  const next=XP_LEVELS[lv]||XP_LEVELS[XP_LEVELS.length-1];
+  el.title=`経験値: ${xp}XP — Lv.${lv}（次のレベルまで: ${Math.max(0,next-xp)}XP）`;
+}
+
+// ── Cycle 44: weekly performance grade ──
+function getWeeklyGrade(){
+  if(!habits.filter(h=>!h.paused).length)return null;
+  let sum=0;for(let i=0;i<7;i++)sum+=dayRate(dateAgo(i));
+  const avg=sum/7;
+  if(avg>=0.9)return'S';if(avg>=0.8)return'A';if(avg>=0.65)return'B';if(avg>=0.5)return'C';return'D';
+}
+function renderWeeklyGrade(){
+  const el=document.getElementById('week-grade');if(!el)return;
+  const grade=getWeeklyGrade();
+  if(!grade){el.style.display='none';return;}
+  el.style.display='';
+  const labels={S:'週間 S✨',A:'週間 A★',B:'週間 B👍',C:'週間 C',D:'週間 D'};
+  const tips={S:'90%以上達成 — 完璧！',A:'80%以上達成 — 優秀！',B:'65%以上達成 — 良好',C:'50%以上達成 — まずまず',D:'50%未満 — 要改善'};
+  el.textContent=labels[grade];el.className=`week-grade grade-${grade}`;el.title=tips[grade];
 }
 
 // ── Cycle 34: reset today's completions ──
