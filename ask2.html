@@ -36,8 +36,8 @@
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(91, 200, 232, 0.2); flex-wrap: wrap; gap: 20px; }
     .header h1 { font-size: 24px; color: #5BC8E8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 250px; }
     .header-right { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-    .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
-    .btn-utility { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); transition: all 0.2s; }
+    .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.8); white-space: nowrap; }
+    .btn-utility { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; background: rgba(91, 200, 232, 0.15); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.5); transition: all 0.2s; }
     .btn-utility:hover { background: rgba(91, 200, 232, 0.2); border-color: #5BC8E8; }
     .btn-utility:focus-visible { outline: 2px solid #5BC8E8; outline-offset: 2px; }
     .btn-utility:active { transform: scale(0.95); }
@@ -218,6 +218,11 @@
     function showMainContent() {
       document.getElementById('mainContent').classList.add('visible');
       document.getElementById('userEmail').textContent = currentUser.email;
+      const savedMonth = localStorage.getItem('ask2_currentMonth');
+      if (savedMonth) {
+        const [y, m] = savedMonth.split('-');
+        currentDate = new Date(parseInt(y), parseInt(m) - 1);
+      }
       renderCalendar();
       loadData();
     }
@@ -228,6 +233,7 @@
 
       document.title = `ASK2 - ${year}年${month + 1}月`;
       document.getElementById('monthYear').textContent = `${year}年${month + 1}月`;
+      localStorage.setItem('ask2_currentMonth', `${year}-${String(month + 1).padStart(2, '0')}`);
 
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
