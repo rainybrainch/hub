@@ -62,6 +62,10 @@
     .btn-save { background: #5BC8E8; color: #0d1117; }
     .btn-cancel { background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); }
     .error-msg { color: #E8354A; font-size: 12px; margin-top: 10px; }
+    .toast { position: fixed; bottom: 20px; right: 20px; padding: 16px 24px; border-radius: 8px; font-size: 14px; z-index: 2000; animation: slideUp 0.3s ease-out; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+    .toast.success { background: rgba(76, 175, 125, 0.9); color: #fff; border-left: 4px solid #4CAF7D; }
+    .toast.error { background: rgba(232, 53, 74, 0.9); color: #fff; border-left: 4px solid #E8354A; }
+    .toast.closing { animation: slideDown 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes slideDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(30px); opacity: 0; } }
@@ -103,6 +107,8 @@
       </div>
     </div>
   </div>
+
+  <div id="toastContainer"></div>
 
   <div class="modal" id="detailModal" role="dialog" aria-labelledby="modalDate" aria-modal="true">
     <div class="modal-content">
@@ -344,7 +350,8 @@
 
       localStorage.setItem('ask2_data', JSON.stringify(currentData));
 
-      document.getElementById('detailModal').classList.remove('visible');
+      showToast('✅ データを保存しました');
+      closeModal();
       renderCalendar();
     });
 
@@ -365,7 +372,7 @@
       renderCalendar();
     });
 
-    let history=[];function undo(){if(history.length>0){currentData=history.pop();localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}}document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z")undo();});document.getElementById("importBtn")?.addEventListener("click",()=>{const input=document.createElement("input");input.type="file";input.accept=".json";input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const imported=JSON.parse(ev.target.result);currentData=Object.assign(currentData,imported);localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();alert("✅ データをインポートしました");}catch(err){alert("❌ JSON形式が不正です");}};reader.readAsText(file);};input.click();});document.getElementById("reportBtn")?.addEventListener("click",()=>{const y=currentDate.getFullYear(),m=currentDate.getMonth()+1,d=new Date(y,m,0).getDate();let c=0,t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}alert(`${m}月:${c}/${d}日入力,画像${t}枚,入力率${Math.round(c*100/d)}%`);});checkAuth();
+    function showToast(msg,type='success'){const container=document.getElementById('toastContainer');const toast=document.createElement('div');toast.className=`toast ${type}`;toast.textContent=msg;container.appendChild(toast);setTimeout(()=>{toast.classList.add('closing');setTimeout(()=>container.removeChild(toast),300);},3000);}let history=[];function undo(){if(history.length>0){currentData=history.pop();localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();}}document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z")undo();});document.getElementById("importBtn")?.addEventListener("click",()=>{const input=document.createElement("input");input.type="file";input.accept=".json";input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const imported=JSON.parse(ev.target.result);currentData=Object.assign(currentData,imported);localStorage.setItem("ask2_data",JSON.stringify(currentData));renderCalendar();alert("✅ データをインポートしました");}catch(err){alert("❌ JSON形式が不正です");}};reader.readAsText(file);};input.click();});document.getElementById("reportBtn")?.addEventListener("click",()=>{const y=currentDate.getFullYear(),m=currentDate.getMonth()+1,d=new Date(y,m,0).getDate();let c=0,t=0;for(let i=1;i<=d;i++){const s=`${y}-${String(m).padStart(2,"0")}-${String(i).padStart(2,"0")}`;const da=currentData[s];if(da){c++;t+=(da.images||[]).length;}}alert(`${m}月:${c}/${d}日入力,画像${t}枚,入力率${Math.round(c*100/d)}%`);});checkAuth();
   </script>
 </body>
 </html>
