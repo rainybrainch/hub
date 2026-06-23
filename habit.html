@@ -644,6 +644,39 @@
     @keyframes nearBestPulse{0%,100%{opacity:1}50%{opacity:.45}}
     .streak-near-best.very-close{animation:nearBestPulse 1.5s ease infinite}
     body.light .streak-near-best{color:var(--gold-d)}
+
+    /* Cycle 40: last-week ghost bars in weekly chart */
+    .bar-fill-ghost{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.11);border-radius:4px;pointer-events:none}
+    body.light .bar-fill-ghost{background:rgba(0,0,0,.08)}
+    /* Cycle 40: stat count-up pop animation */
+    @keyframes statPop{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+    .stat-val.stat-popping{animation:statPop .35s cubic-bezier(.34,1.56,.64,1)}
+
+    /* Cycle 39: habit card check flash */
+    @keyframes checkFlash{0%{box-shadow:none}35%{box-shadow:0 0 0 3px rgba(76,175,125,.5),0 0 18px rgba(76,175,125,.25)}100%{box-shadow:none}}
+    .habit.flash-done{animation:checkFlash .5s ease-out forwards}
+    /* Cycle 39: progress milestone toast */
+    .progress-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--sky),#2a8eb0);color:var(--white);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 6px 24px rgba(91,200,232,.5);z-index:455;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .progress-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Cycle 38: mood tracker */
+    .mood-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .mood-box-ttl{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .mood-btns{display:flex;gap:6px;margin-bottom:2px}
+    .mood-btn{flex:1;background:none;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:7px 2px;font-size:21px;cursor:pointer;transition:all .2s;line-height:1;text-align:center}
+    .mood-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);transform:scale(1.06)}
+    .mood-btn.sel{background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.5);box-shadow:0 0 8px rgba(245,200,66,.25);transform:scale(1.08)}
+    .mood-week{display:flex;gap:4px;padding-top:7px;border-top:1px solid rgba(255,255,255,.05);margin-top:6px}
+    .mood-wd{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+    .mood-wd-ico{font-size:13px;line-height:1;min-height:14px}
+    .mood-wd-lbl{font-size:8px;color:var(--muted)}
+    .mood-insight{font-size:10px;color:var(--muted);font-style:italic;text-align:center;margin-top:6px;padding-top:5px;border-top:1px solid rgba(255,255,255,.04)}
+    body.light .mood-box{border-color:rgba(0,0,0,.08)}
+    body.light .mood-btn{border-color:rgba(0,0,0,.1)}
+    body.light .mood-btn:hover{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.2)}
+    body.light .mood-btn.sel{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.5)}
+    body.light .mood-week{border-top-color:rgba(0,0,0,.06)}
+    body.light .mood-insight{border-top-color:rgba(0,0,0,.05)}
   </style>
 </head>
 <body>
@@ -729,6 +762,13 @@
 
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
+  </div>
+
+  <!-- Cycle 38: mood tracker -->
+  <div class="mood-box" id="mood-box">
+    <div class="mood-box-ttl">😊 今日の気分</div>
+    <div class="mood-btns" id="mood-btns"></div>
+    <div id="mood-history"></div>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -823,6 +863,7 @@
 
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 <div class="milestone-toast" id="milestone-toast"></div>
+<div class="progress-toast" id="progress-toast"></div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -1137,8 +1178,9 @@ function renderHeader(){
 function renderStats(){
   const rate=todayRate(),streak=calcStreak(),best=updateBestStreak(streak);
   document.getElementById('s-today').textContent=rate+'%';
-  document.getElementById('s-streak').textContent=streak;
-  document.getElementById('s-total').textContent=totalDone();
+  // Cycle 40: animate streak and total with count-up
+  _animateStat(document.getElementById('s-streak'),streak);
+  _animateStat(document.getElementById('s-total'),totalDone());
   // cycle 5: best streak display
   const sb=document.getElementById('s-best');
   if(sb)sb.textContent=`最高: ${best}日`;
@@ -1185,9 +1227,11 @@ function renderChart(){
     for(let i=6;i>=0;i--){
       const ds=dateAgo(i),rate=dayRate(ds),pct=Math.round(rate*100),isToday=i===0;
       const lbl=isToday?'今日':DAYS[daysAgo(i).getDay()];
+      // Cycle 40: last-week ghost bar
+      const lastWeekPct=Math.round(dayRate(dateAgo(i+7))*100);
       const col=document.createElement('div');
       col.className='chart-col';
-      col.innerHTML=`<div class="bar-wrap"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%" title="${pct}%"></div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
+      col.innerHTML=`<div class="bar-wrap"><div class="bar-fill-ghost" style="height:${lastWeekPct}%"></div><div class="bar-fill${isToday?' today':''}" style="height:${pct}%" title="${pct}%（先週:${lastWeekPct}%）"></div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
       c.appendChild(col);
     }
   }else if(chartView==='month'){
@@ -1429,6 +1473,7 @@ function render(){
   renderTimeline();
   renderList();
   renderChallenge();
+  renderMoodBox();
   updateFabBadge();
   updateProgressFooter();
   updateDocTitle();
@@ -1459,6 +1504,12 @@ function toggle(id,evt){
   }
   saveC();
   render();
+  // Cycle 39: card flash + progress milestones
+  if(!wasCompleted){
+    const cardEl=document.querySelector(`.habit[data-id="${id}"]`);
+    if(cardEl){cardEl.classList.add('flash-done');setTimeout(()=>cardEl.classList.remove('flash-done'),500);}
+    checkProgressMilestones();
+  }
   // cycle 2: celebration check
   if(todayRate()===100&&!celebrated){
     celebrated=true;
@@ -1513,12 +1564,15 @@ function shareWeeklySummary(){
     lines.push(`${lbl} ${'■'.repeat(filled)}${'□'.repeat(10-filled)} ${rate}%`);
   }
   lines.push('','🔥 連続記録: '+calcStreak()+'日','✅ 累計: '+totalDone()+'回','─────────────','習慣トラッカー | RAINYBRAIN');
-  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+  const text=lines.join('\n');
+  // Cycle 38: use native Web Share API on mobile when available
+  if(navigator.share){navigator.share({title:'習慣週間レポート',text}).catch(()=>{});return;}
+  navigator.clipboard.writeText(text).then(()=>{
     const b=document.getElementById('banner');
     b.textContent='📋 週間レポートをコピーしました！';
     b.classList.add('show');
     setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
-  }).catch(()=>{alert(lines.join('\n'));});
+  }).catch(()=>{alert(text);});
 }
 
 // ── modal ──
@@ -2281,6 +2335,67 @@ function renderMilestoneWidget(){
     const nm=esc((h.emoji?h.emoji+' ':'')+h.name);
     return `<div class="ms-card"><div class="ms-name">${nm}</div><div class="ms-bar-wrap"><div class="ms-bar-fill" style="width:${pct}%"></div></div><div class="ms-rem">あと${rem}日 → 🎯${next}日</div><div class="ms-cur">現在${s}日連続</div></div>`;
   }).join('');
+}
+
+// ── Cycle 40: animated stat counter ──
+function _animateStat(el,toVal,suffix=''){
+  if(!el)return;
+  const fromVal=parseInt(el.dataset.statVal!=null?el.dataset.statVal:el.textContent)||0;
+  el.dataset.statVal=String(toVal);
+  if(fromVal===toVal)return;
+  const dur=380,t0=performance.now(),diff=toVal-fromVal;
+  function step(now){
+    const p=Math.min(1,(now-t0)/dur);
+    const ease=p<.5?2*p*p:(4-2*p)*p-1;
+    el.textContent=Math.round(fromVal+diff*ease)+suffix;
+    if(p<1)requestAnimationFrame(step);
+    else{el.textContent=toVal+suffix;el.classList.add('stat-popping');setTimeout(()=>el.classList.remove('stat-popping'),350);}
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Cycle 39: progress milestone toasts (50% / 75%) ──
+function showProgressToast(msg){
+  const el=document.getElementById('progress-toast');
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+function checkProgressMilestones(){
+  const td=today(),rate=todayRate();
+  const key75='rh_pm75_'+td,key50='rh_pm50_'+td;
+  if(rate>=75&&!localStorage.getItem(key75)){
+    localStorage.setItem(key75,'1');localStorage.setItem(key50,'1');
+    showProgressToast('💪 あと少し！ゴールまでもう一踏ん張り！');
+  }else if(rate>=50&&!localStorage.getItem(key50)){
+    localStorage.setItem(key50,'1');
+    showProgressToast('🎯 半分達成！いい調子です！');
+  }
+}
+
+// ── Cycle 38: Mood tracker ──
+const MOODS=['😫','😔','😐','🙂','😄'];
+const MOOD_LABELS=['最悪','悪い','普通','良い','最高'];
+function _moodKey(ds){return 'rh_mood_'+(ds||today())}
+function setMood(idx){
+  localStorage.setItem(_moodKey(),String(idx));
+  renderMoodBox();
+}
+function renderMoodBox(){
+  const btnsEl=document.getElementById('mood-btns');
+  const histEl=document.getElementById('mood-history');
+  if(!btnsEl)return;
+  const cur=localStorage.getItem(_moodKey());
+  btnsEl.innerHTML=MOODS.map((m,i)=>`<button class="mood-btn${cur===String(i)?' sel':''}" onclick="setMood(${i})" title="${MOOD_LABELS[i]}">${m}</button>`).join('');
+  if(!histEl)return;
+  const week=Array.from({length:7},(_,i)=>{const ds=dateAgo(6-i);return{ds,lbl:i===6?'今':DAYS[daysAgo(6-i).getDay()],mood:localStorage.getItem(_moodKey(ds))};});
+  const hasAny=week.some(d=>d.mood!==null);
+  if(!hasAny){histEl.innerHTML='';return;}
+  const weekHtml='<div class="mood-week">'+week.map(d=>`<div class="mood-wd"><span class="mood-wd-ico">${d.mood!==null?MOODS[+d.mood]:'·'}</span><span class="mood-wd-lbl">${d.lbl}</span></div>`).join('')+'</div>';
+  const goodDays=week.filter(d=>d.mood!==null&&+d.mood>=3);
+  const insightHtml=goodDays.length>=2?`<div class="mood-insight">気分良好日の平均習慣達成率 ${Math.round(goodDays.reduce((s,d)=>s+dayRate(d.ds)*100,0)/goodDays.length)}%</div>`:'';
+  histEl.innerHTML=weekHtml+insightHtml;
 }
 
 // ── Cycle 32: category batch complete ──
