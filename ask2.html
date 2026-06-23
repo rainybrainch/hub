@@ -312,6 +312,16 @@
       if (e.key === 'Escape' && document.getElementById('detailModal').classList.contains('visible')) {
         closeModal();
       }
+      if (!document.getElementById('detailModal').classList.contains('visible')) {
+        if (e.key === 'ArrowLeft') {
+          currentDate.setMonth(currentDate.getMonth() - 1);
+          renderCalendar();
+        }
+        if (e.key === 'ArrowRight') {
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          renderCalendar();
+        }
+      }
     });
 
     if ('serviceWorker' in navigator) {
