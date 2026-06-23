@@ -631,6 +631,19 @@
     .ranking-view-tab{padding:3px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s}
     .ranking-view-tab.active{background:var(--gold);border-color:transparent;color:var(--dark)}
     body.light .ranking-view-tab{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
+
+    /* Cycle 38: header progress badge */
+    .hdr-progress{font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:3px 8px;border-radius:10px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.25);color:var(--gold);transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;flex-shrink:0;line-height:1.5}
+    .hdr-progress.done{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.3);color:var(--green)}
+    @keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+    .hdr-progress.pop{animation:badgePop .35s cubic-bezier(.34,1.56,.64,1)}
+    body.light .hdr-progress{background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.4)}
+    body.light .hdr-progress.done{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.35)}
+
+    /* Cycle 38: check combo toast */
+    .combo-toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(12px);background:linear-gradient(135deg,rgba(91,200,232,.25),rgba(155,109,214,.2));border:1px solid rgba(91,200,232,.4);color:var(--sky);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:8px 18px;border-radius:24px;z-index:430;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 4px 16px rgba(91,200,232,.2);backdrop-filter:blur(6px)}
+    .combo-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    body.light .combo-toast{background:rgba(91,200,232,.15);border-color:rgba(91,200,232,.35);color:#1e8aab}
   </style>
 </head>
 <body>
@@ -650,8 +663,10 @@
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
+  <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
+<div class="combo-toast" id="combo-toast"></div>
 
 <div class="wrap">
   <div class="stats">
@@ -938,6 +953,49 @@ function updateDocTitle(){
   const td=today(),dc=completions[td]||{};
   const done=active.filter(h=>dc[h.id]).length,total=active.length;
   document.title=done===total?`🎉 全完了! | 習慣トラッカー`:`${done}/${total}完了 | 習慣トラッカー`;
+}
+
+// ── Cycle 38: sticky header progress badge ──
+let _prevDone=-1;
+function updateHeaderBadge(){
+  const el=document.getElementById('hdr-progress');
+  if(!el)return;
+  const active=habits.filter(h=>!h.paused);
+  if(!active.length){el.style.display='none';_prevDone=-1;return;}
+  el.style.display='';
+  const td=today(),dc=completions[td]||{};
+  const done=active.filter(h=>dc[h.id]).length,total=active.length;
+  if(done===total){
+    el.textContent='✓ 完了！';
+    el.className='hdr-progress done';
+  }else{
+    el.textContent=`${done}/${total}`;
+    el.className='hdr-progress';
+  }
+  if(_prevDone>=0&&done!==_prevDone){
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  }
+  _prevDone=done;
+}
+
+// ── Cycle 38: check combo toast ──
+let _comboCount=0,_comboTimer=null,_comboHideTimer=null;
+function triggerCombo(){
+  if(_comboTimer)clearTimeout(_comboTimer);
+  if(_comboHideTimer)clearTimeout(_comboHideTimer);
+  _comboCount++;
+  if(_comboCount>=2){
+    const msgs=['⚡ 2連チェック！','🔥 3連チェック！','💥 4連チェック！','🌟 コンボ継続中！','🏆 神速チェック！'];
+    const toast=document.getElementById('combo-toast');
+    if(toast){
+      toast.textContent=msgs[Math.min(_comboCount-2,msgs.length-1)];
+      toast.classList.add('show');
+      _comboHideTimer=setTimeout(()=>toast.classList.remove('show'),1600);
+    }
+  }
+  _comboTimer=setTimeout(()=>{_comboCount=0;},2000);
 }
 
 // ── Cycle 28: habit template picker ──
@@ -1374,6 +1432,7 @@ function render(){
   updateFabBadge();
   updateProgressFooter();
   updateDocTitle();
+  updateHeaderBadge();
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -1395,7 +1454,7 @@ function toggle(id,evt){
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
-    playTick();vib(50);checkHabitMilestone(id);
+    playTick();vib(50);checkHabitMilestone(id);triggerCombo();
     // cycle 18: particle burst from checkbox position
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r)spawnBurst(r.left+r.width/2,r.top+r.height/2);}
   }
