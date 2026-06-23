@@ -335,6 +335,13 @@
     }
 
     function closeModal() {
+      const ask1 = document.getElementById('ask1Summary').value.trim();
+      const market = document.getElementById('marketAnalysis').value.trim();
+
+      if ((ask1 || market) && !confirm('保存されていないデータがあります。閉じますか？')) {
+        return;
+      }
+
       const modal = document.getElementById('detailModal');
       modal.classList.add('closing');
       setTimeout(() => {
@@ -428,12 +435,20 @@
     document.getElementById('saveBtn').addEventListener('click', () => {
       if (!selectedDate || !currentUser) return;
 
+      const ask1 = document.getElementById('ask1Summary').value.trim();
+      const market = document.getElementById('marketAnalysis').value.trim();
+
+      if (!ask1 && !market) {
+        showToast('⚠️ 最低1つのフィールドに入力してください', 'error');
+        return;
+      }
+
       try {
         const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
 
         currentData[dateStr] = {
-          ask1Summary: document.getElementById('ask1Summary').value,
-          marketAnalysis: document.getElementById('marketAnalysis').value,
+          ask1Summary: ask1,
+          marketAnalysis: market,
           manga: currentData[dateStr]?.manga || null,
           timestamp: new Date().toISOString()
         };
