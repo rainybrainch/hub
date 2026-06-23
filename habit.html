@@ -744,6 +744,7 @@
     <div class="stat">
       <div class="stat-val green" id="s-total">0</div>
       <div class="stat-lbl">累計完了</div>
+      <div class="stat-sub" id="s-week">今週: 0件</div>
     </div>
   </div>
 
@@ -850,6 +851,7 @@
   <div class="sort-row">
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
     <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
+    <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px">≡ 全折</button>
   </div>
   <div class="search-row">
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
@@ -917,6 +919,8 @@
       <tr><td><kbd class="kbdkey">T</kbd></td><td class="kbd-desc">ダーク / ライトテーマ切替</td></tr>
       <tr><td><kbd class="kbdkey">/</kbd> または <kbd class="kbdkey">F</kbd></td><td class="kbd-desc">習慣を検索</td></tr>
       <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
+      <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">カテゴリを全折りたたみ / 全展開</td></tr>
+      <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
       <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
     </table>
@@ -1206,6 +1210,9 @@ function renderStats(){
   // Cycle 40: animate streak and total with count-up
   _animateStat(document.getElementById('s-streak'),streak);
   _animateStat(document.getElementById('s-total'),totalDone());
+  // Cycle 43: week completions sub-label
+  const sw=document.getElementById('s-week');
+  if(sw)sw.textContent=`今週: ${weekCompletions()}件`;
   // cycle 5: best streak display
   const sb=document.getElementById('s-best');
   if(sb)sb.textContent=`最高: ${best}日`;
@@ -1423,6 +1430,7 @@ function renderList(){
   el.innerHTML=html;
   initSwipeGestures();
   initLongPress();
+  updateCollapseAllBtn();
 }
 
 // ── Cycle 26: long-press to open edit modal ──
@@ -2378,6 +2386,44 @@ function toggleCatCollapse(cat,e){
   localStorage.setItem(_colKey(),JSON.stringify(st));
   renderList();
 }
+// ── Cycle 43: collapse-all / expand-all toggle ──
+function toggleCollapseAll(){
+  const cats=['学習','運動','創作','自己改善'];
+  const st=getCatCollapsed();
+  const anyOpen=cats.some(c=>!st[c]);
+  const next={};
+  cats.forEach(c=>next[c]=anyOpen);
+  localStorage.setItem(_colKey(),JSON.stringify(next));
+  renderList();
+}
+function updateCollapseAllBtn(){
+  const btn=document.getElementById('collapse-all-btn');
+  if(!btn)return;
+  const cats=['学習','運動','創作','自己改善'];
+  const st=getCatCollapsed();
+  const allClosed=cats.every(c=>!!st[c]);
+  btn.textContent=allClosed?'≡ 全展開':'≡ 全折';
+}
+// ── Cycle 43: D-key shortcut — complete challenge habit ──
+function completeChallengeKey(){
+  const ch=document.getElementById('challenge-widget');
+  if(!ch)return;
+  const btn=ch.querySelector('.ch-btn');
+  if(btn&&!btn.disabled)btn.click();
+}
+// ── Cycle 43: week completions count ──
+function weekCompletions(){
+  const d=new Date();
+  let count=0;
+  for(let i=0;i<7;i++){
+    const dt=new Date(d);
+    dt.setDate(d.getDate()-i);
+    const key=dt.toISOString().slice(0,10);
+    const dc=completions[key]||{};
+    count+=Object.entries(dc).filter(([k,v])=>!k.endsWith('_note')&&v).length;
+  }
+  return count;
+}
 // ── Cycle 27: sticky bottom progress bar ──
 function updateProgressFooter(){
   const fill=document.getElementById('progress-footer-fill');
@@ -2403,6 +2449,8 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='t'||e.key==='T')toggleTheme();
   else if(e.key==='/'||e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-inp')?.focus();}
   else if(e.key==='c'||e.key==='C')toggleCompactView();
+  else if(e.key==='z'||e.key==='Z')toggleCollapseAll();
+  else if(e.key==='d'||e.key==='D')completeChallengeKey();
   else if(e.key==='?'||e.key==='？')openKbdHelp();
 });
 
