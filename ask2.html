@@ -378,28 +378,46 @@
     document.getElementById('saveBtn').addEventListener('click', () => {
       if (!selectedDate || !currentUser) return;
 
-      const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+      try {
+        const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
 
-      currentData[dateStr] = {
-        ask1Summary: document.getElementById('ask1Summary').value,
-        marketAnalysis: document.getElementById('marketAnalysis').value,
-        manga: currentData[dateStr]?.manga || null,
-        timestamp: new Date().toISOString()
-      };
+        currentData[dateStr] = {
+          ask1Summary: document.getElementById('ask1Summary').value,
+          marketAnalysis: document.getElementById('marketAnalysis').value,
+          manga: currentData[dateStr]?.manga || null,
+          timestamp: new Date().toISOString()
+        };
 
-      localStorage.setItem('ask2_data', JSON.stringify(currentData));
+        localStorage.setItem('ask2_data', JSON.stringify(currentData));
 
-      showToast('✅ データを保存しました');
-      closeModal();
-      renderCalendar();
+        showToast('✅ データを保存しました');
+        closeModal();
+        renderCalendar();
+      } catch (e) {
+        showToast('❌ 保存に失敗しました', 'error');
+        console.error('Save error:', e);
+      }
     });
 
     function loadData() {
       const stored = localStorage.getItem('ask2_data');
       if (stored) {
-        currentData = JSON.parse(stored);
+        try {
+          currentData = JSON.parse(stored);
+        } catch (e) {
+          console.error('Failed to parse stored data:', e);
+          currentData = {};
+        }
       }
     }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'ask2_data') {
+        loadData();
+        renderCalendar();
+        showToast('📱 他のタブでデータが更新されました', 'success');
+      }
+    });
 
     document.getElementById('prevBtn').addEventListener('click', () => {
       currentDate.setMonth(currentDate.getMonth() - 1);
