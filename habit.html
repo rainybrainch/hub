@@ -884,6 +884,12 @@
     /* Cycle 55: quick note in timeline */
     .tl-note{font-size:10px;color:var(--muted);font-style:italic;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;max-width:120px}
     body.light .tl-note{color:rgba(0,0,0,.38)}
+    /* Cycle 56: search highlight */
+    .search-hl{background:rgba(245,200,66,.35);color:inherit;border-radius:2px;padding:0 1px;font-weight:700}
+    body.light .search-hl{background:rgba(200,155,10,.25)}
+    /* Cycle 56: category all-done shimmer */
+    @keyframes cat-done-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 2px var(--green),0 4px 18px rgba(76,175,125,.22)}}
+    .sec-hdr.cat-all-done{animation:cat-done-glow 1.4s ease-in-out;border-radius:10px}
   </style>
 </head>
 <body>
@@ -1674,6 +1680,13 @@ function renderChart(){
 }
 
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
+// Cycle 56: highlight search query match within escaped text
+function _hlSearch(text){
+  if(!searchQuery)return esc(text);
+  const idx=text.toLowerCase().indexOf(searchQuery);
+  if(idx<0)return esc(text);
+  return esc(text.slice(0,idx))+'<mark class="search-hl">'+esc(text.slice(idx,idx+searchQuery.length))+'</mark>'+esc(text.slice(idx+searchQuery.length));
+}
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const completedVal=dc[h.id];
   const isDone=!!completedVal;
@@ -1717,7 +1730,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const accentClass=h.color?' has-accent':'';
   const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
-  const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+  const nameHl=_hlSearch(h.name);
+  const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${nameHl}</span></div>`:`<span class="habit-name">${nameHl}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
@@ -1771,7 +1785,7 @@ function renderList(){
     const _npc=ch.filter(h=>!h.paused);
     const _acd=_npc.length>0&&_npc.every(h=>!!dc[h.id]);
     const _batchBtn=_npc.length>0?`<button class="batch-btn${_acd?' all-done':''}" onclick="batchComplete('${cat}',event)" title="${_acd?'チェックを全て解除':'全ての習慣を完了'}">${_acd?'✓ 全解除':'✓ 全完了'}</button>`:'';
-    html+=`<div class="habit-sec"><div class="sec-hdr" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span>${_batchBtn}<span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*250+20+'px'}">`;
+    html+=`<div class="habit-sec"><div class="sec-hdr${_acd?' cat-all-done':''}" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span>${_batchBtn}<span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*250+20+'px'}">`;
     ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
     html+='</div></div>';
   }
