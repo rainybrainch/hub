@@ -877,6 +877,13 @@
     .pwa-dismiss-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px;line-height:1;flex-shrink:0}
     body.light .pwa-banner{background:#f0f4ff;border-top-color:rgba(0,0,0,.08)}
     body.light .pwa-banner-ttl{color:#1a1a2e}
+
+    /* Cycle 55: habit add/update success toast */
+    .save-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--green),#2a7a5a);color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:9px 20px;border-radius:28px;box-shadow:0 6px 24px rgba(76,175,125,.4);z-index:445;opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .save-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 55: quick note in timeline */
+    .tl-note{font-size:10px;color:var(--muted);font-style:italic;margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;max-width:120px}
+    body.light .tl-note{color:rgba(0,0,0,.38)}
   </style>
 </head>
 <body>
@@ -1097,6 +1104,7 @@
 </div>
 
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
+<div class="save-toast" id="save-toast"></div>
 <div class="milestone-toast" id="milestone-toast"></div>
 <div class="progress-toast" id="progress-toast"></div>
 
@@ -1811,7 +1819,7 @@ function renderTimeline(){
   box.style.display=done.length?'':'none';
   if(!done.length)return;
   const list=document.getElementById('timeline-list');
-  if(list)list.innerHTML=done.map(h=>`<div class="timeline-item"><span class="tl-time">${String(h.ts.getHours()).padStart(2,'0')}:${String(h.ts.getMinutes()).padStart(2,'0')}</span>${h.emoji?`<span class="tl-emoji">${h.emoji}</span>`:''}<span class="tl-name">${esc(h.name)}</span></div>`).join('');
+  if(list)list.innerHTML=done.map(h=>{const qn=getCompletionNote(h.id);return`<div class="timeline-item"><span class="tl-time">${String(h.ts.getHours()).padStart(2,'0')}:${String(h.ts.getMinutes()).padStart(2,'0')}</span>${h.emoji?`<span class="tl-emoji">${h.emoji}</span>`:''}<span class="tl-name">${esc(h.name)}</span>${qn?`<span class="tl-note">— ${esc(qn)}</span>`:''}</div>`;}).join('');
 }
 
 // ── Cycle 20: monthly trend chart ──
@@ -2090,6 +2098,7 @@ function saveHabit(){
   const note=((document.getElementById('note-inp')||{}).value||'').trim();
   const emoji=((document.getElementById('emoji-inp')||{}).value||'').trim();
   if(!name||!selCatVal)return;
+  const isEdit=!!editingId;
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(_selWeekGoal<7)h.weekGoal=_selWeekGoal;else delete h.weekGoal;if(_selDifficulty!==2)h.difficulty=_selDifficulty;else delete h.difficulty;if(_selAccent)h.color=_selAccent;else delete h.color;}
@@ -2105,7 +2114,18 @@ function saveHabit(){
   saveH();
   closeModal();
   celebrated=false;
+  showSaveToast(name,emoji,isEdit);
   render();
+}
+
+// ── Cycle 55: habit save/update success toast ──
+function showSaveToast(name,emoji,isEdit){
+  const el=document.getElementById('save-toast');
+  if(!el)return;
+  const nm=emoji?emoji+' '+name:name;
+  el.textContent=isEdit?`✏ 更新: 「${nm}」`:`✅ 追加: 「${nm}」`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
 }
 
 // ── theme (cycle 7 + 17: system preference auto-detect) ──
