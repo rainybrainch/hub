@@ -751,6 +751,34 @@
     body.light .wgoal-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
     body.light .wgoal-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.25)}
     body.light .wgoal-btn.sel{background:rgba(76,175,125,.12);border-color:var(--green);color:var(--green)}
+    /* Cycle 48: difficulty selector & badge */
+    .diff-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .diff-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0}
+    .diff-btns{display:flex;gap:5px}
+    .diff-btn{padding:3px 10px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .diff-btn:hover{color:var(--white);border-color:rgba(255,255,255,.25)}
+    .diff-btn.sel.d1{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    .diff-btn.sel.d2{background:rgba(76,175,125,.15);border-color:var(--green);color:var(--green)}
+    .diff-btn.sel.d3{background:rgba(232,53,74,.12);border-color:var(--red);color:var(--red)}
+    body.light .diff-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
+    body.light .diff-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.25)}
+    body.light .diff-btn.sel.d1{background:rgba(91,200,232,.12);border-color:var(--sky);color:var(--sky)}
+    body.light .diff-btn.sel.d2{background:rgba(76,175,125,.1);border-color:var(--green);color:var(--green)}
+    body.light .diff-btn.sel.d3{background:rgba(232,53,74,.08);border-color:var(--red);color:var(--red)}
+    .diff-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;line-height:1.5;flex-shrink:0;white-space:nowrap}
+    .diff-badge.d1{color:var(--sky);background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2)}
+    .diff-badge.d3{color:var(--red);background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.2)}
+    body.light .diff-badge.d1{background:rgba(91,200,232,.12);border-color:rgba(91,200,232,.3)}
+    body.light .diff-badge.d3{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.25)}
+    body.compact .diff-badge{display:none}
+    /* Cycle 48: accent color swatches in modal & left border on card */
+    .accent-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .accent-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0}
+    .accent-swatches{display:flex;gap:5px;flex-wrap:wrap}
+    .accent-swatch{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0;outline:none}
+    .accent-swatch.sel{border-color:rgba(255,255,255,.9);transform:scale(1.3)}
+    body.light .accent-swatch.sel{border-color:rgba(0,0,0,.55)}
+    .habit.has-accent{border-left-width:3px;border-left-style:solid}
   </style>
 </head>
 <body>
@@ -933,6 +961,14 @@
     <div class="wgoal-row">
       <span class="wgoal-row-lbl">週目標</span>
       <div class="wgoal-btns" id="wgoal-btns"></div>
+    </div>
+    <div class="diff-row">
+      <span class="diff-row-lbl">難易度</span>
+      <div class="diff-btns" id="diff-btns"></div>
+    </div>
+    <div class="accent-row">
+      <span class="accent-row-lbl">カラー</span>
+      <div class="accent-swatches" id="accent-swatches"></div>
     </div>
     <div class="tmpl-section" id="tmpl-section">
       <button class="tmpl-toggle" onclick="toggleTemplates()" type="button">📋 テンプレートから選ぶ <span class="tmpl-chev" id="tmpl-chev">▼</span></button>
@@ -1270,6 +1306,40 @@ function selWeekGoalBtn(v){
   document.querySelectorAll('.wgoal-btn').forEach((b,i)=>b.classList.toggle('sel',i+1===v));
 }
 
+// Cycle 48: difficulty selector helpers
+let _selDifficulty=2;
+const DIFF_DEFS=[['☆やさしい','d1'],['★ふつう','d2'],['★★★むずかしい','d3']];
+function initDiffBtns(){
+  const el=document.getElementById('diff-btns');if(!el)return;
+  el.innerHTML=DIFF_DEFS.map(([lbl,cls],i)=>{
+    const v=i+1;
+    return `<button class="diff-btn${_selDifficulty===v?' sel '+cls:''}" onclick="selDiffBtn(${v})" type="button">${lbl}</button>`;
+  }).join('');
+}
+function selDiffBtn(v){
+  _selDifficulty=v;
+  document.querySelectorAll('.diff-btn').forEach((b,i)=>{
+    const on=i+1===v;
+    b.className='diff-btn'+(on?' sel '+DIFF_DEFS[i][1]:'');
+  });
+}
+
+// Cycle 48: accent color swatch helpers
+let _selAccent='';
+const ACCENT_COLORS=['','#5BC8E8','#4CAF7D','#F5C842','#E8354A','#9B6DD6','#FF8C42','#E8A0BF','#64B5F6'];
+function initAccentSwatches(){
+  const el=document.getElementById('accent-swatches');if(!el)return;
+  el.innerHTML=ACCENT_COLORS.map(c=>{
+    const isSel=_selAccent===c;
+    const bg=c?c:'rgba(255,255,255,.12)';
+    return `<button class="accent-swatch${isSel?' sel':''}" style="background:${bg}" onclick="selAccent('${c}')" title="${c||'デフォルト'}" type="button"></button>`;
+  }).join('');
+}
+function selAccent(c){
+  _selAccent=c;
+  document.querySelectorAll('.accent-swatch').forEach((b,i)=>b.classList.toggle('sel',ACCENT_COLORS[i]===c));
+}
+
 // cycle 11: smart category auto-suggest based on habit name keywords
 function suggestCategory(name){
   for(const[cat,kws]of Object.entries(CAT_KEYWORDS)){
@@ -1480,6 +1550,13 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const cls=wdone>=g?'met':wdone>=Math.ceil(g/2)?'near':'behind';
     wgoalLbl=`<span class="wgoal-lbl ${cls}">週${wdone}/${g}</span>`;
   }
+  // Cycle 48: difficulty badge (only shown for easy=1 or hard=3)
+  let diffBadge='';
+  if(h.difficulty===1)diffBadge='<span class="diff-badge d1">☆やさしい</span>';
+  else if(h.difficulty===3)diffBadge='<span class="diff-badge d3">★★★むずかしい</span>';
+  // Cycle 48: accent color left border
+  const accentStyle=h.color?`border-left-color:${h.color};`:'';
+  const accentClass=h.color?' has-accent':'';
   const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
   const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
@@ -1495,7 +1572,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}${accentClass}" style="${accentStyle}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${diffBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1821,6 +1898,9 @@ function openModal(id=null){
     const ts=document.getElementById('tmpl-section');if(ts)ts.style.display='none';
     // Cycle 47: set week goal
     _selWeekGoal=h&&h.weekGoal?h.weekGoal:7;initWeekGoalBtns();
+    // Cycle 48: set difficulty & accent
+    _selDifficulty=h&&h.difficulty?h.difficulty:2;initDiffBtns();
+    _selAccent=h&&h.color?h.color:'';initAccentSwatches();
   }else{
     inp.value='';if(noteEl)noteEl.value='';
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
@@ -1835,6 +1915,9 @@ function openModal(id=null){
     if(ts)ts.style.display='';
     // Cycle 47: reset week goal
     _selWeekGoal=7;initWeekGoalBtns();
+    // Cycle 48: reset difficulty & accent
+    _selDifficulty=2;initDiffBtns();
+    _selAccent='';initAccentSwatches();
   }
   setTimeout(()=>inp.focus(),300);
 }
@@ -1857,12 +1940,14 @@ function saveHabit(){
   if(!name||!selCatVal)return;
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(_selWeekGoal<7)h.weekGoal=_selWeekGoal;else delete h.weekGoal;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(_selWeekGoal<7)h.weekGoal=_selWeekGoal;else delete h.weekGoal;if(_selDifficulty!==2)h.difficulty=_selDifficulty;else delete h.difficulty;if(_selAccent)h.color=_selAccent;else delete h.color;}
   }else{
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
     if(emoji)nh.emoji=emoji;
     if(_selWeekGoal<7)nh.weekGoal=_selWeekGoal;
+    if(_selDifficulty!==2)nh.difficulty=_selDifficulty;
+    if(_selAccent)nh.color=_selAccent;
     habits.push(nh);
   }
   saveH();
@@ -2470,6 +2555,8 @@ initFocusModeBtn();
 initCompactView();
 initEmojiPresets();
 initWeekGoalBtns();
+initDiffBtns();
+initAccentSwatches();
 initTemplates();
 initIntention();
 initWeekly();
@@ -2762,7 +2849,9 @@ function calcHabitXP(id){const s=habitStreak(id);return 10+Math.min(s*2,30);}
 function earnXP(id,evt){
   const earned=_getXpEarned();
   if(earned.includes(id))return;
-  const amount=calcHabitXP(id);
+  const hObj=habits.find(x=>x.id===id);
+  const diffMult=hObj?.difficulty===3?1.5:hObj?.difficulty===1?0.7:1.0;
+  const amount=Math.round(calcHabitXP(id)*diffMult);
   const oldXP=getTotalXP();
   const newXP=oldXP+amount;
   const oldLv=getXPLevel(oldXP);
