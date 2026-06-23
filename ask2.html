@@ -25,8 +25,10 @@
     .header h1 { font-size: 24px; color: #5BC8E8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 250px; }
     .header-right { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
-    .btn-logout { padding: 8px 16px; background: rgba(232, 53, 74, 0.2); color: #E8354A; border: 1px solid #E8354A; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    .btn-logout, #exportBtn, #importBtn, #reportBtn { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); }
+    .btn-utility { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); transition: all 0.2s; }
+    .btn-utility:hover { background: rgba(91, 200, 232, 0.2); border-color: #5BC8E8; }
+    .btn-logout { padding: 8px 16px; background: rgba(232, 53, 74, 0.2); color: #E8354A; border: 1px solid #E8354A; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+    .btn-logout:hover { background: rgba(232, 53, 74, 0.4); }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
     .calendar-nav { display: flex; gap: 15px; align-items: center; }
@@ -77,7 +79,7 @@
         <div class="header-right">
           <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
-          <button id="exportBtn" onclick="(()=>{const d=JSON.stringify(currentData,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ask2.json';a.click();})()">E</button><button id="importBtn">I</button><button id="reportBtn">R</button>
+          <button class="btn-utility" id="exportBtn" title="Export JSON" onclick="(()=>{const d=JSON.stringify(currentData,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ask2.json';a.click();})()">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button>
         </div>
       </div>
 
