@@ -1,818 +1,2514 @@
 <!doctype html>
-<html lang="ja" data-theme="light">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>習慣トラッカー</title>
+  <meta name="theme-color" content="#0d1117" id="meta-theme-color">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="習慣トラッカー">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>習慣トラッカー | RAINYBRAIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #f0f4f8;
-      --surface: #ffffff;
-      --surface2: #f8fafc;
-      --border: #e2e8f0;
-      --text: #1a202c;
-      --text-muted: #718096;
-      --primary: #667eea;
-      --primary-dark: #5a6fd8;
-      --success: #48bb78;
-      --danger: #fc8181;
-      --warning: #f6ad55;
-      --shadow: 0 2px 8px rgba(0,0,0,0.08);
-      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-      --radius: 12px;
-      --radius-sm: 8px;
-      --transition: 0.2s ease;
-    }
-    [data-theme="dark"] {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: #2d3148;
-      --text: #e2e8f0;
-      --text-muted: #718096;
-      --primary: #7c8ef7;
-      --primary-dark: #667eea;
-      --shadow: 0 2px 8px rgba(0,0,0,0.4);
-      --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      transition: background var(--transition), color var(--transition);
-    }
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow);
-    }
-    .header-left h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    .header-left p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-    .header-actions { display: flex; gap: 8px; }
-    .icon-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      width: 36px; height: 36px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      transition: all var(--transition);
-    }
-    .icon-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
-    main { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
-    .date-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-    }
-    .date-nav button {
-      background: none; border: none; color: var(--text-muted);
-      font-size: 1.2rem; cursor: pointer; padding: 4px 8px;
-      border-radius: var(--radius-sm);
-      transition: all var(--transition);
-    }
-    .date-nav button:hover { background: var(--surface2); color: var(--text); }
-    #currentDate {
-      font-weight: 600; font-size: 1rem;
-    }
-    .today-badge {
-      background: var(--primary); color: white;
-      font-size: 0.7rem; font-weight: 600;
-      padding: 2px 6px; border-radius: 20px; margin-left: 8px;
-      vertical-align: middle;
-    }
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .stat-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 14px;
-      text-align: center;
-      box-shadow: var(--shadow);
-      transition: transform var(--transition);
-    }
-    .stat-card:hover { transform: translateY(-2px); }
-    .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-    .stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-    .section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .section-title { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .add-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 7px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 5px;
-      transition: all var(--transition);
-    }
-    .add-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .habit-list { display: flex; flex-direction: column; gap: 8px; }
-    .habit-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: var(--shadow);
-      border: 2px solid transparent;
-      transition: all 0.25s ease;
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .habit-card.done { border-color: var(--success); background: color-mix(in srgb, var(--surface) 95%, var(--success)); }
-    .habit-card:hover { box-shadow: var(--shadow-lg); }
-    .check-btn {
-      width: 32px; height: 32px; min-width: 32px;
-      border-radius: 50%;
-      border: 2.5px solid var(--border);
-      background: transparent;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      transition: all 0.25s ease;
-      color: transparent;
-    }
-    .habit-card.done .check-btn {
-      background: var(--success);
-      border-color: var(--success);
-      color: white;
-      transform: scale(1.05);
-    }
-    .check-btn:hover { border-color: var(--success); }
-    .habit-info { flex: 1; min-width: 0; }
-    .habit-name {
-      font-weight: 600;
-      font-size: 0.95rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .habit-card.done .habit-name { color: var(--text-muted); text-decoration: line-through; }
-    .habit-meta {
-      display: flex; align-items: center; gap: 10px;
-      margin-top: 3px;
-    }
-    .streak-badge {
-      font-size: 0.75rem;
-      color: var(--warning);
-      font-weight: 600;
-    }
-    .category-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .habit-actions { display: flex; gap: 4px; opacity: 0; transition: opacity var(--transition); }
-    .habit-card:hover .habit-actions { opacity: 1; }
-    .action-btn {
-      background: none; border: none;
-      color: var(--text-muted);
-      padding: 4px 6px;
-      border-radius: var(--radius-sm);
-      cursor: pointer; font-size: 0.85rem;
-      transition: all var(--transition);
-    }
-    .action-btn:hover { background: var(--surface2); color: var(--text); }
-    .action-btn.del:hover { color: var(--danger); }
-    .empty-state {
-      text-align: center;
-      padding: 48px 24px;
-      color: var(--text-muted);
-    }
-    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty-state p { font-size: 0.9rem; }
-    .week-view {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-    }
-    .week-view h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .week-days { display: flex; gap: 6px; justify-content: space-between; }
-    .week-day {
-      flex: 1; text-align: center;
-      padding: 8px 4px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all var(--transition);
-    }
-    .week-day .day-label { font-size: 0.7rem; color: var(--text-muted); }
-    .week-day .day-num { font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
-    .week-day .day-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); margin: 4px auto 0; }
-    .week-day.active { background: var(--primary); border-color: var(--primary); }
-    .week-day.active .day-label, .week-day.active .day-num { color: white; }
-    .week-day.active .day-dot { background: rgba(255,255,255,0.6); }
-    .week-day.has-done .day-dot { background: var(--success); }
-    .week-day.today .day-num { color: var(--primary); font-weight: 700; }
-    .progress-bar-container {
-      margin-top: 12px;
-    }
-    .progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-    .progress-bar {
-      height: 6px; background: var(--border);
-      border-radius: 99px; overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary), var(--success));
-      border-radius: 99px;
-      transition: width 0.5s ease;
-    }
+    :root{--sky:#5BC8E8;--gold:#F5C842;--gold-d:#D4A017;--green:#4CAF7D;--red:#E8354A;--purple:#9B6DD6;--dark:#0d1117;--dark2:#161b22;--dark3:#21262d;--white:#fff;--muted:rgba(255,255,255,.45)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Zen Maru Gothic",sans-serif;background:var(--dark);color:var(--white);min-height:100vh;padding-bottom:100px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+    /* Header */
+    .hdr{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:14px 20px;display:flex;align-items:center;gap:12px}
+    .back{display:flex;align-items:center;gap:6px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;padding:6px 10px;border-radius:8px;transition:background .15s}
+    .back:hover{background:rgba(245,200,66,.1)}
+    .hdr-title{font-family:"Dela Gothic One",sans-serif;font-size:18px;flex:1}
+    .hdr-date{font-size:11px;color:var(--muted);text-align:right}
+
+    /* Container */
+    .wrap{max-width:520px;margin:0 auto;padding:20px 16px}
+
+    /* Stats strip */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .stat{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 12px;text-align:center}
+    .stat-val{font-family:"Dela Gothic One",sans-serif;font-size:28px;line-height:1;margin-bottom:4px}
+    .stat-val.gold{color:var(--gold)}
+    .stat-val.sky{color:var(--sky)}
+    .stat-val.green{color:var(--green)}
+    .stat-lbl{font-size:10px;color:var(--muted);letter-spacing:.1em}
+
+    /* Weekly chart — cycle 1 feature */
+    .chart-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;margin-bottom:20px}
+    .chart-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .chart-bars{display:flex;gap:6px;align-items:flex-end;height:80px}
+    .chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+    .bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:4px;position:relative;overflow:hidden;min-height:60px}
+    .bar-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,var(--gold),var(--gold-d));border-radius:4px;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .bar-fill.today{background:linear-gradient(180deg,var(--sky),#2a8eb0)}
+    .bar-lbl{font-size:9px;color:var(--muted);font-weight:700}
+    .bar-lbl.today{color:var(--sky)}
+
+    /* Streak badge — cycle 2 feature */
+    .streak-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .streak-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.15),rgba(212,160,23,.1));border:1px solid rgba(245,200,66,.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--gold);transition:all .3s}
+    .streak-badge.fire{box-shadow:0 0 16px rgba(245,200,66,.3);border-color:rgba(245,200,66,.6)}
+
+    /* Category tabs */
+    .tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;background:none;font-family:"Zen Maru Gothic",sans-serif}
+    .tab:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .tab.active[data-cat="all"]{background:var(--gold);border-color:transparent;color:var(--dark)}
+    .tab.active[data-cat="学習"]{background:var(--sky);border-color:transparent;color:var(--dark)}
+    .tab.active[data-cat="運動"]{background:var(--green);border-color:transparent;color:var(--dark)}
+    .tab.active[data-cat="創作"]{background:var(--purple);border-color:transparent;color:var(--white)}
+    .tab.active[data-cat="自己改善"]{background:var(--gold);border-color:transparent;color:var(--dark)}
+
+    /* Habit list */
+    .habit-sec{margin-bottom:24px}
+    .sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .sec-name{font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+    .sec-count{font-size:11px;color:var(--muted)}
+
+    /* Cycle 8: category progress bar in section header */
+    .sec-progress{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin:0 6px}
+    .sec-progress-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+
+    .habit{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:transform .12s,background .15s,border-color .15s;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+    .habit:active{transform:scale(.98)}
+    .habit.done{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.2)}
+    .chk{width:24px;height:24px;border-radius:8px;border:2px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+    .habit.done .chk{background:var(--green);border-color:var(--green);transform:scale(1.1)}
+    .chk-ico{display:none;font-size:13px;color:var(--dark);font-weight:900}
+    .habit.done .chk-ico{display:block}
+    .habit-info{flex:1;min-width:0}
+    .habit-name{font-size:14px;font-weight:700;transition:color .15s;display:block}
+    .habit-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:1px}
+    .habit.done .habit-note{opacity:.65}
+    body.light .habit-note{color:rgba(0,0,0,.4)}
+    .habit.done .habit-name{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(76,175,125,.5)}
+    .cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .del-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .del-btn:hover{color:var(--red);background:rgba(232,53,74,.1)}
+    .edit-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .edit-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+
+    /* Empty state */
+    .empty{text-align:center;padding:48px 20px;color:var(--muted)}
+    .empty-ico{font-size:52px;margin-bottom:12px}
+    .empty-txt{font-size:13px}
+
+    /* FAB */
+    .fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--gold);color:var(--dark);border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(245,200,66,.4);transition:transform .2s cubic-bezier(.34,1.56,.64,1);z-index:200;font-weight:900}
+    .fab:hover{transform:scale(1.1)}
+    .fab:active{transform:scale(.95)}
+
     /* Modal */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 200;
-      padding: 16px;
-      opacity: 0; pointer-events: none;
-      transition: opacity var(--transition);
-    }
-    .modal-backdrop.open { opacity: 1; pointer-events: all; }
-    .modal {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 24px;
-      width: 100%; max-width: 360px;
-      box-shadow: var(--shadow-lg);
-      transform: translateY(20px);
-      transition: transform var(--transition);
-    }
-    .modal-backdrop.open .modal { transform: translateY(0); }
-    .modal h2 { font-size: 1.1rem; margin-bottom: 16px; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface2);
-      color: var(--text);
-      font-size: 0.9rem;
-      transition: border-color var(--transition);
-      outline: none;
-    }
-    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
-    .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
-    .color-opt {
-      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-      border: 3px solid transparent;
-      transition: transform var(--transition);
-    }
-    .color-opt.selected, .color-opt:hover { border-color: var(--text); transform: scale(1.15); }
-    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
-    .btn {
-      flex: 1; padding: 10px;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all var(--transition);
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-ghost:hover { background: var(--border); }
-    /* Stats Panel */
-    .stats-panel {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-      display: none;
-    }
-    .stats-panel.open { display: block; }
-    .stats-panel h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .habit-stat-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.88rem;
-    }
-    .habit-stat-row:last-child { border-bottom: none; }
-    .mini-bar { height: 4px; width: 80px; background: var(--border); border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 8px; }
-    .mini-bar-fill { height: 100%; background: var(--primary); border-radius: 99px; }
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
-      background: var(--text);
-      color: var(--bg);
-      padding: 10px 20px;
-      border-radius: 99px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      z-index: 300;
-      transition: transform 0.3s ease;
-      pointer-events: none;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    @media (max-width: 480px) {
-      .stats-row { grid-template-columns: repeat(3, 1fr); }
-      .stat-num { font-size: 1.2rem; }
-      .stat-label { font-size: 0.65rem; }
-      .week-day .day-label { font-size: 0.65rem; }
-    }
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .overlay.open{opacity:1;pointer-events:auto}
+    .modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:520px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .overlay.open .modal{transform:translateY(0)}
+    .modal-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+    .modal-ttl{font-family:"Dela Gothic One",sans-serif;font-size:18px;margin-bottom:20px}
+    .modal-inp{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:15px;outline:none;transition:border-color .15s;margin-bottom:14px}
+    .modal-inp:focus{border-color:rgba(245,200,66,.4)}
+    .modal-inp::placeholder{color:var(--muted)}
+    .cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
+    .cat-btn{padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+    .cat-btn:hover{color:var(--white)}
+    .cat-btn.sel[data-cat="学習"]{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    .cat-btn.sel[data-cat="運動"]{background:rgba(76,175,125,.15);border-color:var(--green);color:var(--green)}
+    .cat-btn.sel[data-cat="創作"]{background:rgba(155,109,214,.15);border-color:var(--purple);color:var(--purple)}
+    .cat-btn.sel[data-cat="自己改善"]{background:rgba(245,200,66,.15);border-color:var(--gold);color:var(--gold)}
+    .modal-ok{width:100%;padding:16px;border-radius:14px;background:var(--gold);border:none;color:var(--dark);font-family:"Zen Maru Gothic",sans-serif;font-size:15px;font-weight:900;cursor:pointer;transition:opacity .15s}
+    .modal-ok:hover{opacity:.9}
+    .modal-ok:disabled{opacity:.35;cursor:not-allowed}
+
+    /* Celebration — cycle 2 feature */
+    .banner{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:14px;padding:12px 24px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.5);z-index:400;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+    .banner.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Confetti canvas */
+    #cfv{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:500}
+
+    /* Chart header + toggle — cycle 3 */
+    .chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .chart-hdr .chart-ttl{margin-bottom:0}
+    .chart-toggle{display:flex;gap:4px}
+    .toggle-btn{padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .toggle-btn.active{background:var(--gold);border-color:transparent;color:var(--dark)}
+
+    /* Monthly heatmap — cycle 3 */
+    .heatmap{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+    .hm-cell{aspect-ratio:1;border-radius:3px;cursor:default;transition:transform .1s}
+    .hm-cell:hover{transform:scale(1.25)}
+
+    /* Progress ring — cycle 4 */
+    .progress-ring-wrap{position:relative;width:62px;height:62px;margin:0 auto 4px}
+    .progress-ring{width:62px;height:62px}
+    .ring-fill{transition:stroke-dashoffset .8s cubic-bezier(.34,1.56,.64,1)}
+    .ring-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:"Dela Gothic One",sans-serif;font-size:14px;line-height:1;white-space:nowrap}
+
+    /* Habit count badge — cycle 4 */
+    .habit-cnt{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;padding:2px 6px;background:rgba(255,255,255,.06);border-radius:6px;line-height:1.5}
+
+    /* Cycle 8: per-habit individual streak badge */
+    .habit-streak{font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.2);border-radius:6px;line-height:1.5}
+
+    /* Export button in header — cycle 5 */
+    .hdr-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:6px 8px;border-radius:8px;transition:all .15s;line-height:1;flex-shrink:0}
+    .hdr-btn:hover{color:var(--white);background:rgba(255,255,255,.08)}
+    .hdr-btn:active{transform:scale(.92)}
+    /* Best streak sub-label — cycle 5 */
+    .stat-sub{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px;letter-spacing:.05em}
+
+    /* Cycle 7: theme toggle button */
+    .theme-btn{background:none;border:none;cursor:pointer;font-size:18px;padding:6px 8px;border-radius:8px;transition:all .15s;line-height:1;flex-shrink:0}
+    .theme-btn:hover{background:rgba(255,255,255,.08)}
+
+    /* Cycle 7: sort undone button */
+    .sort-row{display:flex;align-items:center;margin-bottom:10px}
+    .sort-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .sort-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .sort-btn.active{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+
+    /* Cycle 7: light mode */
+    body.light{--dark2:#ffffff;--dark3:#e8eaed;--muted:rgba(0,0,0,.45);background:#f0f2f5;color:#1a1a2e}
+    body.light .hdr{background:rgba(248,249,250,.95);border-bottom-color:rgba(0,0,0,.08)}
+    body.light .stat,body.light .chart-box{border-color:rgba(0,0,0,.08)}
+    body.light .bar-wrap{background:rgba(0,0,0,.06)}
+    body.light .habit{border-color:rgba(0,0,0,.08)}
+    body.light .habit.done{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.25)}
+    body.light .chk{border-color:rgba(0,0,0,.2)}
+    body.light .del-btn{color:rgba(0,0,0,.2)}
+    body.light .edit-btn{color:rgba(0,0,0,.2)}
+    body.light .modal{border-color:rgba(0,0,0,.1)}
+    body.light .modal-handle{background:rgba(0,0,0,.1)}
+    body.light .modal-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .modal-inp::placeholder{color:rgba(0,0,0,.35)}
+    body.light .cat-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .cat-btn:hover{color:#1a1a2e}
+    body.light .toggle-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .tab{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .tab:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .habit-cnt{background:rgba(0,0,0,.06)}
+    body.light .stat-sub{color:rgba(0,0,0,.3)}
+    body.light .hdr-btn{color:rgba(0,0,0,.4)}
+    body.light .hdr-btn:hover{color:#1a1a2e;background:rgba(0,0,0,.08)}
+    body.light .back:hover{background:rgba(0,0,0,.06)}
+    body.light .theme-btn:hover{background:rgba(0,0,0,.08)}
+    body.light .sort-btn{border-color:rgba(0,0,0,.12)}
+    body.light .sort-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .streak-badge{background:linear-gradient(135deg,rgba(245,200,66,.2),rgba(212,160,23,.15))}
+    body.light .progress-ring circle:first-child{stroke:rgba(0,0,0,.07)}
+    body.light .habit-streak{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.35)}
+    body.light .sec-progress{background:rgba(0,0,0,.08)}
+
+    /* Cycle 9: completion timestamp badge */
+    .done-time{font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2);border-radius:6px;line-height:1.5}
+    body.light .done-time{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
+
+    /* Cycle 11: per-habit 7-day mini dot calendar */
+    .h-dots{display:flex;gap:3px;align-items:center;flex-shrink:0}
+    .h-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .2s}
+    .h-dot.done{background:var(--green);box-shadow:0 0 3px rgba(76,175,125,.5)}
+    body.light .h-dot{background:rgba(0,0,0,.1)}
+    body.light .h-dot.done{background:var(--green)}
+
+    /* Cycle 9: daily motivational motto */
+    .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(91,200,232,.05));border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 16px;margin-bottom:16px;text-align:center;font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;transition:all .3s}
+    body.light .motto-box{background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(91,200,232,.07));border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.5)}
+
+    /* Cycle 10: undo delete snackbar */
+    .snackbar{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(16px);background:#1e2330;color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:14px;z-index:600;opacity:0;transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 6px 28px rgba(0,0,0,.55);pointer-events:none;border:1px solid rgba(255,255,255,.1);max-width:calc(100vw - 32px)}
+    .snackbar.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .sb-msg{overflow:hidden;text-overflow:ellipsis;max-width:200px}
+    .snackbar-undo{background:none;border:none;color:var(--gold);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:900;cursor:pointer;padding:4px 10px;border-radius:8px;transition:background .15s;flex-shrink:0;letter-spacing:.05em}
+    .snackbar-undo:hover{background:rgba(245,200,66,.15)}
+    body.light .snackbar{background:#1a1a2e;border-color:rgba(255,255,255,.15)}
+
+    /* Cycle 13: habit streak milestone toast */
+    .milestone-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.55);z-index:450;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .milestone-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Cycle 13: compact view mode */
+    body.compact .habit{padding:8px 12px}
+    body.compact .h-dots{display:none}
+    body.compact .habit-cnt{display:none}
+    body.compact .habit-streak{display:none}
+    body.compact .done-time{display:none}
+    body.compact .habit-note{display:none}
+    body.compact .habit-name{font-size:13px}
+    body.compact .sec-progress{display:none}
+    body.compact .chk{width:20px;height:20px;border-radius:6px}
+
+    /* Cycle 14: real-time search filter */
+    .search-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;position:relative}
+    .search-inp{flex:1;background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 34px 8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+    .search-inp:focus{border-color:rgba(91,200,232,.4)}
+    .search-inp::placeholder{color:var(--muted)}
+    .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s}
+    .search-clear:hover{color:var(--white)}
+    body.light .search-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .search-inp::placeholder{color:rgba(0,0,0,.35)}
+    body.light .search-inp:focus{border-color:rgba(91,200,232,.4)}
+    body.light .search-clear{color:rgba(0,0,0,.3)}
+    body.light .search-clear:hover{color:#1a1a2e}
+
+    /* Cycle 14: week-over-week comparison badge */
+    .week-cmp{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;letter-spacing:.03em}
+    .week-cmp.up{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2)}
+    .week-cmp.down{color:var(--red);background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.15)}
+    .week-cmp.same{color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+    body.light .week-cmp.same{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1)}
+
+    /* Cycle 15: habit emoji icon */
+    .habit-name-row{display:flex;align-items:center;gap:5px}
+    .habit-emoji{font-size:15px;flex-shrink:0;line-height:1}
+    .modal-emoji-row{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+    .modal-emoji-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;flex-shrink:0}
+    .modal-emoji-inp{width:52px;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px;color:var(--white);font-size:20px;text-align:center;outline:none;transition:border-color .15s;flex-shrink:0}
+    .modal-emoji-inp:focus{border-color:rgba(245,200,66,.4)}
+    .emoji-presets{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+    .emoji-preset{background:none;border:1px solid rgba(255,255,255,.08);font-size:16px;cursor:pointer;padding:4px 3px;border-radius:7px;transition:all .12s;line-height:1;width:30px;text-align:center;flex-shrink:0}
+    .emoji-preset:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+    .emoji-preset.sel{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.4)}
+    body.light .modal-emoji-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .emoji-preset{border-color:rgba(0,0,0,.1)}
+    body.light .emoji-preset:hover{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.2)}
+    body.light .emoji-preset.sel{background:rgba(245,200,66,.25);border-color:rgba(245,200,66,.5)}
+
+    /* Cycle 16: progress ring glow on 100% */
+    @keyframes ringGlow{from{filter:drop-shadow(0 0 3px var(--green))}to{filter:drop-shadow(0 0 9px var(--green))}}
+    .progress-ring-wrap.ring-complete{animation:ringGlow 1.4s ease-in-out infinite alternate}
+
+    /* Cycle 16: today's timeline */
+    .timeline-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;margin-bottom:20px}
+    .timeline-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .timeline-item:last-child{border-bottom:none;padding-bottom:0}
+    .tl-time{font-size:11px;color:var(--green);font-weight:700;min-width:36px;flex-shrink:0;font-variant-numeric:tabular-nums}
+    .tl-emoji{font-size:14px;flex-shrink:0;line-height:1}
+    .tl-name{font-size:13px;font-weight:700}
+    body.light .timeline-box{border-color:rgba(0,0,0,.08)}
+    body.light .timeline-item{border-bottom-color:rgba(0,0,0,.05)}
+
+    /* Cycle 17: weekly habit ranking card */
+    .ranking-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;margin-bottom:16px}
+    .ranking-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .ranking-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .ranking-item:last-child{border-bottom:none;padding-bottom:0}
+    .rank-badge{font-size:16px;flex-shrink:0;width:24px;text-align:center;line-height:1}
+    .rank-name{flex:1;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rank-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;flex:0 0 56px}
+    .rank-bar-fill{height:100%;border-radius:2px;background:var(--gold);transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+    .rank-cnt{font-size:11px;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
+    body.light .ranking-box{border-color:rgba(0,0,0,.08)}
+    body.light .ranking-item{border-bottom-color:rgba(0,0,0,.05)}
+    body.light .rank-cnt{color:rgba(0,0,0,.4)}
+    body.light .rank-bar{background:rgba(0,0,0,.08)}
+
+    /* Cycle 18: weekday performance chart */
+    .dow-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+    .dow-bars{display:flex;gap:4px;align-items:flex-end;height:56px}
+    .dow-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .dow-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:4px;position:relative;overflow:hidden;min-height:40px}
+    .dow-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .dow-lbl{font-size:9px;font-weight:700;color:var(--muted)}
+    body.light .dow-box{border-color:rgba(0,0,0,.08)}
+    body.light .dow-bar-wrap{background:rgba(0,0,0,.06)}
+
+    /* Cycle 18: check particle burst */
+    @keyframes burstDot{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+    .chk-burst-dot{position:absolute;width:5px;height:5px;border-radius:50%;transform-origin:center;animation:burstDot .55s cubic-bezier(.2,.8,.3,1) forwards}
+
+    /* Cycle 19: today's focus section */
+    .focus-section{background:linear-gradient(135deg,rgba(245,200,66,.08),rgba(245,200,66,.03));border:1px solid rgba(245,200,66,.25);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+    .focus-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+    .habit.focus-habit{border-color:rgba(245,200,66,.35)!important;background:rgba(245,200,66,.05)!important}
+    body.light .habit.focus-habit{border-color:rgba(245,200,66,.5)!important;background:rgba(245,200,66,.08)!important}
+    .star-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .star-btn:hover{color:var(--gold);background:rgba(245,200,66,.1)}
+    .star-btn.starred{color:var(--gold)}
+    body.light .star-btn{color:rgba(0,0,0,.18)}
+    body.compact .star-btn{display:none}
+    /* Cycle 19: monthly stats card */
+    .month-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px}
+    .month-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+    .month-hdr-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .month-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
+    .month-chev.open{transform:rotate(180deg)}
+    .month-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+    .month-body.open{max-height:180px}
+    .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px}
+    .month-val{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:var(--gold);line-height:1;margin-bottom:2px;text-align:center}
+    .month-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-align:center}
+    .month-best{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    body.light .month-box{border-color:rgba(0,0,0,.08)}
+    body.light .month-best{border-top-color:rgba(0,0,0,.06)}
+
+    /* Cycle 20: monthly trend chart */
+    .trend-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+    .trend-rows{display:flex;flex-direction:column;gap:7px}
+    .trend-row{display:flex;align-items:center;gap:8px}
+    .trend-month{font-size:11px;font-weight:700;color:var(--muted);min-width:28px;flex-shrink:0;text-align:right}
+    .trend-bar-wrap{flex:1;height:12px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+    .trend-bar-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+    .trend-pct{font-size:11px;font-weight:700;color:var(--muted);min-width:30px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+    body.light .trend-box{border-color:rgba(0,0,0,.08)}
+    body.light .trend-bar-wrap{background:rgba(0,0,0,.06)}
+
+    /* Cycle 21: smooth theme transitions */
+    body{transition:background-color .3s}
+    .hdr,.stat,.chart-box,.dow-box,.trend-box,.ranking-box,.timeline-box,.month-box,.motto-box,.tod-box{transition:background .25s,border-color .25s}
+
+    /* Cycle 21: habit pause / resume */
+    .habit.paused{opacity:.38}
+    .paused-lbl{font-size:9px;color:var(--muted);padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;line-height:1.5;flex-shrink:0;letter-spacing:.04em}
+    body.light .paused-lbl{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    .pause-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .pause-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .pause-btn.on{color:var(--gold)}
+    body.light .pause-btn{color:rgba(0,0,0,.15)}
+    body.compact .pause-btn{display:none}
+    body.compact .paused-lbl{display:none}
+
+    /* Cycle 22: achievement badges */
+    .ach-box{margin-bottom:16px}
+    .ach-ttl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .ach-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .ach-count{font-size:11px;color:var(--muted)}
+    .ach-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+    .ach-scroll::-webkit-scrollbar{display:none}
+    .ach-item{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 8px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:var(--dark2);min-width:66px;cursor:default;transition:all .2s;position:relative}
+    .ach-item.unlocked{border-color:rgba(245,200,66,.35);background:rgba(245,200,66,.07);box-shadow:0 2px 10px rgba(245,200,66,.1)}
+    .ach-emoji{font-size:22px;line-height:1;filter:grayscale(1);opacity:.3;transition:filter .3s,opacity .3s}
+    .ach-item.unlocked .ach-emoji{filter:none;opacity:1}
+    .ach-name{font-size:9px;font-weight:700;color:var(--muted);text-align:center;line-height:1.3;max-width:60px}
+    .ach-item.unlocked .ach-name{color:var(--gold)}
+    .ach-new{position:absolute;top:-4px;right:-4px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid var(--dark)}
+    body.light .ach-item{border-color:rgba(0,0,0,.08);background:#fff}
+    body.light .ach-item.unlocked{border-color:rgba(245,200,66,.45);background:rgba(245,200,66,.1)}
+    body.light .ach-new{border-color:#f0f2f5}
+
+    /* Cycle 22: daily intention note */
+    .intention-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:16px;overflow:hidden;transition:background .25s,border-color .25s}
+    .intention-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;user-select:none}
+    .intention-ico{font-size:14px;flex-shrink:0;line-height:1}
+    .intention-preview{flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
+    .intention-preview.has-text{color:var(--white)}
+    .intention-chev{color:var(--muted);font-size:10px;flex-shrink:0;transition:transform .25s;display:inline-block}
+    .intention-chev.open{transform:rotate(180deg)}
+    .intention-body{padding:0 14px 14px;display:none}
+    .intention-body.open{display:block}
+    .intention-ta{width:100%;background:transparent;border:none;border-top:1px solid rgba(255,255,255,.07);padding:10px 0 0;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;resize:none;outline:none;line-height:1.7}
+    .intention-ta::placeholder{color:var(--muted)}
+    body.light .intention-box{border-color:rgba(0,0,0,.08)}
+    body.light .intention-ta{color:#1a1a2e;border-top-color:rgba(0,0,0,.07)}
+    body.light .intention-ta::placeholder{color:rgba(0,0,0,.35)}
+    body.light .intention-preview.has-text{color:#1a1a2e}
+
+    /* Cycle 23: custom reorder mode */
+    .reorder-btn{background:none;border:none;color:rgba(255,255,255,.28);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1;font-weight:700}
+    .reorder-btn:hover:not([disabled]){color:var(--sky);background:rgba(91,200,232,.12)}
+    .reorder-btn[disabled]{opacity:.15;cursor:default}
+    body.light .reorder-btn{color:rgba(0,0,0,.22)}
+    body:not(.reorder-mode) .reorder-btn{display:none}
+    body.compact .reorder-btn{display:none}
+    /* Cycle 23: reminder button active state */
+    .hdr-btn.reminder-on{color:var(--gold)!important}
+
+    /* Cycle 24: swipe-to-complete gesture visual feedback */
+    .habit.swipe-right{background:rgba(76,175,125,.1)!important;border-color:rgba(76,175,125,.3)!important}
+    body.light .habit.swipe-right{background:rgba(76,175,125,.14)!important;border-color:rgba(76,175,125,.38)!important}
+
+    /* Cycle 25: streak visual glow motivator */
+    .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.3)!important}
+    .habit.streak-hot:not(.done):not(.paused){border-color:rgba(245,200,66,.55)!important;box-shadow:0 0 10px rgba(245,200,66,.12)}
+    body.light .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.45)!important}
+    body.light .habit.streak-hot:not(.done):not(.paused){border-color:rgba(245,200,66,.7)!important;box-shadow:0 0 10px rgba(245,200,66,.18)}
+
+    /* Cycle 26: FAB remaining-task badge */
+    .fab-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:10px;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1;border:2px solid var(--dark);transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .15s;pointer-events:none}
+    .fab-badge.zero{transform:scale(0);opacity:0}
+    body.light .fab-badge{border-color:#f0f2f5}
+    /* Cycle 26: long-press ripple feedback */
+    @keyframes lpRipple{0%{box-shadow:0 0 0 0 rgba(245,200,66,.45)}100%{box-shadow:0 0 0 12px rgba(245,200,66,0)}}
+    .habit.lp-active{animation:lpRipple .5s ease-out forwards}
+
+    /* Cycle 27: collapsible category sections */
+    .sec-chev{font-size:9px;color:var(--muted);transition:transform .2s;display:inline-block;margin-left:4px;flex-shrink:0}
+    .sec-chev.closed{transform:rotate(-90deg)}
+    .sec-habits{overflow:hidden;transition:max-height .35s ease}
+    .sec-habits.closed{max-height:0!important}
+    /* Cycle 27: sticky bottom progress bar */
+    .progress-footer{position:fixed;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,.07);z-index:150;pointer-events:none}
+    .progress-footer-fill{height:100%;width:0;transition:width .5s cubic-bezier(.34,1.56,.64,1),background .5s}
+    body.light .progress-footer{background:rgba(0,0,0,.08)}
+
+    /* Cycle 28: habit template picker in modal */
+    .tmpl-section{margin-bottom:14px}
+    .tmpl-toggle{font-size:11px;color:var(--muted);cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:6px;user-select:none;width:100%;background:none;border:none;font-family:"Zen Maru Gothic",sans-serif;letter-spacing:.05em;text-align:left}
+    .tmpl-toggle:hover{color:var(--white)}
+    .tmpl-chev{font-size:9px;transition:transform .2s;display:inline-block}
+    .tmpl-chev.open{transform:rotate(180deg)}
+    .tmpl-grid{display:none;flex-wrap:wrap;gap:5px;padding-top:8px}
+    .tmpl-grid.open{display:flex}
+    .tmpl-item{padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:4px}
+    .tmpl-item:hover{color:var(--white);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
+    body.light .tmpl-toggle{color:rgba(0,0,0,.45)}
+    body.light .tmpl-toggle:hover{color:#1a1a2e}
+    body.light .tmpl-item{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .tmpl-item:hover{color:#1a1a2e;border-color:rgba(0,0,0,.25);background:rgba(0,0,0,.03)}
+
+    /* Cycle 29: completion quick note */
+    .note-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .note-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .note-btn.has-note{color:var(--sky)}
+    body.light .note-btn{color:rgba(0,0,0,.18)}
+    body.compact .note-btn{display:none}
+    .habit-quick-note{font-size:10px;color:var(--sky);display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+    body.light .habit-quick-note{color:#1e8aab}
+    body.compact .habit-quick-note{display:none}
+    /* note modal */
+    .note-ovl{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:350;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .note-ovl.open{opacity:1;pointer-events:auto}
+    .note-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;width:calc(100% - 48px);max-width:340px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+    .note-ovl.open .note-modal{transform:scale(1)}
+    .note-ttl{font-family:"Dela Gothic One",sans-serif;font-size:15px;margin-bottom:12px}
+    .note-ta{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;resize:none;outline:none;transition:border-color .15s;line-height:1.6}
+    .note-ta:focus{border-color:rgba(91,200,232,.4)}
+    .note-ta::placeholder{color:var(--muted)}
+    .note-char-hint{font-size:10px;color:var(--muted);text-align:right;margin-top:4px;margin-bottom:12px}
+    .note-actions{display:flex;gap:8px}
+    .note-save-btn{flex:1;padding:12px;border-radius:12px;background:var(--sky);border:none;color:var(--dark);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:opacity .15s}
+    .note-save-btn:hover{opacity:.88}
+    .note-del-btn{padding:12px 14px;border-radius:12px;background:rgba(232,53,74,.12);border:1px solid rgba(232,53,74,.2);color:var(--red);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+    .note-del-btn:hover{opacity:.8}
+    body.light .note-ta{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .note-ta::placeholder{color:rgba(0,0,0,.35)}
+    body.light .note-ta:focus{border-color:rgba(91,200,232,.4)}
+
+    /* Cycle 29: keyboard shortcuts help */
+    .kbd-ovl{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .kbd-ovl.open{opacity:1;pointer-events:auto}
+    .kbd-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:22px 20px;width:calc(100% - 48px);max-width:360px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:80vh;overflow-y:auto}
+    .kbd-ovl.open .kbd-modal{transform:scale(1)}
+    .kbd-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px;margin-bottom:16px}
+    .kbd-table{width:100%;border-collapse:collapse}
+    .kbd-table td{padding:6px 4px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+    .kbd-table tr:last-child td{border-bottom:none}
+    .kbdkey{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:1px 7px;font-family:monospace;font-size:11px;font-weight:700;white-space:nowrap;color:var(--gold);line-height:1.7}
+    .kbd-desc{color:var(--muted);padding-left:10px}
+    .kbd-close{margin-top:16px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+    .kbd-close:hover{background:rgba(255,255,255,.12)}
+    body.light .kbd-table td{border-bottom-color:rgba(0,0,0,.06)}
+    body.light .kbdkey{background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.15);color:var(--gold-d)}
+    body.light .kbd-desc{color:rgba(0,0,0,.5)}
+    body.light .kbd-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .kbd-close:hover{background:rgba(0,0,0,.1)}
+
+    /* Cycle 31: weekly reflection note */
+    .weekly-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:background .25s,border-color .25s}
+    .weekly-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;user-select:none}
+    .weekly-ico{font-size:14px;flex-shrink:0;line-height:1}
+    .weekly-preview{flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
+    .weekly-preview.has-text{color:var(--white)}
+    .weekly-chev{color:var(--muted);font-size:10px;flex-shrink:0;transition:transform .25s;display:inline-block}
+    .weekly-chev.open{transform:rotate(180deg)}
+    .weekly-body{padding:0 14px 14px;display:none}
+    .weekly-body.open{display:block}
+    .weekly-ta{width:100%;background:transparent;border:none;border-top:1px solid rgba(255,255,255,.07);padding:10px 0 0;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;resize:none;outline:none;line-height:1.7}
+    .weekly-ta::placeholder{color:var(--muted)}
+    body.light .weekly-box{border-color:rgba(0,0,0,.08)}
+    body.light .weekly-ta{color:#1a1a2e;border-top-color:rgba(0,0,0,.07)}
+    body.light .weekly-ta::placeholder{color:rgba(0,0,0,.35)}
+    body.light .weekly-preview.has-text{color:#1a1a2e}
+    /* Cycle 31: low-rate habit alert (0 completions in past 7 days) */
+    .habit.low-rate:not(.done):not(.paused){border-left:3px solid rgba(232,53,74,.45)!important}
+    .low-rate-lbl{font-size:9px;color:var(--red);font-weight:700;padding:1px 5px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.2);border-radius:5px;line-height:1.5;flex-shrink:0}
+    body.light .low-rate-lbl{background:rgba(232,53,74,.1);border-color:rgba(232,53,74,.25)}
+    body.compact .low-rate-lbl{display:none}
+    /* Cycle 30: per-habit 28-day heatmap detail panel */
+    .habit-wrap{margin-bottom:8px}
+    .habit-wrap .habit{margin-bottom:0}
+    .habit-wrap.expanded .habit{border-radius:12px 12px 0 0;border-bottom-color:transparent}
+    .info-btn{background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .info-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .info-btn.open{color:var(--sky)}
+    body.light .info-btn{color:rgba(0,0,0,.18)}
+    body.compact .info-btn{display:none}
+    .habit-detail{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-top:none;border-radius:0 0 12px 12px;max-height:0;overflow:hidden;transition:max-height .35s ease}
+    .habit-detail.open{max-height:140px}
+    body.compact .habit-detail{display:none!important}
+    body.light .habit-detail{border-color:rgba(0,0,0,.08)}
+    .hd-inner{padding:10px 14px 12px}
+    .mini-hm{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px}
+    .mhm-cell{aspect-ratio:1;border-radius:2px;transition:transform .1s}
+    .mhm-cell:hover{transform:scale(1.3)}
+    .hd-stats{display:flex;gap:14px}
+    .hd-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .hd-stat-val{font-family:"Dela Gothic One",sans-serif;font-size:13px;color:var(--gold);line-height:1}
+    .hd-stat-lbl{font-size:9px;color:var(--muted);letter-spacing:.06em}
+    body.light .hd-stat-val{color:var(--gold-d)}
+
+    /* Cycle 32: scroll-to-top button */
+    .scroll-top{position:fixed;bottom:90px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--dark2);border:1px solid rgba(255,255,255,.12);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:190;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s,background .15s,border-color .15s;pointer-events:none;line-height:1}
+    .scroll-top.show{opacity:1;transform:translateY(0);pointer-events:auto}
+    .scroll-top:hover{background:rgba(255,255,255,.1);color:var(--white);border-color:rgba(255,255,255,.25)}
+    body.light .scroll-top{background:#fff;border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.4)}
+    body.light .scroll-top:hover{background:rgba(0,0,0,.04);color:#1a1a2e;border-color:rgba(0,0,0,.2)}
+
+    /* Cycle 32: category batch complete button */
+    .batch-btn{background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:pointer;font-size:9px;padding:2px 6px;border-radius:10px;transition:all .15s;flex-shrink:0;line-height:1.6;font-family:"Zen Maru Gothic",sans-serif;font-weight:700;margin-left:4px}
+    .batch-btn:hover{color:var(--green);border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.1)}
+    .batch-btn.all-done{color:var(--green);border-color:rgba(76,175,125,.3);background:rgba(76,175,125,.07)}
+    body.light .batch-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.38)}
+    body.light .batch-btn:hover{border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.08);color:var(--green)}
+    body.light .batch-btn.all-done{color:var(--green);border-color:rgba(76,175,125,.35);background:rgba(76,175,125,.08)}
+    body.compact .batch-btn{display:none}
+
+    /* Cycle 33: next milestone preview widget */
+    .ms-widget{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .ms-widget-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+    .ms-widget-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .ms-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
+    .ms-chev.closed{transform:rotate(-90deg)}
+    .ms-body{padding-top:10px}
+    .ms-body.closed{display:none}
+    .ms-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+    .ms-scroll::-webkit-scrollbar{display:none}
+    .ms-card{flex-shrink:0;background:var(--dark3);border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:9px 11px;min-width:110px;max-width:134px}
+    .ms-name{font-size:12px;font-weight:700;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+    .ms-bar-wrap{height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-bottom:5px}
+    .ms-bar-fill{height:100%;border-radius:2px;background:var(--gold);transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+    .ms-rem{font-size:10px;font-weight:700;color:var(--gold);line-height:1.5}
+    .ms-cur{font-size:9px;color:var(--muted);line-height:1.5}
+    body.light .ms-widget{border-color:rgba(0,0,0,.08)}
+    body.light .ms-card{border-color:rgba(0,0,0,.1)}
+    body.light .ms-bar-wrap{background:rgba(0,0,0,.1)}
+    /* Cycle 33: hover highlight for desktop */
+    @media(hover:hover){.habit:hover:not(.done):not(.paused){background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.1)}body.light .habit:hover:not(.done):not(.paused){background:rgba(0,0,0,.02);border-color:rgba(0,0,0,.12)}}
+
+    /* Cycle 34: time-of-day achievement pattern widget */
+    .tod-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
+    .tod-bars{display:flex;gap:8px;align-items:flex-end;height:56px;margin-bottom:6px}
+    .tod-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .tod-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:4px;position:relative;overflow:hidden;min-height:40px}
+    .tod-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .tod-lbl{font-size:9px;font-weight:700;color:var(--muted);text-align:center;line-height:1.4}
+    .tod-peak{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-style:italic}
+    body.light .tod-box{border-color:rgba(0,0,0,.08)}
+    body.light .tod-bar-wrap{background:rgba(0,0,0,.06)}
+
+    /* Cycle 35: today's challenge widget */
+    .challenge-box{background:var(--dark2);border:1px solid rgba(91,200,232,.18);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+    .challenge-ttl{font-size:11px;font-weight:700;color:var(--sky);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .challenge-card{background:rgba(91,200,232,.06);border:1px dashed rgba(91,200,232,.25);border-radius:10px;padding:11px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;-webkit-tap-highlight-color:transparent}
+    .challenge-card:hover{background:rgba(91,200,232,.12);border-color:rgba(91,200,232,.45)}
+    .challenge-card:active{transform:scale(.98)}
+    .challenge-name{font-size:14px;font-weight:700;line-height:1.4}
+    .challenge-hint{font-size:10px;color:var(--sky);opacity:.75;margin-top:2px}
+    .challenge-arrow{color:var(--sky);font-size:18px;opacity:.6;flex-shrink:0;margin-left:10px;transition:transform .2s}
+    .challenge-card:hover .challenge-arrow{transform:translateX(4px);opacity:1}
+    .challenge-done{text-align:center;color:var(--green);font-weight:700;font-size:13px;padding:6px 0}
+    body.light .challenge-box{border-color:rgba(91,200,232,.25)}
+    body.light .challenge-card{background:rgba(91,200,232,.04);border-color:rgba(91,200,232,.2)}
+    body.light .challenge-card:hover{background:rgba(91,200,232,.1)}
+    @keyframes highlightPulse{0%,100%{box-shadow:none;border-color:rgba(255,255,255,.06)}50%{box-shadow:0 0 0 3px rgba(91,200,232,.35);border-color:rgba(91,200,232,.5)}}
+    .habit.highlight-pulse{animation:highlightPulse 0.7s ease 3}
+
+    /* Cycle 36: today's pace indicator */
+    .pace-box{display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 14px;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .pace-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+    .pace-val{font-family:"Dela Gothic One",sans-serif;font-size:18px;line-height:1}
+    .pace-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-align:center}
+    .pace-sep{width:1px;height:28px;background:rgba(255,255,255,.08);flex-shrink:0}
+    .pace-msg{font-size:11px;color:var(--muted);text-align:center;flex:1;padding:0 4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    body.light .pace-box{border-color:rgba(0,0,0,.08)}
+    body.light .pace-sep{background:rgba(0,0,0,.08)}
+    /* Cycle 36: ranking view tabs */
+    .ranking-view-tabs{display:flex;gap:4px}
+    .ranking-view-tab{padding:3px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s}
+    .ranking-view-tab.active{background:var(--gold);border-color:transparent;color:var(--dark)}
+    body.light .ranking-view-tab{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
+
+    /* Cycle 38: header progress badge */
+    .hdr-progress{font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:3px 8px;border-radius:10px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.25);color:var(--gold);transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;flex-shrink:0;line-height:1.5}
+    .hdr-progress.done{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.3);color:var(--green)}
+    @keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+    .hdr-progress.pop{animation:badgePop .35s cubic-bezier(.34,1.56,.64,1)}
+    body.light .hdr-progress{background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.4)}
+    body.light .hdr-progress.done{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.35)}
+
+    /* Cycle 38: check combo toast */
+    .combo-toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(12px);background:linear-gradient(135deg,rgba(91,200,232,.25),rgba(155,109,214,.2));border:1px solid rgba(91,200,232,.4);color:var(--sky);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:8px 18px;border-radius:24px;z-index:430;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 4px 16px rgba(91,200,232,.2);backdrop-filter:blur(6px)}
+    .combo-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    body.light .combo-toast{background:rgba(91,200,232,.15);border-color:rgba(91,200,232,.35);color:#1e8aab}
+
+    /* Cycle 39: weekday-only habit frequency */
+    .freq-badge{font-size:9px;color:var(--sky);font-weight:700;padding:2px 5px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.04em}
+    body.light .freq-badge{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.25)}
+    body.compact .freq-badge{display:none}
+    .habit.weekend-off{opacity:.42;cursor:default}
+    .weekend-lbl{font-size:9px;color:var(--muted);padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;line-height:1.5;flex-shrink:0;letter-spacing:.04em}
+    body.light .weekend-lbl{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.08)}
+    body.compact .weekend-lbl{display:none}
+    .h-dot.off{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.07)}
+    body.light .h-dot.off{background:rgba(0,0,0,.04)!important;border-color:rgba(0,0,0,.07)}
+    /* Frequency selector in modal */
+    .freq-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .freq-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;width:30px}
+    .freq-btn{flex:1;padding:9px 6px;border-radius:10px;border:2px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+    .freq-btn:hover{color:var(--white)}
+    .freq-btn.sel{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    body.light .freq-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .freq-btn:hover{color:#1a1a2e}
+    body.light .freq-btn.sel{background:rgba(91,200,232,.1);border-color:var(--sky);color:var(--sky)}
+
+    /* Cycle 40: custom habit accent color */
+    .color-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .color-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;width:30px}
+    .color-swatches{display:flex;gap:6px;flex-wrap:wrap}
+    .color-swatch{width:24px;height:24px;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:transform .12s,border-color .12s;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+    .color-swatch:hover{transform:scale(1.15)}
+    .color-swatch.sel{border-color:#fff!important;transform:scale(1.2)}
+    body.light .color-swatch.sel{border-color:#1a1a2e!important}
+    .color-swatch-none{background:rgba(255,255,255,.08);border:2px dashed rgba(255,255,255,.2)!important;font-size:11px;color:var(--muted)}
+    body.light .color-swatch-none{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.15)!important;color:rgba(0,0,0,.4)}
+    .habit.custom-color .h-dot.done{background:var(--hcol)!important;box-shadow:0 0 4px var(--hcol)}
+    body.light .habit.custom-color .h-dot.done{background:var(--hcol)!important}
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <h1>📋 習慣トラッカー</h1>
-      <p id="headerSub">今日の達成を記録しよう</p>
-    </div>
-    <div class="header-actions">
-      <button class="icon-btn" id="statsToggle" title="統計">📊</button>
-      <button class="icon-btn" id="exportBtn" title="エクスポート">⬇️</button>
-      <button class="icon-btn" id="themeToggle" title="テーマ切替">🌙</button>
-    </div>
-  </header>
 
-  <main>
-    <!-- Week View -->
-    <div class="week-view">
-      <h3>今週の記録</h3>
-      <div class="week-days" id="weekDays"></div>
-      <div class="progress-bar-container">
-        <div class="progress-info">
-          <span id="progressLabel">今日の進捗</span>
-          <span id="progressPct">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill" style="width:0%"></div>
-        </div>
-      </div>
-    </div>
+<div class="progress-footer" id="progress-footer"><div class="progress-footer-fill" id="progress-footer-fill"></div></div>
+<canvas id="cfv"></canvas>
 
-    <!-- Date Navigation -->
-    <div class="date-nav">
-      <button id="prevDay">‹</button>
-      <div>
-        <span id="currentDate"></span>
-        <span class="today-badge" id="todayBadge" style="display:none">今日</span>
-      </div>
-      <button id="nextDay">›</button>
-    </div>
+<header class="hdr">
+  <a href="index.html" class="back">← Hub</a>
+  <h1 class="hdr-title">📅 習慣トラッカー</h1>
+  <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
+  <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
+  <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
+  <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
+  <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
+  <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
+  <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
+  <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
+  <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
+  <div class="hdr-date" id="hdr-date"></div>
+</header>
+<div class="combo-toast" id="combo-toast"></div>
 
-    <!-- Stats Cards -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-num" id="statTotal">0</div>
-        <div class="stat-label">習慣の数</div>
+<div class="wrap">
+  <div class="stats">
+    <div class="stat">
+      <div class="progress-ring-wrap">
+        <svg class="progress-ring" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="4"/>
+          <circle id="ring-fill" cx="28" cy="28" r="22" fill="none" stroke="var(--gold)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="138.23" transform="rotate(-90 28 28)"/>
+        </svg>
+        <div class="ring-val gold" id="s-today">0%</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statDone">0</div>
-        <div class="stat-label">今日達成</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statStreak">0</div>
-        <div class="stat-label">最長連続🔥</div>
-      </div>
+      <div class="stat-lbl">今日の達成率</div>
     </div>
-
-    <!-- Detailed Stats Panel -->
-    <div class="stats-panel" id="statsPanel">
-      <h3>📈 習慣別統計（過去30日）</h3>
-      <div id="statsContent"></div>
+    <div class="stat">
+      <div class="stat-val sky" id="s-streak">0</div>
+      <div class="stat-lbl">🔥 連続記録</div>
+      <div class="stat-sub" id="s-best">最高: 0日</div>
     </div>
-
-    <!-- Habits Section -->
-    <div class="section-header">
-      <span class="section-title">習慣リスト</span>
-      <button class="add-btn" id="addHabitBtn">＋ 追加</button>
-    </div>
-    <div class="habit-list" id="habitList"></div>
-  </main>
-
-  <!-- Add Habit Modal -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal">
-      <h2 id="modalTitle">新しい習慣を追加</h2>
-      <div class="form-group">
-        <label>習慣の名前</label>
-        <input type="text" id="habitNameInput" placeholder="例: 毎朝30分ウォーキング" maxlength="40">
-      </div>
-      <div class="form-group">
-        <label>カテゴリ</label>
-        <select id="habitCategory">
-          <option value="health">💪 健康・運動</option>
-          <option value="learn">📚 学習</option>
-          <option value="mind">🧘 メンタル</option>
-          <option value="work">💼 仕事</option>
-          <option value="life">🌟 生活</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>カラー</label>
-        <div class="color-picker" id="colorPicker"></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="cancelModal">キャンセル</button>
-        <button class="btn btn-primary" id="saveHabit">保存</button>
-      </div>
+    <div class="stat">
+      <div class="stat-val green" id="s-total">0</div>
+      <div class="stat-lbl">累計完了</div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <!-- Cycle 36: today's pace indicator -->
+  <div class="pace-box" id="pace-box" style="display:none"></div>
 
-  <script>
-    const COLORS = ['#667eea','#48bb78','#f6ad55','#fc8181','#76e4f7','#b794f4','#f687b3','#4fd1c5'];
-    const DAY_LABELS = ['日','月','火','水','木','金','土'];
-    const STORE_KEY = 'habitTracker_v2';
+  <div class="chart-box">
+    <div class="chart-hdr">
+      <div class="chart-ttl" id="chart-ttl">📊 週間達成率</div>
+      <span class="week-cmp same" id="week-cmp"></span>
+      <div class="chart-toggle">
+        <button class="toggle-btn active" data-view="week" onclick="setChartView('week')">週</button>
+        <button class="toggle-btn" data-view="month" onclick="setChartView('month')">月</button>
+      </div>
+    </div>
+    <div id="chart"></div>
+  </div>
 
-    let state = load();
-    let viewDate = todayStr();
-    let selectedColor = COLORS[0];
-    let editingId = null;
+  <div class="weekly-box" id="weekly-box">
+    <div class="weekly-hdr" onclick="toggleWeekly()">
+      <span class="weekly-ico">📓</span>
+      <span class="weekly-preview" id="weekly-preview">今週の振り返りを書こう...</span>
+      <span class="weekly-chev" id="weekly-chev">▼</span>
+    </div>
+    <div class="weekly-body" id="weekly-body">
+      <textarea class="weekly-ta" id="weekly-ta" rows="3" placeholder="今週の気づき・改善点・感謝など..." oninput="saveWeekly(this.value)" maxlength="200"></textarea>
+    </div>
+  </div>
 
-    function todayStr() {
-      return new Date().toISOString().slice(0, 10);
-    }
+  <div class="dow-box" id="dow-box" style="display:none">
+    <div class="chart-ttl">📈 曜日別 平均達成率（過去4週）</div>
+    <div class="dow-bars" id="dow-chart"></div>
+  </div>
 
-    function load() {
-      try {
-        const raw = localStorage.getItem(STORE_KEY);
-        if (raw) return JSON.parse(raw);
-      } catch {}
-      return { habits: [], logs: {} };
-    }
+  <div class="trend-box" id="trend-box" style="display:none">
+    <div class="chart-ttl">📉 月別達成率トレンド</div>
+    <div class="trend-rows" id="trend-rows"></div>
+  </div>
 
-    function save() {
-      localStorage.setItem(STORE_KEY, JSON.stringify(state));
-    }
+  <div class="streak-row">
+    <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
+  </div>
 
-    function genId() {
-      return Math.random().toString(36).slice(2, 9);
-    }
+  <div class="month-box" id="month-box" style="display:none"></div>
 
-    function getWeekDates() {
-      const today = new Date();
-      const day = today.getDay();
-      const dates = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - day + i);
-        dates.push(d.toISOString().slice(0, 10));
-      }
-      return dates;
-    }
+  <div class="ranking-box" id="ranking-box" style="display:none"></div>
 
-    function getDoneFraction(dateStr) {
-      if (!state.habits.length) return 0;
-      const logs = state.logs[dateStr] || {};
-      const done = state.habits.filter(h => logs[h.id]).length;
-      return done / state.habits.length;
-    }
+  <!-- Cycle 35: today's challenge widget -->
+  <div class="challenge-box" id="challenge-box" style="display:none"></div>
 
-    function calcStreak(habit) {
-      let streak = 0;
-      const d = new Date();
-      while (true) {
-        const s = d.toISOString().slice(0, 10);
-        const logs = state.logs[s] || {};
-        if (logs[habit.id]) { streak++; d.setDate(d.getDate() - 1); }
-        else break;
-      }
-      return streak;
-    }
+  <div class="motto-box" id="motto-box"></div>
 
-    function calcBestStreak(habit) {
-      const keys = Object.keys(state.logs).sort();
-      let best = 0, cur = 0;
-      let prev = null;
-      for (const k of keys) {
-        if (state.logs[k][habit.id]) {
-          if (prev) {
-            const pd = new Date(prev), cd = new Date(k);
-            const diff = (cd - pd) / 86400000;
-            cur = diff === 1 ? cur + 1 : 1;
-          } else { cur = 1; }
-          prev = k;
-          best = Math.max(best, cur);
-        } else { prev = null; cur = 0; }
-      }
-      return best;
-    }
+  <div class="ach-box" id="ach-box"></div>
 
-    function calc30DayRate(habit) {
-      let done = 0;
-      const d = new Date();
-      for (let i = 0; i < 30; i++) {
-        const s = d.toISOString().slice(0, 10);
-        if ((state.logs[s] || {})[habit.id]) done++;
-        d.setDate(d.getDate() - 1);
-      }
-      return done;
-    }
+  <div class="ms-widget" id="ms-widget" style="display:none">
+    <div class="ms-widget-hdr" onclick="toggleMsWidget()">
+      <span class="ms-widget-ttl">🎯 次のマイルストーン</span>
+      <span class="ms-chev" id="ms-chev">▼</span>
+    </div>
+    <div class="ms-body" id="ms-body">
+      <div class="ms-scroll" id="ms-scroll"></div>
+    </div>
+  </div>
 
-    function renderWeek() {
-      const dates = getWeekDates();
-      const today = todayStr();
-      const el = document.getElementById('weekDays');
-      el.innerHTML = dates.map(d => {
-        const date = new Date(d + 'T00:00:00');
-        const frac = getDoneFraction(d);
-        const hasDone = frac > 0;
-        const isActive = d === viewDate;
-        const isToday = d === today;
-        return `<div class="week-day${isActive ? ' active' : ''}${hasDone ? ' has-done' : ''}${isToday ? ' today' : ''}" data-date="${d}">
-          <div class="day-label">${DAY_LABELS[date.getDay()]}</div>
-          <div class="day-num">${date.getDate()}</div>
-          <div class="day-dot"></div>
-        </div>`;
-      }).join('');
-      el.querySelectorAll('.week-day').forEach(el => {
-        el.addEventListener('click', () => { viewDate = el.dataset.date; render(); });
-      });
-    }
+  <div class="intention-box" id="intention-box">
+    <div class="intention-hdr" onclick="toggleIntention()">
+      <span class="intention-ico">📝</span>
+      <span class="intention-preview" id="intention-preview">今日の意図を書こう...</span>
+      <span class="intention-chev" id="intention-chev">▼</span>
+    </div>
+    <div class="intention-body" id="intention-body">
+      <textarea class="intention-ta" id="intention-ta" rows="3" placeholder="今日やり遂げたいこと、気持ち、目標を自由に書こう..." oninput="saveIntention(this.value)" maxlength="200"></textarea>
+    </div>
+  </div>
 
-    function renderStats() {
-      const logs = state.logs[viewDate] || {};
-      const total = state.habits.length;
-      const done = state.habits.filter(h => logs[h.id]).length;
-      const pct = total ? Math.round(done / total * 100) : 0;
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statDone').textContent = done;
-      const maxStreak = state.habits.reduce((m, h) => Math.max(m, calcBestStreak(h)), 0);
-      document.getElementById('statStreak').textContent = maxStreak + '日';
-      document.getElementById('progressFill').style.width = pct + '%';
-      document.getElementById('progressPct').textContent = pct + '%';
-      document.getElementById('progressLabel').textContent = viewDate === todayStr() ? '今日の進捗' : `${viewDate} の進捗`;
-      document.getElementById('headerSub').textContent = pct === 100 ? '🎉 全部達成！すごい！' : `今日の達成: ${done}/${total}`;
-    }
+  <div class="tod-box" id="tod-box" style="display:none">
+    <div class="chart-ttl">🕐 時間帯別 達成パターン（過去30日）</div>
+    <div class="tod-bars" id="tod-chart"></div>
+    <div class="tod-peak" id="tod-peak"></div>
+  </div>
 
-    function renderHabits() {
-      const logs = state.logs[viewDate] || {};
-      const list = document.getElementById('habitList');
-      if (!state.habits.length) {
-        list.innerHTML = `<div class="empty-state"><div class="icon">🌱</div><p>習慣をまだ追加していません<br>「追加」ボタンで始めましょう！</p></div>`;
-        return;
-      }
-      const sorted = [...state.habits].sort((a, b) => {
-        const ad = logs[a.id] ? 1 : 0, bd = logs[b.id] ? 1 : 0;
-        return ad - bd;
-      });
-      list.innerHTML = sorted.map(h => {
-        const done = !!logs[h.id];
-        const streak = calcStreak(h);
-        return `<div class="habit-card${done ? ' done' : ''}" data-id="${h.id}">
-          <button class="check-btn" data-id="${h.id}">✓</button>
-          <div class="habit-info">
-            <div class="habit-name">${escHtml(h.name)}</div>
-            <div class="habit-meta">
-              <span class="category-dot" style="background:${h.color}"></span>
-              ${streak > 0 ? `<span class="streak-badge">🔥 ${streak}日連続</span>` : '<span style="font-size:0.75rem;color:var(--text-muted)">' + catLabel(h.category) + '</span>'}
-            </div>
-          </div>
-          <div class="habit-actions">
-            <button class="action-btn edit" data-id="${h.id}" title="編集">✏️</button>
-            <button class="action-btn del" data-id="${h.id}" title="削除">🗑️</button>
-          </div>
-        </div>`;
-      }).join('');
-      list.querySelectorAll('.check-btn').forEach(btn => {
-        btn.addEventListener('click', () => toggleHabit(btn.dataset.id));
-      });
-      list.querySelectorAll('.action-btn.edit').forEach(btn => {
-        btn.addEventListener('click', () => openEdit(btn.dataset.id));
-      });
-      list.querySelectorAll('.action-btn.del').forEach(btn => {
-        btn.addEventListener('click', () => deleteHabit(btn.dataset.id));
-      });
-    }
+  <div class="timeline-box" id="timeline-box" style="display:none">
+    <div class="chart-ttl">⏱ 今日のタイムライン</div>
+    <div id="timeline-list"></div>
+  </div>
 
-    function renderDetailedStats() {
-      const content = document.getElementById('statsContent');
-      if (!state.habits.length) { content.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem">習慣がありません</p>'; return; }
-      content.innerHTML = state.habits.map(h => {
-        const cnt = calc30DayRate(h);
-        const pct = Math.round(cnt / 30 * 100);
-        const best = calcBestStreak(h);
-        return `<div class="habit-stat-row">
-          <div>
-            <span class="category-dot" style="background:${h.color}"></span>
-            <strong style="margin-left:6px">${escHtml(h.name)}</strong>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem">
-            <span style="color:var(--text-muted)">${cnt}/30日</span>
-            <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>
-            <span style="color:var(--warning)">🔥${best}</span>
-          </div>
-        </div>`;
-      }).join('');
-    }
+  <div class="tabs">
+    <button class="tab active" data-cat="all" onclick="setFilter('all')">全て</button>
+    <button class="tab" data-cat="学習" onclick="setFilter('学習')">📚 学習</button>
+    <button class="tab" data-cat="運動" onclick="setFilter('運動')">💪 運動</button>
+    <button class="tab" data-cat="創作" onclick="setFilter('創作')">🎨 創作</button>
+    <button class="tab" data-cat="自己改善" onclick="setFilter('自己改善')">✨ 自己改善</button>
+  </div>
 
-    function render() {
-      const today = todayStr();
-      const d = new Date(viewDate + 'T00:00:00');
-      document.getElementById('currentDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${DAY_LABELS[d.getDay()]}）`;
-      document.getElementById('todayBadge').style.display = viewDate === today ? '' : 'none';
-      document.getElementById('nextDay').disabled = viewDate >= today;
-      renderWeek();
-      renderStats();
-      renderHabits();
-      renderDetailedStats();
-    }
+  <div class="sort-row">
+    <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
+    <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
+    <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px" title="全カテゴリーを折りたたむ/展開（Zキー）">≡ 全折</button>
+  </div>
+  <div class="search-row">
+    <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="検索をクリア">✕</button>
+  </div>
+  <div id="list"></div>
+</div>
 
-    function toggleHabit(id) {
-      if (!state.logs[viewDate]) state.logs[viewDate] = {};
-      const was = state.logs[viewDate][id];
-      state.logs[viewDate][id] = !was;
-      if (!state.logs[viewDate][id]) delete state.logs[viewDate][id];
-      save();
-      render();
-      if (!was) showToast('✓ 達成！');
-    }
+<button class="scroll-top" id="scroll-top" onclick="scrollToTop()" aria-label="ページ上部へ">↑</button>
+<button class="fab" onclick="openModal()" aria-label="習慣を追加">＋<span class="fab-badge zero" id="fab-badge"></span></button>
 
-    function catLabel(cat) {
-      const m = { health:'💪 健康', learn:'📚 学習', mind:'🧘 メンタル', work:'💼 仕事', life:'🌟 生活' };
-      return m[cat] || cat;
-    }
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 class="modal-ttl" id="modal-ttl">習慣を追加</h2>
+    <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
+      oninput="onHabitInput()" onkeydown="if(event.key==='Enter')saveHabit()">
+    <input class="modal-inp" id="note-inp" type="text" placeholder="メモ（任意）..." maxlength="60" style="margin-bottom:14px">
+    <div class="modal-emoji-row">
+      <input class="modal-emoji-inp" id="emoji-inp" type="text" placeholder="🎯" maxlength="4" oninput="onEmojiInput(this.value)" title="絵文字アイコン（任意）">
+      <div class="emoji-presets" id="emoji-presets"></div>
+    </div>
+    <div class="tmpl-section" id="tmpl-section">
+      <button class="tmpl-toggle" onclick="toggleTemplates()" type="button">📋 テンプレートから選ぶ <span class="tmpl-chev" id="tmpl-chev">▼</span></button>
+      <div class="tmpl-grid" id="tmpl-grid"></div>
+    </div>
+    <div class="cat-grid">
+      <button class="cat-btn" data-cat="学習" onclick="selCat('学習')">📚 学習</button>
+      <button class="cat-btn" data-cat="運動" onclick="selCat('運動')">💪 運動</button>
+      <button class="cat-btn" data-cat="創作" onclick="selCat('創作')">🎨 創作</button>
+      <button class="cat-btn" data-cat="自己改善" onclick="selCat('自己改善')">✨ 自己改善</button>
+    </div>
+    <div class="freq-row">
+      <span class="freq-row-lbl">頻度</span>
+      <button class="freq-btn sel" id="freq-daily" onclick="selFreq('daily')" type="button">📅 毎日</button>
+      <button class="freq-btn" id="freq-weekday" onclick="selFreq('weekday')" type="button">🏢 平日のみ</button>
+    </div>
+    <div class="color-row">
+      <span class="color-row-lbl">色</span>
+      <div class="color-swatches">
+        <button class="color-swatch color-swatch-none sel" data-col="" onclick="selColor('')" type="button" title="デフォルト">✕</button>
+        <button class="color-swatch" data-col="#5BC8E8" onclick="selColor('#5BC8E8')" type="button" title="水色" style="background:#5BC8E8"></button>
+        <button class="color-swatch" data-col="#F5C842" onclick="selColor('#F5C842')" type="button" title="ゴールド" style="background:#F5C842"></button>
+        <button class="color-swatch" data-col="#4CAF7D" onclick="selColor('#4CAF7D')" type="button" title="グリーン" style="background:#4CAF7D"></button>
+        <button class="color-swatch" data-col="#E8354A" onclick="selColor('#E8354A')" type="button" title="レッド" style="background:#E8354A"></button>
+        <button class="color-swatch" data-col="#9B6DD6" onclick="selColor('#9B6DD6')" type="button" title="パープル" style="background:#9B6DD6"></button>
+        <button class="color-swatch" data-col="#FF7B5C" onclick="selColor('#FF7B5C')" type="button" title="オレンジ" style="background:#FF7B5C"></button>
+        <button class="color-swatch" data-col="#FF9BCC" onclick="selColor('#FF9BCC')" type="button" title="ピンク" style="background:#FF9BCC"></button>
+      </div>
+    </div>
+    <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
+  </div>
+</div>
 
-    function escHtml(s) {
-      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+<div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
+<div class="milestone-toast" id="milestone-toast"></div>
 
-    function showToast(msg, duration = 1800) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), duration);
-    }
+<div class="snackbar" id="snackbar">
+  <span class="sb-msg" id="sb-msg"></span>
+  <button class="snackbar-undo" onclick="undoDelete()">元に戻す</button>
+</div>
 
-    function openModal(reset = true) {
-      if (reset) {
-        editingId = null;
-        document.getElementById('modalTitle').textContent = '新しい習慣を追加';
-        document.getElementById('habitNameInput').value = '';
-        document.getElementById('habitCategory').value = 'health';
-        selectedColor = COLORS[0];
-        renderColorPicker();
-        document.getElementById('saveHabit').textContent = '保存';
-      }
-      document.getElementById('modalBackdrop').classList.add('open');
-      setTimeout(() => document.getElementById('habitNameInput').focus(), 100);
-    }
+<!-- Cycle 29: completion quick note modal -->
+<div class="note-ovl" id="note-ovl" onclick="bgNoteClose(event)">
+  <div class="note-modal">
+    <div class="note-ttl">📝 今日のメモ</div>
+    <textarea class="note-ta" id="note-ta" rows="3" maxlength="50" placeholder="今日の内容を一言メモ..." oninput="updNoteChar()"></textarea>
+    <div class="note-char-hint"><span id="note-char-cnt">0</span>/50文字</div>
+    <div class="note-actions">
+      <button class="note-save-btn" onclick="saveNote()">保存する</button>
+      <button class="note-del-btn" onclick="deleteNote()">削除</button>
+    </div>
+  </div>
+</div>
 
-    function closeModal() {
-      document.getElementById('modalBackdrop').classList.remove('open');
-    }
+<!-- Cycle 29: keyboard shortcuts help modal -->
+<div class="kbd-ovl" id="kbd-ovl" onclick="if(event.target===this)closeKbdHelp()">
+  <div class="kbd-modal">
+    <div class="kbd-ttl">⌨️ キーボードショートカット</div>
+    <table class="kbd-table">
+      <tr><td><kbd class="kbdkey">N</kbd></td><td class="kbd-desc">新しい習慣を追加</td></tr>
+      <tr><td><kbd class="kbdkey">T</kbd></td><td class="kbd-desc">ダーク / ライトテーマ切替</td></tr>
+      <tr><td><kbd class="kbdkey">/</kbd> または <kbd class="kbdkey">F</kbd></td><td class="kbd-desc">習慣を検索</td></tr>
+      <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
+      <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
+      <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">全カテゴリーを折りたたむ / 展開</td></tr>
+      <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
+      <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
+    </table>
+    <button class="kbd-close" onclick="closeKbdHelp()">閉じる（ESCでも）</button>
+  </div>
+</div>
 
-    function openEdit(id) {
-      const h = state.habits.find(x => x.id === id);
-      if (!h) return;
-      editingId = id;
-      document.getElementById('modalTitle').textContent = '習慣を編集';
-      document.getElementById('habitNameInput').value = h.name;
-      document.getElementById('habitCategory').value = h.category;
-      selectedColor = h.color;
-      renderColorPicker();
-      document.getElementById('saveHabit').textContent = '更新';
-      openModal(false);
-    }
+<script>
+const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak';
+const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
+// Cycle 15: preset emoji for habit icons
+const EMOJI_PRESETS=['📚','📖','✏️','💪','🏃','🧘','🎨','🎵','📝','💡','🌱','⭐','🎯','🔔','🌅','🏆','💎','🔥','⚡','💤','🥗','💊','🛌','🧠'];
+// Cycle 28: habit template presets
+const HABIT_TEMPLATES=[
+  {name:'読書30分',category:'学習',emoji:'📚'},{name:'英語学習',category:'学習',emoji:'🗣'},
+  {name:'プログラミング',category:'学習',emoji:'💻'},{name:'資格勉強',category:'学習',emoji:'📖'},
+  {name:'筋トレ',category:'運動',emoji:'💪'},{name:'ウォーキング',category:'運動',emoji:'🚶'},
+  {name:'ヨガ',category:'運動',emoji:'🧘'},{name:'ランニング',category:'運動',emoji:'🏃'},
+  {name:'日記',category:'自己改善',emoji:'📝'},{name:'瞑想',category:'自己改善',emoji:'💆'},
+  {name:'早起き',category:'自己改善',emoji:'🌅'},{name:'感謝日記',category:'自己改善',emoji:'❤️'},
+  {name:'YouTube動画制作',category:'創作',emoji:'🎬'},{name:'絵を描く',category:'創作',emoji:'🎨'},
+  {name:'音楽練習',category:'創作',emoji:'🎵'},{name:'ブログ執筆',category:'創作',emoji:'✍️'},
+];
+const DAYS = ['日','月','火','水','木','金','土'];
+// Cycle 11: keyword→category mapping for auto-suggest
+const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-    function saveHabit() {
-      const name = document.getElementById('habitNameInput').value.trim();
-      if (!name) { showToast('名前を入力してください'); return; }
-      const category = document.getElementById('habitCategory').value;
-      if (editingId) {
-        const h = state.habits.find(x => x.id === editingId);
-        if (h) { h.name = name; h.category = category; h.color = selectedColor; }
-        showToast('✏️ 更新しました');
-      } else {
-        state.habits.push({ id: genId(), name, category, color: selectedColor, createdAt: todayStr() });
-        showToast('🌱 習慣を追加しました！');
-      }
-      save();
-      closeModal();
-      render();
-    }
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day';
 
-    function deleteHabit(id) {
-      state.habits = state.habits.filter(h => h.id !== id);
-      Object.values(state.logs).forEach(log => delete log[id]);
-      save();
-      render();
-      showToast('🗑️ 削除しました');
-    }
-
-    function renderColorPicker() {
-      const el = document.getElementById('colorPicker');
-      el.innerHTML = COLORS.map(c => `<div class="color-opt${c === selectedColor ? ' selected' : ''}" style="background:${c}" data-color="${c}"></div>`).join('');
-      el.querySelectorAll('.color-opt').forEach(opt => {
-        opt.addEventListener('click', () => {
-          selectedColor = opt.dataset.color;
-          renderColorPicker();
-        });
-      });
-    }
-
-    function exportData() {
-      const rows = ['日付,習慣名,達成'];
-      const dates = Object.keys(state.logs).sort();
-      dates.forEach(d => {
-        state.habits.forEach(h => {
-          const done = state.logs[d][h.id] ? '○' : '×';
-          rows.push(`${d},${h.name},${done}`);
-        });
-      });
-      const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `habits_${todayStr()}.csv`;
-      a.click();
-      showToast('📥 CSVをダウンロードしました');
-    }
-
-    // Theme
-    function initTheme() {
-      const saved = localStorage.getItem('habitTheme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const dark = saved ? saved === 'dark' : prefersDark;
-      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
-    }
-
-    function toggleTheme() {
-      const isDark = document.documentElement.dataset.theme === 'dark';
-      document.documentElement.dataset.theme = isDark ? 'light' : 'dark';
-      localStorage.setItem('habitTheme', isDark ? 'light' : 'dark');
-      document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
-    }
-
-    // Events
-    document.getElementById('addHabitBtn').addEventListener('click', () => openModal());
-    document.getElementById('cancelModal').addEventListener('click', closeModal);
-    document.getElementById('modalBackdrop').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
-    document.getElementById('saveHabit').addEventListener('click', saveHabit);
-    document.getElementById('habitNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') saveHabit(); });
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    document.getElementById('exportBtn').addEventListener('click', exportData);
-    document.getElementById('statsToggle').addEventListener('click', () => {
-      const panel = document.getElementById('statsPanel');
-      panel.classList.toggle('open');
-      renderDetailedStats();
+// ── Cycle 12: sound effects ──
+let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
+function _audioCtx(){return new (window.AudioContext||window.webkitAudioContext)()}
+function playTick(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=_audioCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.connect(g);g.connect(ctx.destination);
+    osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660,ctx.currentTime+0.08);
+    g.gain.setValueAtTime(0.25,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
+    osc.start();osc.stop(ctx.currentTime+0.22);
+  }catch(e){}
+}
+function playCelebration(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=_audioCtx();
+    [523,659,784,1047].forEach((f,i)=>{
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.frequency.value=f;
+      const t=ctx.currentTime+i*0.12;
+      g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+      osc.start(t);osc.stop(t+0.35);
     });
-    document.getElementById('prevDay').addEventListener('click', () => {
-      const d = new Date(viewDate + 'T00:00:00');
-      d.setDate(d.getDate() - 1);
-      viewDate = d.toISOString().slice(0, 10);
-      render();
-    });
-    document.getElementById('nextDay').addEventListener('click', () => {
-      const d = new Date(viewDate + 'T00:00:00');
-      const next = d;
-      next.setDate(next.getDate() + 1);
-      const ns = next.toISOString().slice(0, 10);
-      if (ns <= todayStr()) { viewDate = ns; render(); }
-    });
+  }catch(e){}
+}
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  localStorage.setItem('rh_sound',soundEnabled?'true':'false');
+  updateSoundBtn();
+}
+function updateSoundBtn(){
+  const btn=document.getElementById('sound-btn');
+  if(btn)btn.textContent=soundEnabled?'🔊':'🔇';
+}
 
-    // Init
-    initTheme();
-    renderColorPicker();
-    render();
-  </script>
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ── Cycle 39: habit frequency (daily / weekday-only) ──
+function isScheduled(h, dateStr){
+  if((h.frequency||'daily')==='weekday'){
+    const dow=new Date(dateStr+'T00:00:00').getDay();
+    return dow>=1&&dow<=5;
+  }
+  return true;
+}
+let selFreqVal='daily';
+function selFreq(freq){
+  selFreqVal=freq;
+  const d=document.getElementById('freq-daily'),w=document.getElementById('freq-weekday');
+  if(d)d.classList.toggle('sel',freq==='daily');
+  if(w)w.classList.toggle('sel',freq==='weekday');
+}
+
+// ── Cycle 40: custom habit accent color ──
+let selColorVal='';
+function selColor(c){
+  selColorVal=c;
+  document.querySelectorAll('.color-swatch').forEach(b=>b.classList.toggle('sel',b.dataset.col===c));
+}
+
+// ── Cycle 15: haptic vibration feedback ──
+function vib(pattern){if(navigator.vibrate)navigator.vibrate(pattern)}
+
+// ── Cycle 18: particle burst on habit check ──
+function spawnBurst(x,y){
+  const cols=['#4CAF7D','#5BC8E8','#F5C842','#9B6DD6'];
+  const wrap=document.createElement('div');
+  wrap.style.cssText=`position:fixed;left:${x}px;top:${y}px;pointer-events:none;z-index:999`;
+  for(let i=0;i<8;i++){
+    const s=document.createElement('span');
+    const angle=(i/8)*Math.PI*2,dist=16+Math.random()*14;
+    s.className='chk-burst-dot';
+    s.style.background=cols[i%cols.length];
+    s.style.animationDelay=`${(Math.random()*40).toFixed(0)}ms`;
+    s.style.setProperty('--tx',`${(Math.cos(angle)*dist).toFixed(1)}px`);
+    s.style.setProperty('--ty',`${(Math.sin(angle)*dist).toFixed(1)}px`);
+    wrap.appendChild(s);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),700);
+}
+
+// ── Cycle 28: dynamic document title ──
+function updateDocTitle(){
+  const td=today();
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  if(!active.length){document.title='習慣トラッカー | RAINYBRAIN';return;}
+  const dc=completions[td]||{};
+  const done=active.filter(h=>dc[h.id]).length,total=active.length;
+  document.title=done===total?`🎉 全完了! | 習慣トラッカー`:`${done}/${total}完了 | 習慣トラッカー`;
+}
+
+// ── Cycle 38: sticky header progress badge ──
+let _prevDone=-1;
+function updateHeaderBadge(){
+  const el=document.getElementById('hdr-progress');
+  if(!el)return;
+  const td=today();
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  if(!active.length){el.style.display='none';_prevDone=-1;return;}
+  el.style.display='';
+  const dc=completions[td]||{};
+  const done=active.filter(h=>dc[h.id]).length,total=active.length;
+  if(done===total){
+    el.textContent='✓ 完了！';
+    el.className='hdr-progress done';
+  }else{
+    el.textContent=`${done}/${total}`;
+    el.className='hdr-progress';
+  }
+  if(_prevDone>=0&&done!==_prevDone){
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  }
+  _prevDone=done;
+}
+
+// ── Cycle 38: check combo toast ──
+let _comboCount=0,_comboTimer=null,_comboHideTimer=null;
+function triggerCombo(){
+  if(_comboTimer)clearTimeout(_comboTimer);
+  if(_comboHideTimer)clearTimeout(_comboHideTimer);
+  _comboCount++;
+  if(_comboCount>=2){
+    const msgs=['⚡ 2連チェック！','🔥 3連チェック！','💥 4連チェック！','🌟 コンボ継続中！','🏆 神速チェック！'];
+    const toast=document.getElementById('combo-toast');
+    if(toast){
+      toast.textContent=msgs[Math.min(_comboCount-2,msgs.length-1)];
+      toast.classList.add('show');
+      _comboHideTimer=setTimeout(()=>toast.classList.remove('show'),1600);
+    }
+  }
+  _comboTimer=setTimeout(()=>{_comboCount=0;},2000);
+}
+
+// ── Cycle 28: habit template picker ──
+let _tmplOpen=false;
+function toggleTemplates(){
+  _tmplOpen=!_tmplOpen;
+  const g=document.getElementById('tmpl-grid'),c=document.getElementById('tmpl-chev');
+  if(g)g.classList.toggle('open',_tmplOpen);
+  if(c)c.classList.toggle('open',_tmplOpen);
+}
+function selectTemplate(i){
+  const t=HABIT_TEMPLATES[i];if(!t)return;
+  const inp=document.getElementById('habit-inp');
+  const emojiEl=document.getElementById('emoji-inp');
+  if(inp)inp.value=t.name;
+  if(emojiEl){emojiEl.value=t.emoji;onEmojiInput(t.emoji);}
+  selCat(t.category);validateModal();
+  _tmplOpen=false;
+  const g=document.getElementById('tmpl-grid'),c=document.getElementById('tmpl-chev');
+  if(g)g.classList.remove('open');if(c)c.classList.remove('open');
+}
+function initTemplates(){
+  const el=document.getElementById('tmpl-grid');if(!el)return;
+  el.innerHTML=HABIT_TEMPLATES.map((t,i)=>`<button class="tmpl-item" onclick="selectTemplate(${i})" type="button">${t.emoji} ${t.name}</button>`).join('');
+}
+
+// ── Cycle 15: emoji icon helpers ──
+function initEmojiPresets(){
+  const el=document.getElementById('emoji-presets');
+  if(!el)return;
+  el.innerHTML=EMOJI_PRESETS.map(e=>`<button class="emoji-preset" onclick="selectEmoji('${e}')" title="${e}">${e}</button>`).join('');
+}
+function selectEmoji(e){
+  const inp=document.getElementById('emoji-inp');
+  if(inp)inp.value=e;
+  document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.toggle('sel',b.textContent.trim()===e));
+}
+function onEmojiInput(val){
+  const v=val.trim();
+  document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.toggle('sel',b.textContent.trim()===v));
+}
+
+// ── date helpers ──
+function toStr(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function today(){return toStr(new Date())}
+function daysAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d}
+function dateAgo(n){return toStr(daysAgo(n))}
+
+// ── storage ──
+function load(){
+  try{
+    const h=localStorage.getItem(HK);
+    habits=h?JSON.parse(h):defaults();
+    const c=localStorage.getItem(CK);
+    completions=c?JSON.parse(c):{};
+  }catch{habits=defaults();completions={}}
+  if(!habits.length)habits=defaults();
+}
+function saveH(){localStorage.setItem(HK,JSON.stringify(habits))}
+function saveC(){localStorage.setItem(CK,JSON.stringify(completions))}
+
+function defaults(){
+  const t=new Date().toISOString();
+  return[
+    {id:'h1',name:'読書30分',category:'学習',createdAt:t},
+    {id:'h2',name:'英語学習',category:'学習',createdAt:t},
+    {id:'h3',name:'筋トレ',category:'運動',createdAt:t},
+    {id:'h4',name:'ウォーキング',category:'運動',createdAt:t},
+    {id:'h5',name:'YouTube動画制作',category:'創作',createdAt:t},
+    {id:'h6',name:'瞑想',category:'自己改善',createdAt:t},
+    {id:'h7',name:'日記',category:'自己改善',createdAt:t},
+  ];
+}
+
+// ── stats ──
+function dayRate(dateStr){
+  const relevant=habits.filter(h=>!h.paused&&isScheduled(h,dateStr));
+  if(!relevant.length)return 0;
+  const dc=completions[dateStr]||{};
+  return relevant.filter(h=>dc[h.id]).length/relevant.length;
+}
+function todayRate(){return Math.round(dayRate(today())*100)}
+
+function totalDone(){
+  let n=0;
+  for(const day of Object.values(completions))for(const v of Object.values(day))if(v)n++;
+  return n;
+}
+
+// cycle 2: streak counter
+function calcStreak(){
+  if(!habits.length)return 0;
+  let s=0,start=dayRate(today())===1?0:1;
+  for(let d=start;d<365;d++){
+    if(dayRate(dateAgo(d))===1)s++;else break;
+  }
+  return s;
+}
+
+// cycle 5: best streak persistence
+function getBestStreak(){return parseInt(localStorage.getItem(BK)||'0')}
+function updateBestStreak(current){
+  const best=getBestStreak();
+  if(current>best){localStorage.setItem(BK,current);return current}
+  return best;
+}
+
+// cycle 5+25: JSON/CSV export
+function exportData(){
+  const isJson=confirm('エクスポート形式を選択\n\n[OK] JSON — 完全バックアップ（インポート可能）\n[キャンセル] CSV — スプレッドシート用（Excelなど）');
+  if(isJson)_exportJSON();else _exportCSV();
+}
+function _exportJSON(){
+  const data={version:'2.25',exportedAt:new Date().toISOString(),habits,completions};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`habit-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+function _exportCSV(){
+  if(!habits.length){alert('習慣データがありません。');return;}
+  const dates=Object.keys(completions).sort();
+  if(!dates.length){alert('完了履歴がありません。');return;}
+  const header=['日付',...habits.map(h=>`"${(h.emoji?h.emoji+' ':'')+h.name}"`)].join(',');
+  const rows=dates.map(d=>{const dc=completions[d]||{};return[d,...habits.map(h=>dc[h.id]?'1':'0')].join(',');});
+  const csv=[header,...rows].join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`habit-data-${today()}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// cycle 4: per-habit cumulative count
+function habitTotalCount(id){
+  return Object.values(completions).filter(day=>day[id]).length;
+}
+
+// cycle 8: per-habit individual consecutive streak
+function habitStreak(id){
+  const h=habits.find(x=>x.id===id);
+  const freq=h?(h.frequency||'daily'):'daily';
+  const dc0=completions[today()]||{};
+  let s=0;
+  if(freq==='weekday'){
+    const todayDow=new Date().getDay();
+    let d=0;
+    if(todayDow>=1&&todayDow<=5&&!dc0[id])d=1;
+    for(;d<365;d++){
+      const dow=daysAgo(d).getDay();
+      if(dow===0||dow===6)continue;
+      if((completions[dateAgo(d)]||{})[id])s++;else break;
+    }
+    return s;
+  }
+  const start=dc0[id]?0:1;
+  for(let d=start;d<365;d++){
+    if((completions[dateAgo(d)]||{})[id])s++;else break;
+  }
+  return s;
+}
+
+// cycle 11: 7-day dot calendar per habit (oldest→newest)
+function habit7Days(id){
+  const h=habits.find(x=>x.id===id);
+  const freq=h?(h.frequency||'daily'):'daily';
+  return Array.from({length:7},(_,i)=>{
+    const n=6-i;
+    if(freq==='weekday'){
+      const dow=daysAgo(n).getDay();
+      if(dow===0||dow===6)return null;
+    }
+    return !!(completions[dateAgo(n)]||{})[id];
+  });
+}
+
+// cycle 11: smart category auto-suggest based on habit name keywords
+function suggestCategory(name){
+  for(const[cat,kws]of Object.entries(CAT_KEYWORDS)){
+    if(kws.some(kw=>name.includes(kw)))return cat;
+  }
+  return null;
+}
+
+// cycle 11: input handler with auto-suggest
+function onHabitInput(){
+  const name=document.getElementById('habit-inp').value.trim();
+  if(!editingId&&(!selCatVal||catAutoSel)){
+    const sug=name?suggestCategory(name):null;
+    if(sug){
+      selCatVal=sug;catAutoSel=true;
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===sug));
+    }else if(!name&&catAutoSel){
+      selCatVal='';catAutoSel=false;
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+    }
+  }
+  validateModal();
+}
+
+// ── render ──
+function renderHeader(){
+  const now=new Date();
+  document.getElementById('hdr-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${DAYS[now.getDay()]}）`;
+}
+
+function renderStats(){
+  const rate=todayRate(),streak=calcStreak(),best=updateBestStreak(streak);
+  document.getElementById('s-today').textContent=rate+'%';
+  document.getElementById('s-streak').textContent=streak;
+  document.getElementById('s-total').textContent=totalDone();
+  // cycle 5: best streak display
+  const sb=document.getElementById('s-best');
+  if(sb)sb.textContent=`最高: ${best}日`;
+  const badge=document.getElementById('streak-badge');
+  badge.textContent=`🔥 ${streak}日連続達成中`;
+  badge.classList.toggle('fire',streak>=3);
+  // cycle 4 + 16: update progress ring with dynamic color
+  const rf=document.getElementById('ring-fill');
+  if(rf){
+    rf.style.strokeDashoffset=(138.23*(1-rate/100)).toFixed(2);
+    rf.style.stroke=rate===100?'var(--green)':rate>=50?'var(--gold)':'var(--sky)';
+    const rv=document.getElementById('s-today');
+    if(rv)rv.className='ring-val '+(rate===100?'green':rate>=50?'gold':'sky');
+    const pw=document.querySelector('.progress-ring-wrap');
+    if(pw)pw.classList.toggle('ring-complete',rate===100);
+  }
+}
+
+let chartView='week';
+
+function setChartView(v){
+  chartView=v;
+  document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  const ttl=document.getElementById('chart-ttl');
+  if(ttl)ttl.textContent=v==='week'?'📊 週間達成率':'📅 過去30日 ヒートマップ';
+  renderChart();
+}
+
+function renderChart(){
+  const c=document.getElementById('chart');
+  c.innerHTML='';
+  if(chartView==='week'){
+    c.className='chart-bars';
+    for(let i=6;i>=0;i--){
+      const ds=dateAgo(i),rate=dayRate(ds),pct=Math.round(rate*100),isToday=i===0;
+      const lbl=isToday?'今日':DAYS[daysAgo(i).getDay()];
+      const col=document.createElement('div');
+      col.className='chart-col';
+      col.innerHTML=`<div class="bar-wrap"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%" title="${pct}%"></div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
+      c.appendChild(col);
+    }
+  }else{
+    c.className='heatmap';
+    for(let i=29;i>=0;i--){
+      const ds=dateAgo(i),pct=dayRate(ds);
+      const cell=document.createElement('div');
+      cell.className='hm-cell';
+      const emptyBg=document.body.classList.contains('light')?'rgba(0,0,0,.06)':'rgba(255,255,255,.06)';
+      cell.style.background=pct===0?emptyBg:`rgba(245,200,66,${(0.12+pct*.82).toFixed(2)})`;
+      const d=daysAgo(i);
+      cell.title=`${d.getMonth()+1}月${d.getDate()}日 ${Math.round(pct*100)}%達成`;
+      c.appendChild(cell);
+    }
+  }
+}
+
+// Cycle 19: habit card HTML builder (shared by focus section and category sections)
+function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
+  const completedVal=dc[h.id];
+  const isDone=!!completedVal;
+  const isPaused=!!h.paused;
+  const cnt=habitTotalCount(h.id);
+  const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
+  const hs=habitStreak(h.id);
+  const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
+  let timeBadge='';
+  if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
+  const dots7=habit7Days(h.id);
+  const dotsHtml=`<div class="h-dots" title="過去7日間の達成">${dots7.map(d=>`<span class="h-dot${d===null?' off':d?' done':''}"></span>`).join('')}</div>`;
+  const createdDaysAgo=Math.floor((Date.now()-new Date(h.createdAt))/86400000);
+  const doneThisWeek=dots7.filter(Boolean).length;
+  const isLowRate=!isPaused&&createdDaysAgo>=7&&doneThisWeek===0;
+  const lowRateLbl=isLowRate?'<span class="low-rate-lbl">要注意</span>':'';
+  const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
+  const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
+  const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+  const isStarred=focusIds.includes(h.id);
+  const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
+  const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
+  const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
+  // Cycle 39: weekday-only frequency
+  const freq=h.frequency||'daily';
+  const isWeekendOff=!isPaused&&!isScheduled(h,today());
+  const freqBadge=freq==='weekday'&&!isWeekendOff?'<span class="freq-badge">平日</span>':'';
+  const weekendLbl=isWeekendOff?'<span class="weekend-lbl">週末お休み</span>':'';
+  // Cycle 40: custom accent color
+  const hcol=h.color||'';
+  const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
+  // Cycle 29: completion quick note
+  const qNote=isDone?getCompletionNote(h.id):'';
+  const noteBtnHtml=isDone?`<button class="note-btn${qNote?' has-note':''}" onclick="openNoteModal('${h.id}',event)" title="${qNote?esc(qNote):'メモを追加'}" aria-label="メモ">${qNote?'📝':'✎'}</button>`:'';
+  const quickNoteHtml=qNote?`<span class="habit-quick-note">${esc(qNote)}</span>`:'';
+  // Cycle 30: habit detail panel
+  const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
+  const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+}
+
+function renderList(){
+  const el=document.getElementById('list');
+  const td=today(),dc=completions[td]||{};
+  const focusIds=getFocusIds();
+  let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
+  if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
+
+  if(!list.length){
+    const msg=searchQuery?`「${esc(searchQuery)}」に一致する習慣はありません`:'＋ボタンで習慣を追加しよう！';
+    const ico=searchQuery?'🔍':'🌱';
+    el.innerHTML=`<div class="empty"><div class="empty-ico">${ico}</div><div class="empty-txt">${msg}</div></div>`;
+    return;
+  }
+
+  let html='';
+  // Cycle 19: focus section at top (paused habits excluded)
+  const focused=list.filter(h=>focusIds.includes(h.id)&&!h.paused);
+  if(focused.length){
+    html+='<div class="focus-section"><div class="focus-ttl">📌 今日のフォーカス</div>';
+    focused.forEach(h=>html+=_hCard(h,dc,CAT_COLORS[h.category]||'#fff',focusIds));
+    html+='</div>';
+  }
+
+  const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
+  const catCol=getCatCollapsed();
+  for(const cat of cats){
+    const rawCh=list.filter(h=>h.category===cat);
+    if(!rawCh.length)continue;
+    let ch;
+    if(sortUndone)ch=[...rawCh].sort((a,b)=>{
+      const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
+      if(aOff!==bOff)return aOff?1:-1;
+      return(dc[a.id]?1:0)-(dc[b.id]?1:0);
+    });
+    else ch=[...rawCh].sort((a,b)=>{
+      const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
+      return aOff&&!bOff?1:!aOff&&bOff?-1:0;
+    });
+    const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
+    const pct=ch.length?Math.round(done/ch.length*100):0;
+    const isClosed=!!catCol[cat];
+    const _npc=ch.filter(h=>!h.paused&&isScheduled(h,td));
+    const _acd=_npc.length>0&&_npc.every(h=>!!dc[h.id]);
+    const _batchBtn=_npc.length>0?`<button class="batch-btn${_acd?' all-done':''}" onclick="batchComplete('${cat}',event)" title="${_acd?'チェックを全て解除':'全ての習慣を完了'}">${_acd?'✓ 全解除':'✓ 全完了'}</button>`:'';
+    html+=`<div class="habit-sec"><div class="sec-hdr" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span>${_batchBtn}<span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*250+20+'px'}">`;
+    ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
+    html+='</div></div>';
+  }
+  el.innerHTML=html;
+  updateCollapseAllBtn();
+  initSwipeGestures();
+  initLongPress();
+}
+
+// ── Cycle 26: long-press to open edit modal ──
+function initLongPress(){
+  document.querySelectorAll('#list .habit[data-id]').forEach(el=>{
+    if(el._lpInited)return;
+    el._lpInited=true;
+    let timer=null,moved=false,sx=0,sy=0;
+    const id=el.dataset.id;
+    el.addEventListener('touchstart',e=>{
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;moved=false;
+      timer=setTimeout(()=>{
+        if(!moved){
+          el.classList.add('lp-active');
+          setTimeout(()=>el.classList.remove('lp-active'),500);
+          openModal(id);vib(40);
+        }
+      },500);
+    },{passive:true});
+    el.addEventListener('touchmove',e=>{
+      const dx=Math.abs(e.touches[0].clientX-sx),dy=Math.abs(e.touches[0].clientY-sy);
+      if(dx>8||dy>8){moved=true;clearTimeout(timer);}
+    },{passive:true});
+    el.addEventListener('touchend',()=>clearTimeout(timer),{passive:true});
+    el.addEventListener('touchcancel',()=>clearTimeout(timer),{passive:true});
+  });
+}
+
+// Cycle 16: today's completed habit timeline
+function renderTimeline(){
+  const td=today(),dc=completions[td]||{};
+  const done=habits
+    .filter(h=>dc[h.id]&&typeof dc[h.id]==='string')
+    .map(h=>({...h,ts:new Date(dc[h.id])}))
+    .sort((a,b)=>a.ts-b.ts);
+  const box=document.getElementById('timeline-box');
+  if(!box)return;
+  box.style.display=done.length?'':'none';
+  if(!done.length)return;
+  const list=document.getElementById('timeline-list');
+  if(list)list.innerHTML=done.map(h=>`<div class="timeline-item"><span class="tl-time">${String(h.ts.getHours()).padStart(2,'0')}:${String(h.ts.getMinutes()).padStart(2,'0')}</span>${h.emoji?`<span class="tl-emoji">${h.emoji}</span>`:''}<span class="tl-name">${esc(h.name)}</span></div>`).join('');
+}
+
+// ── Cycle 20: monthly trend chart ──
+function renderMonthlyTrend(){
+  const box=document.getElementById('trend-box'),rowsEl=document.getElementById('trend-rows');
+  if(!box||!rowsEl||!habits.length){if(box)box.style.display='none';return;}
+  const now=new Date();
+  const months=[];
+  for(let m=3;m>=0;m--){
+    const d=new Date(now.getFullYear(),now.getMonth()-m,1);
+    const yr=d.getFullYear(),mn=d.getMonth();
+    const daysInMonth=new Date(yr,mn+1,0).getDate();
+    let total=0,cnt=0;
+    for(let day=1;day<=daysInMonth;day++){
+      if(new Date(yr,mn,day)>now)break;
+      const ds=`${yr}-${String(mn+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      total+=dayRate(ds);cnt++;
+    }
+    if(cnt>0)months.push({label:`${mn+1}月`,avg:Math.round(total/cnt*100)});
+  }
+  if(!months.some(m=>m.avg>0)){box.style.display='none';return;}
+  box.style.display='';
+  const max=Math.max(...months.map(m=>m.avg),1);
+  rowsEl.innerHTML=months.map(m=>{
+    const pct=Math.round(m.avg/max*100);
+    const color=m.avg>=80?'var(--green)':m.avg>=50?'var(--gold)':'var(--sky)';
+    return `<div class="trend-row"><span class="trend-month">${m.label}</span><div class="trend-bar-wrap"><div class="trend-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="trend-pct">${m.avg}%</span></div>`;
+  }).join('');
+}
+
+// ── Cycle 36: today's pace indicator ──
+function renderPaceBox(){
+  const el=document.getElementById('pace-box');
+  if(!el||!habits.length){if(el)el.style.display='none';return;}
+  const td=today(),dc=completions[td]||{};
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  if(!active.length){el.style.display='none';return;}
+  const remaining=active.filter(h=>!dc[h.id]).length;
+  const now=new Date();
+  const secsLeft=(23-now.getHours())*3600+(59-now.getMinutes())*60+(59-now.getSeconds());
+  const hoursLeft=Math.floor(secsLeft/3600);
+  const minsLeft=Math.floor((secsLeft%3600)/60);
+  const timeStr=hoursLeft>0?`${hoursLeft}h${minsLeft>0?String(minsLeft).padStart(2,'0')+'m':''}`:minsLeft+'m';
+  el.style.display='';
+  const paceColor=remaining===0?'var(--green)':hoursLeft<2?'var(--red)':hoursLeft<6?'var(--gold)':'var(--sky)';
+  const msg=remaining===0?'今日の習慣完了！🎉':remaining===1?'あと1件で全完了！':hoursLeft<2?`急いで！残り${remaining}件`:'ペース継続中';
+  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div><div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
+}
+
+function render(){
+  renderHeader();
+  renderStats();
+  renderPaceBox();
+  renderChart();
+  renderWeekComparison();
+  renderDayOfWeekChart();
+  renderMonthlyTrend();
+  renderMonthStats();
+  renderWeeklyRanking();
+  renderMotto();
+  renderAchievements();
+  renderMilestoneWidget();
+  renderTimeOfDayChart();
+  renderTimeline();
+  renderList();
+  renderChallenge();
+  updateFabBadge();
+  updateProgressFooter();
+  updateDocTitle();
+  updateHeaderBadge();
+}
+
+// ── Cycle 26: FAB remaining-task badge ──
+function updateFabBadge(){
+  const el=document.getElementById('fab-badge');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const remaining=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!dc[h.id]).length;
+  el.textContent=remaining||'';
+  el.classList.toggle('zero',remaining===0);
+}
+
+// ── actions ──
+function toggle(id,evt){
+  const _hh=habits.find(x=>x.id===id);
+  if(_hh&&_hh.paused)return;
+  if(_hh&&!isScheduled(_hh,today()))return;
+  const td=today();
+  if(!completions[td])completions[td]={};
+  const wasCompleted=!!completions[td][id];
+  // cycle 9: store ISO timestamp on completion, null on undo
+  completions[td][id]=wasCompleted?null:new Date().toISOString();
+  if(!wasCompleted){
+    playTick();vib(50);checkHabitMilestone(id);triggerCombo();
+    // cycle 18: particle burst from checkbox position
+    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r)spawnBurst(r.left+r.width/2,r.top+r.height/2);}
+  }
+  saveC();
+  render();
+  // cycle 2: celebration check
+  if(todayRate()===100&&!celebrated){
+    celebrated=true;
+    showBanner();
+    launchConfetti();
+    playCelebration();
+  }else if(todayRate()<100){
+    celebrated=false;
+  }
+}
+
+// ── Cycle 10: Undo delete snackbar ──
+let _delHabit=null,_delIdx=null,_delTimer=null;
+function del(id){
+  if(_delTimer){clearTimeout(_delTimer);saveH();}  // commit any pending delete
+  const idx=habits.findIndex(h=>h.id===id);
+  if(idx===-1)return;
+  _delHabit=habits[idx];_delIdx=idx;
+  habits.splice(idx,1);
+  vib(25);celebrated=false;render();
+  document.getElementById('sb-msg').textContent=`「${_delHabit.name}」を削除しました`;
+  const sb=document.getElementById('snackbar');
+  sb.classList.add('show');
+  _delTimer=setTimeout(()=>{saveH();_hideSb();},4000);
+}
+function _hideSb(){
+  document.getElementById('snackbar').classList.remove('show');
+  _delHabit=null;_delIdx=null;_delTimer=null;
+}
+function undoDelete(){
+  if(!_delHabit)return;
+  clearTimeout(_delTimer);
+  habits.splice(_delIdx,0,_delHabit);
+  saveH();_hideSb();render();
+}
+
+// Cycle 21: pause / resume a habit (excluded from rate calculations while paused)
+function togglePause(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h)return;
+  h.paused=!h.paused;
+  saveH();celebrated=false;render();
+}
+
+// Cycle 10: weekly summary copy
+function shareWeeklySummary(){
+  const lines=['📅 習慣週間レポート',today(),''];
+  for(let i=6;i>=0;i--){
+    const ds=dateAgo(i),rate=Math.round(dayRate(ds)*100);
+    const d=daysAgo(i),lbl=i===0?'今日':DAYS[d.getDay()];
+    const filled=Math.round(rate/10);
+    lines.push(`${lbl} ${'■'.repeat(filled)}${'□'.repeat(10-filled)} ${rate}%`);
+  }
+  lines.push('','🔥 連続記録: '+calcStreak()+'日','✅ 累計: '+totalDone()+'回','─────────────','習慣トラッカー | RAINYBRAIN');
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const b=document.getElementById('banner');
+    b.textContent='📋 週間レポートをコピーしました！';
+    b.classList.add('show');
+    setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
+  }).catch(()=>{alert(lines.join('\n'));});
+}
+
+// ── modal ──
+function openModal(id=null){
+  editingId=id;
+  document.getElementById('overlay').classList.add('open');
+  const inp=document.getElementById('habit-inp');
+  const ok=document.getElementById('modal-ok');
+  const ttl=document.getElementById('modal-ttl');
+  const noteEl=document.getElementById('note-inp');
+  const emojiEl=document.getElementById('emoji-inp');
+  if(id){
+    const h=habits.find(h=>h.id===id);
+    inp.value=h?h.name:'';
+    if(noteEl)noteEl.value=h&&h.note?h.note:'';
+    if(emojiEl){emojiEl.value=h&&h.emoji?h.emoji:'';onEmojiInput(emojiEl.value);}
+    selCatVal=h?h.category:'';catAutoSel=false;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
+    selFreq(h&&h.frequency?h.frequency:'daily');
+    selColor(h&&h.color?h.color:'');
+    if(ttl)ttl.textContent='習慣を編集';
+    if(ok){ok.textContent='更新する';ok.disabled=false;}
+    // Cycle 28: hide template picker in edit mode
+    const ts=document.getElementById('tmpl-section');if(ts)ts.style.display='none';
+  }else{
+    inp.value='';if(noteEl)noteEl.value='';
+    if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
+    selCatVal='';catAutoSel=false;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+    selFreq('daily');
+    selColor('');
+    if(ttl)ttl.textContent='習慣を追加';
+    if(ok){ok.textContent='追加する';ok.disabled=true;}
+    // Cycle 28: reset template picker state
+    _tmplOpen=false;
+    const tg=document.getElementById('tmpl-grid'),tc=document.getElementById('tmpl-chev'),ts=document.getElementById('tmpl-section');
+    if(tg)tg.classList.remove('open');if(tc)tc.classList.remove('open');
+    if(ts)ts.style.display='';
+  }
+  setTimeout(()=>inp.focus(),300);
+}
+function closeModal(){editingId=null;document.getElementById('overlay').classList.remove('open')}
+function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal()}
+
+function selCat(cat,auto=false){
+  selCatVal=cat;catAutoSel=auto;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===cat));
+  validateModal();
+}
+function validateModal(){
+  const name=document.getElementById('habit-inp').value.trim();
+  document.getElementById('modal-ok').disabled=!name||!selCatVal;
+}
+function saveHabit(){
+  const name=document.getElementById('habit-inp').value.trim();
+  const note=((document.getElementById('note-inp')||{}).value||'').trim();
+  const emoji=((document.getElementById('emoji-inp')||{}).value||'').trim();
+  if(!name||!selCatVal)return;
+  if(editingId){
+    const h=habits.find(h=>h.id===editingId);
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;}
+  }else{
+    const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
+    if(note)nh.note=note;
+    if(emoji)nh.emoji=emoji;
+    if(selFreqVal!=='daily')nh.frequency=selFreqVal;
+    if(selColorVal)nh.color=selColorVal;
+    habits.push(nh);
+  }
+  saveH();
+  closeModal();
+  celebrated=false;
+  render();
+}
+
+// ── theme (cycle 7 + 17: system preference auto-detect) ──
+function initTheme(){
+  const saved=localStorage.getItem('rh_theme');
+  if(saved){
+    if(saved==='light')document.body.classList.add('light');
+  }else{
+    // Auto-detect from OS preference when no manual override
+    if(window.matchMedia('(prefers-color-scheme: light)').matches)document.body.classList.add('light');
+  }
+  // Follow system changes if user hasn't manually overridden
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',e=>{
+    if(!localStorage.getItem('rh_theme')){
+      document.body.classList.toggle('light',e.matches);
+      updateThemeBtn();renderChart();
+    }
+  });
+  updateThemeBtn();
+}
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  localStorage.setItem('rh_theme',isLight?'light':'dark');
+  updateThemeBtn();
+  renderChart();
+}
+function updateThemeBtn(){
+  const btn=document.getElementById('theme-btn');
+  if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀️';
+  syncThemeColor();
+}
+
+// ── sort undone (cycle 7) ──
+function toggleSortUndone(){
+  sortUndone=!sortUndone;
+  const btn=document.getElementById('sort-undone-btn');
+  if(btn)btn.classList.toggle('active',sortUndone);
+  renderList();
+}
+
+// ── Cycle 37: collapse-all / expand-all toggle (Z key) ──
+function toggleCollapseAll(){
+  const cats=['学習','運動','創作','自己改善'];
+  const st=getCatCollapsed();
+  const anyOpen=cats.some(c=>!st[c]);
+  cats.forEach(c=>st[c]=anyOpen);
+  localStorage.setItem(_colKey(),JSON.stringify(st));
+  renderList();
+}
+function updateCollapseAllBtn(){
+  const cats=['学習','運動','創作','自己改善'];
+  const st=getCatCollapsed();
+  const allClosed=cats.every(c=>st[c]);
+  const btn=document.getElementById('collapse-all-btn');
+  if(btn){btn.textContent=allClosed?'≡ 全開':'≡ 全折';btn.classList.toggle('active',allClosed);}
+}
+
+// ── Cycle 23: custom reorder within category ──
+function toggleReorderMode(){
+  reorderMode=!reorderMode;
+  document.body.classList.toggle('reorder-mode',reorderMode);
+  const btn=document.getElementById('reorder-mode-btn');
+  if(btn)btn.classList.toggle('active',reorderMode);
+  renderList();
+}
+function moveHabit(id,dir){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  const catH=habits.filter(x=>x.category===h.category);
+  const pos=catH.findIndex(x=>x.id===id);
+  const np=pos+dir;if(np<0||np>=catH.length)return;
+  const ia=habits.indexOf(catH[pos]),ib=habits.indexOf(catH[np]);
+  [habits[ia],habits[ib]]=[habits[ib],habits[ia]];
+  saveH();renderList();
+}
+
+// cycle 6: JSON import
+function importData(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=e=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=evt=>{
+      try{
+        const data=JSON.parse(evt.target.result);
+        if(!data.habits||!Array.isArray(data.habits))throw new Error();
+        if(!confirm(`${data.habits.length}件の習慣データをインポートします。現在のデータは上書きされます。続けますか？`))return;
+        habits=data.habits;completions=data.completions||{};
+        saveH();saveC();celebrated=false;render();
+      }catch{alert('インポートに失敗しました。正しいバックアップJSONを選択してください。');}
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// cycle 9: daily motivational motto
+const MOTTOS=[
+  '一歩一歩が、遠くへ連れて行く。🚶',
+  '今日の積み重ねが明日の自分を作る。✨',
+  '継続こそが才能を超える唯一の道。💪',
+  '小さな習慣が大きな人生を変える。🌱',
+  '昨日より今日、少しだけ前進しよう。📈',
+  '完璧じゃなくていい、続けることが大切。🎯',
+  '習慣は第二の天性、それを磨こう。⚡',
+  'やり続ける人が、最後に笑う。😊',
+  '成功は習慣の集大成。今日も一つずつ。🏆',
+  '挑戦しないことが、最大の失敗。🔥',
+  '毎日が新しいスタートライン。一緒に頑張ろう。🌅',
+  '積み重ねの先に、必ず景色が変わる。🗻',
+];
+function renderMotto(){
+  const box=document.getElementById('motto-box');
+  if(!box)return;
+  const streak=calcStreak(),rate=todayRate();
+  let msg;
+  if(rate===100)msg='🎊 今日の全習慣クリア！最高の一日！';
+  else if(streak>=7)msg=`🔥 ${streak}日連続！あなたの継続力は本物です！`;
+  else if(streak>=3)msg=`✨ ${streak}日連続中！この勢いを止めるな！`;
+  else{const d=new Date();msg=MOTTOS[(d.getDate()+d.getMonth()*3)%MOTTOS.length];}
+  box.textContent=msg;
+}
+
+// ── filter ──
+function setFilter(cat){
+  filter=cat;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
+  renderList();
+}
+
+// ── Cycle 14: real-time search filter ──
+function onSearch(val){
+  searchQuery=val.trim().toLowerCase();
+  const clr=document.getElementById('search-clear');
+  if(clr)clr.style.display=searchQuery?'block':'none';
+  renderList();
+}
+function clearSearch(){
+  const inp=document.getElementById('search-inp');
+  if(inp)inp.value='';
+  onSearch('');
+  if(inp)inp.focus();
+}
+
+// ── Cycle 14: week-over-week comparison ──
+function weekAvg(offsetWeeks){
+  const start=offsetWeeks*7;
+  let sum=0;
+  for(let i=0;i<7;i++)sum+=dayRate(dateAgo(start+i));
+  return sum/7;
+}
+function renderWeekComparison(){
+  const el=document.getElementById('week-cmp');
+  if(!el)return;
+  const thisW=Math.round(weekAvg(0)*100);
+  const lastW=Math.round(weekAvg(1)*100);
+  const diff=thisW-lastW;
+  if(diff>0){el.textContent=`↑ 先週比+${diff}%`;el.className='week-cmp up';}
+  else if(diff<0){el.textContent=`↓ 先週比${diff}%`;el.className='week-cmp down';}
+  else{el.textContent='= 先週と同じ';el.className='week-cmp same';}
+}
+
+// ── celebration (cycle 2 新機能) ──
+function showBanner(){
+  const b=document.getElementById('banner');
+  b.classList.add('show');
+  vib([80,40,80,40,180]);
+  setTimeout(()=>b.classList.remove('show'),3500);
+}
+
+function launchConfetti(){
+  const canvas=document.getElementById('cfv');
+  const ctx=canvas.getContext('2d');
+  canvas.width=innerWidth;canvas.height=innerHeight;
+  const cols=document.body.classList.contains('light')?['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#333333']:['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff'];
+  const ps=Array.from({length:130},()=>({
+    x:Math.random()*canvas.width,
+    y:-20-Math.random()*80,
+    vx:(Math.random()-.5)*6,
+    vy:2+Math.random()*4,
+    col:cols[Math.floor(Math.random()*cols.length)],
+    w:4+Math.random()*6,
+    h:2+Math.random()*4,
+    rot:Math.random()*Math.PI*2,
+    rs:(Math.random()-.5)*.2,
+    a:1
+  }));
+  let fr=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    for(const p of ps){
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.rot+=p.rs;
+      if(p.y>canvas.height*.75)p.a-=.025;
+      if(p.a<=0)continue;
+      alive=true;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.globalAlpha=p.a;ctx.fillStyle=p.col;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    }
+    if(alive&&fr++<240)requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+
+// ── Cycle 13: habit streak milestone celebration ──
+const MILESTONES=[7,14,21,30,50,100];
+function checkHabitMilestone(id){
+  const s=habitStreak(id);
+  if(!MILESTONES.includes(s))return;
+  const h=habits.find(x=>x.id===id);
+  if(!h)return;
+  const emoji=s>=100?'🏆':s>=50?'🌟':s>=30?'💎':s>=14?'⭐':'🔥';
+  const el=document.getElementById('milestone-toast');
+  if(!el)return;
+  el.textContent=`${emoji} ${h.name} ${s}日連続達成！`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// ── Cycle 17+36: weekly top habit ranking with all-time tab ──
+function setRankingView(v){rankingView=v;renderWeeklyRanking();}
+function renderWeeklyRanking(){
+  const el=document.getElementById('ranking-box');
+  if(!el)return;
+  if(!habits.length){el.style.display='none';return;}
+  const active=habits.filter(h=>!h.paused);
+  let scores;
+  if(rankingView==='alltime'){
+    scores=active.map(h=>{
+      const days=Math.max(1,Math.floor((Date.now()-new Date(h.createdAt))/86400000)+1);
+      const cnt=habitTotalCount(h.id);
+      return{h,cnt,rate:Math.round(cnt/days*100)};
+    }).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).slice(0,3);
+  }else{
+    scores=active.map(h=>{
+      let cnt=0;for(let i=0;i<7;i++)if((completions[dateAgo(i)]||{})[h.id])cnt++;
+      return{h,cnt,rate:Math.round(cnt/7*100)};
+    }).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).slice(0,3);
+  }
+  if(!scores.length){el.style.display='none';return;}
+  el.style.display='';
+  const medals=['🥇','🥈','🥉'];
+  const max=scores[0].cnt;
+  const tabsHtml=`<div class="ranking-view-tabs"><button class="ranking-view-tab${rankingView==='7day'?' active':''}" onclick="setRankingView('7day')">今週</button><button class="ranking-view-tab${rankingView==='alltime'?' active':''}" onclick="setRankingView('alltime')">全期間</button></div>`;
+  el.innerHTML=`<div class="ranking-ttl" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span>🏅 トップ習慣</span>${tabsHtml}</div>`+
+    scores.map((x,i)=>{
+      const pct=Math.round(x.cnt/max*100);
+      const em=x.h.emoji?`${x.h.emoji} `:'';
+      const cntStr=rankingView==='alltime'?`${x.cnt}日 (${x.rate}%)`:`${x.cnt}/7日`;
+      return `<div class="ranking-item"><span class="rank-badge">${medals[i]}</span><span class="rank-name">${em}${esc(x.h.name)}</span><div class="rank-bar"><div class="rank-bar-fill" style="width:${pct}%"></div></div><span class="rank-cnt">${cntStr}</span></div>`;
+    }).join('');
+}
+
+// ── Cycle 18: weekday performance chart ──
+function calcDayOfWeekStats(){
+  const raw=Array(7).fill(0).map(()=>({sum:0,cnt:0}));
+  for(let i=1;i<=28;i++){
+    const dow=daysAgo(i).getDay();
+    const r=dayRate(dateAgo(i));
+    raw[dow].sum+=r;raw[dow].cnt++;
+  }
+  return raw.map(s=>s.cnt?Math.round(s.sum/s.cnt*100):null);
+}
+function renderDayOfWeekChart(){
+  const box=document.getElementById('dow-box'),el=document.getElementById('dow-chart');
+  if(!box||!el)return;
+  const stats=calcDayOfWeekStats(); // indexed by JS day-of-week: 0=Sun
+  const order=[1,2,3,4,5,6,0]; // display Mon→Sun
+  const vals=order.map(i=>stats[i]);
+  const defined=vals.filter(v=>v!==null);
+  if(!defined.length){box.style.display='none';return;}
+  box.style.display='';
+  const max=Math.max(...defined,1);
+  const bestIdx=vals.reduce((bi,v,i)=>v!==null&&(vals[bi]===null||v>vals[bi])?i:bi,0);
+  const worstIdx=vals.reduce((wi,v,i)=>v!==null&&(vals[wi]===null||v<vals[wi])?i:wi,0);
+  el.innerHTML=order.map((dow,i)=>{
+    const v=vals[i]??0;
+    const pct=Math.round(v/max*100);
+    const color=i===bestIdx?'var(--green)':i===worstIdx?'rgba(232,53,74,.8)':'var(--gold)';
+    const lblStyle=i===bestIdx?' style="color:var(--green)"':i===worstIdx?' style="color:var(--red)"':'';
+    return `<div class="dow-col"><div class="dow-bar-wrap"><div class="dow-fill" style="height:${pct}%;background:${color}"></div></div><span class="dow-lbl"${lblStyle}>${DAYS[dow]}</span></div>`;
+  }).join('');
+}
+
+// ── Cycle 34: time-of-day achievement pattern analysis ──
+function renderTimeOfDayChart(){
+  const box=document.getElementById('tod-box'),el=document.getElementById('tod-chart'),peakEl=document.getElementById('tod-peak');
+  if(!box||!el)return;
+  const bands=[{label:'🌅 朝',range:[5,12],cnt:0},{label:'🌞 昼',range:[12,18],cnt:0},{label:'🌙 夜',range:[18,24],cnt:0},{label:'🌃 深夜',range:[0,5],cnt:0}];
+  let total=0;
+  for(let i=0;i<30;i++){
+    const dc=completions[dateAgo(i)]||{};
+    for(const[k,v] of Object.entries(dc)){
+      if(typeof v!=='string'||k.endsWith('_note'))continue;
+      const h=new Date(v).getHours();
+      for(const b of bands){const[s,e]=b.range;if(h>=s&&h<e){b.cnt++;total++;break;}}
+    }
+  }
+  if(!total){box.style.display='none';return;}
+  box.style.display='';
+  const max=Math.max(...bands.map(b=>b.cnt),1);
+  const colors=['var(--gold)','var(--sky)','var(--purple)','rgba(155,109,214,.55)'];
+  el.innerHTML=bands.map((b,i)=>{
+    const pct=Math.round(b.cnt/max*100);
+    return `<div class="tod-col"><div class="tod-bar-wrap"><div class="tod-fill" style="height:${pct}%;background:${colors[i]}" title="${b.cnt}回"></div></div><span class="tod-lbl">${b.label}</span></div>`;
+  }).join('');
+  const peakBand=bands.reduce((a,b)=>b.cnt>a.cnt?b:a);
+  const peakPct=Math.round(peakBand.cnt/total*100);
+  if(peakEl)peakEl.textContent=`${peakBand.label}型（${peakPct}%の習慣をこの時間帯に達成）`;
+}
+
+// ── Cycle 13: compact view mode ──
+let compactView=localStorage.getItem('rh_compact')==='true';
+function toggleCompactView(){
+  compactView=!compactView;
+  localStorage.setItem('rh_compact',compactView?'true':'false');
+  document.body.classList.toggle('compact',compactView);
+  updateCompactBtn();
+}
+function updateCompactBtn(){
+  const btn=document.getElementById('compact-btn');
+  if(btn)btn.textContent=compactView?'⊞':'⊟';
+}
+function initCompactView(){
+  if(compactView)document.body.classList.add('compact');
+  updateCompactBtn();
+}
+
+// ── Cycle 19: Today's Focus ──
+function _focusKey(){return 'rh_focus_'+today()}
+function getFocusIds(){try{return JSON.parse(localStorage.getItem(_focusKey())||'[]')}catch{return[]}}
+function toggleFocus(id,e){
+  e.stopPropagation();
+  const ids=getFocusIds();
+  const idx=ids.indexOf(id);
+  if(idx>=0)ids.splice(idx,1);
+  else if(ids.length<3)ids.push(id);
+  localStorage.setItem(_focusKey(),JSON.stringify(ids));
+  renderList();
+}
+
+// ── Cycle 19: Monthly stats card ──
+let _mOpen=false;
+function toggleMonthBox(){
+  _mOpen=!_mOpen;
+  const b=document.getElementById('month-body-el');
+  const ch=document.getElementById('month-chev-el');
+  if(b)b.classList.toggle('open',_mOpen);
+  if(ch)ch.classList.toggle('open',_mOpen);
+}
+function renderMonthStats(){
+  const el=document.getElementById('month-box');
+  if(!el||!habits.length){if(el)el.style.display='none';return}
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth(),day=now.getDate();
+  let total=0;const hc={};habits.forEach(h=>hc[h.id]=0);
+  for(let d=1;d<=day;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dc=completions[ds]||{};
+    habits.forEach(h=>{if(dc[h.id]){total++;hc[h.id]++;}});
+  }
+  const possible=habits.length*day;
+  const rate=possible?Math.round(total/possible*100):0;
+  let best=null,bestCnt=0;
+  habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
+  const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  el.style.display='';
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
+}
+
+// ── Cycle 22: Achievement badges ──
+const ACH_KEY='rh_ach',ACH_NEW_KEY='rh_ach_new';
+const ACHIEVEMENTS=[
+  {id:'first',emoji:'🌱',name:'はじめの一歩',desc:'初回習慣達成'},
+  {id:'streak3',emoji:'🔥',name:'3日連続',desc:'3日連続全達成'},
+  {id:'streak7',emoji:'⭐',name:'週間達成者',desc:'7日連続全達成'},
+  {id:'streak30',emoji:'💎',name:'月間継続者',desc:'30日連続全達成'},
+  {id:'total50',emoji:'🏅',name:'50回達成',desc:'累計50回完了'},
+  {id:'total100',emoji:'🏆',name:'100回達成',desc:'累計100回完了'},
+  {id:'perfect',emoji:'💯',name:'完璧な一日',desc:'今日の達成率100%'},
+  {id:'allcat',emoji:'🌈',name:'全カテゴリー',desc:'4カテゴリーに習慣を持つ'},
+];
+function getUnlocked(){try{return JSON.parse(localStorage.getItem(ACH_KEY)||'[]')}catch{return[]}}
+function getNewAch(){try{return JSON.parse(localStorage.getItem(ACH_NEW_KEY)||'[]')}catch{return[]}}
+function checkAchievements(){
+  const unlocked=getUnlocked();
+  const streak=calcStreak(),total=totalDone(),rate=todayRate();
+  const cats=new Set(habits.map(h=>h.category)).size;
+  const conds={first:total>=1,streak3:streak>=3,streak7:streak>=7,streak30:streak>=30,total50:total>=50,total100:total>=100,perfect:rate===100,allcat:cats>=4};
+  const newOnes=getNewAch();
+  let changed=false;
+  for(const[id,met]of Object.entries(conds)){
+    if(met&&!unlocked.includes(id)){unlocked.push(id);newOnes.push(id);changed=true;}
+  }
+  if(changed){localStorage.setItem(ACH_KEY,JSON.stringify(unlocked));localStorage.setItem(ACH_NEW_KEY,JSON.stringify(newOnes));}
+  return{unlocked,newOnes};
+}
+function clearNewAch(id){
+  const n=getNewAch().filter(x=>x!==id);
+  localStorage.setItem(ACH_NEW_KEY,JSON.stringify(n));
+}
+function renderAchievements(){
+  const el=document.getElementById('ach-box');
+  if(!el)return;
+  const{unlocked,newOnes}=checkAchievements();
+  const cnt=`${unlocked.length}/${ACHIEVEMENTS.length}`;
+  el.innerHTML=`<div class="ach-ttl-row"><span class="ach-ttl">🏅 実績バッジ</span><span class="ach-count">${cnt}</span></div>`+
+    '<div class="ach-scroll">'+
+    ACHIEVEMENTS.map(a=>{
+      const isNew=newOnes.includes(a.id);
+      return `<div class="ach-item${unlocked.includes(a.id)?' unlocked':''}" title="${a.desc}" onclick="clearNewAch('${a.id}');renderAchievements()"><span class="ach-emoji">${a.emoji}</span><span class="ach-name">${a.name}</span>${isNew?'<span class="ach-new"></span>':''}</div>`;
+    }).join('')+
+  '</div>';
+}
+
+// ── Cycle 22: Daily intention note ──
+function _intentKey(){return 'rh_intent_'+today()}
+let _intentOpen=false;
+function initIntention(){
+  const val=localStorage.getItem(_intentKey())||'';
+  const ta=document.getElementById('intention-ta');
+  const prev=document.getElementById('intention-preview');
+  if(ta)ta.value=val;
+  if(prev){prev.textContent=val||'今日の意図を書こう...';prev.classList.toggle('has-text',!!val);}
+}
+function toggleIntention(){
+  _intentOpen=!_intentOpen;
+  const body=document.getElementById('intention-body');
+  const chev=document.getElementById('intention-chev');
+  if(body)body.classList.toggle('open',_intentOpen);
+  if(chev)chev.classList.toggle('open',_intentOpen);
+  if(_intentOpen){const ta=document.getElementById('intention-ta');if(ta)setTimeout(()=>ta.focus(),60);}
+}
+function saveIntention(val){
+  localStorage.setItem(_intentKey(),val);
+  const prev=document.getElementById('intention-preview');
+  if(prev){prev.textContent=val.trim()||'今日の意図を書こう...';prev.classList.toggle('has-text',!!val.trim());}
+}
+
+// ── Cycle 23: daily notification reminder ──
+function initReminder(){
+  updateReminderBtn();
+  setInterval(checkReminder,60000);
+  checkReminder();
+}
+function toggleReminder(){
+  const cur=localStorage.getItem('rh_reminder');
+  if(cur){
+    localStorage.removeItem('rh_reminder');
+    updateReminderBtn();
+    return;
+  }
+  if(!('Notification' in window)){alert('このブラウザは通知に対応していません。');return;}
+  const time=prompt('毎日のリマインダー時刻を設定してください\n（例: 08:00 / 21:30）','08:00');
+  if(!time)return;
+  if(!/^\d{1,2}:\d{2}$/.test(time)){alert('形式が正しくありません（例: 08:00）');return;}
+  const setIt=()=>{localStorage.setItem('rh_reminder',time);updateReminderBtn();};
+  if(Notification.permission==='granted')setIt();
+  else if(Notification.permission==='denied')alert('通知がブロックされています。ブラウザ設定から許可してください。');
+  else Notification.requestPermission().then(p=>{if(p==='granted')setIt();});
+}
+function checkReminder(){
+  const time=localStorage.getItem('rh_reminder');if(!time)return;
+  if(Notification.permission!=='granted')return;
+  const now=new Date();
+  const cur=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  if(cur!==time)return;
+  const key='rh_reminder_last',td=today();
+  if(localStorage.getItem(key)===td)return;
+  localStorage.setItem(key,td);
+  const rate=todayRate();
+  const msg=rate===100?'今日の全習慣クリア！素晴らしい🎉':`今日の達成率: ${rate}% — 習慣を記録しよう💪`;
+  try{new Notification('📅 習慣トラッカー',{body:msg});}catch(e){}
+}
+function updateReminderBtn(){
+  const btn=document.getElementById('reminder-btn');if(!btn)return;
+  const time=localStorage.getItem('rh_reminder');
+  btn.classList.toggle('reminder-on',!!time);
+  btn.title=time?`リマインダー: 毎日${time}（クリックで解除）`:'デイリーリマインダーを設定';
+}
+
+// ── Cycle 29: completion quick note ──
+let _noteHabitId=null;
+function getCompletionNote(id){return(completions[today()]||{})[id+'_note']||'';}
+function openNoteModal(id,e){
+  e.stopPropagation();
+  _noteHabitId=id;
+  const h=habits.find(x=>x.id===id);
+  const ttl=document.querySelector('.note-ttl');
+  if(ttl&&h)ttl.textContent=`📝 ${h.emoji?h.emoji+' ':''}${h.name}`;
+  const ta=document.getElementById('note-ta');
+  if(ta){ta.value=getCompletionNote(id);updNoteChar();setTimeout(()=>ta.focus(),100);}
+  document.getElementById('note-ovl').classList.add('open');
+}
+function bgNoteClose(e){if(e.target===document.getElementById('note-ovl'))closeNoteModal();}
+function closeNoteModal(){document.getElementById('note-ovl').classList.remove('open');_noteHabitId=null;}
+function updNoteChar(){
+  const ta=document.getElementById('note-ta'),cnt=document.getElementById('note-char-cnt');
+  if(ta&&cnt)cnt.textContent=ta.value.length;
+}
+function saveNote(){
+  if(!_noteHabitId)return;
+  const ta=document.getElementById('note-ta');
+  const text=(ta?ta.value:'').trim().substring(0,50);
+  const td=today(),key=_noteHabitId+'_note';
+  if(!completions[td])completions[td]={};
+  if(text)completions[td][key]=text;else delete completions[td][key];
+  saveC();closeNoteModal();renderList();
+}
+function deleteNote(){
+  if(!_noteHabitId)return;
+  const td=today(),key=_noteHabitId+'_note';
+  if(completions[td])delete completions[td][key];
+  saveC();closeNoteModal();renderList();
+}
+
+// ── Cycle 29: keyboard shortcuts help ──
+function openKbdHelp(){document.getElementById('kbd-ovl').classList.add('open');}
+function closeKbdHelp(){document.getElementById('kbd-ovl').classList.remove('open');}
+
+// ── Cycle 30: per-habit 28-day heatmap detail panel ──
+let _expandedHabits=new Set();
+function _habitBestStreak(id){
+  let best=0,cur=0;
+  for(let i=365;i>=0;i--){
+    if((completions[dateAgo(i)]||{})[id]){cur++;if(cur>best)best=cur;}
+    else cur=0;
+  }
+  return best;
+}
+function _habitDetailHtml(id){
+  const isLight=document.body.classList.contains('light');
+  const emptyBg=isLight?'rgba(0,0,0,.07)':'rgba(255,255,255,.08)';
+  const cells=[];
+  for(let i=27;i>=0;i--){
+    const ds=dateAgo(i),done=!!(completions[ds]||{})[id];
+    const d=daysAgo(i);
+    cells.push(`<div class="mhm-cell" style="background:${done?'var(--green)':emptyBg}" title="${d.getMonth()+1}/${d.getDate()}${done?' ✓':''}"></div>`);
+  }
+  const total=habitTotalCount(id);
+  const streak=habitStreak(id);
+  const best=_habitBestStreak(id);
+  let cnt30=0;
+  for(let i=0;i<30;i++)if((completions[dateAgo(i)]||{})[id])cnt30++;
+  const rate30=Math.round(cnt30/30*100);
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div></div></div>`;
+}
+function toggleHabitDetail(id,e){
+  e.stopPropagation();
+  const wrapper=e.currentTarget.closest('.habit-wrap');
+  const detail=wrapper?.querySelector('.habit-detail');
+  if(!detail)return;
+  const isOpen=_expandedHabits.has(id);
+  if(isOpen)_expandedHabits.delete(id);
+  else{_expandedHabits.add(id);detail.innerHTML=_habitDetailHtml(id);}
+  detail.classList.toggle('open',!isOpen);
+  wrapper?.classList.toggle('expanded',!isOpen);
+  e.currentTarget.classList.toggle('open',!isOpen);
+  const sec=wrapper?.closest('.sec-habits');
+  if(sec&&!sec.classList.contains('closed')){
+    const ws=sec.querySelectorAll('.habit-wrap');
+    sec.style.maxHeight=(ws.length*250+20)+'px';
+  }
+}
+
+// ── Cycle 31: weekly reflection note ──
+function _weeklyKey(){const now=new Date();const m=new Date(now);m.setDate(m.getDate()-((m.getDay()+6)%7));return 'rh_week_'+toStr(m);}
+let _weeklyOpen=false;
+function initWeekly(){
+  const val=localStorage.getItem(_weeklyKey())||'';
+  const ta=document.getElementById('weekly-ta');
+  const prev=document.getElementById('weekly-preview');
+  if(ta)ta.value=val;
+  if(prev){prev.textContent=val||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val);}
+}
+function toggleWeekly(){
+  _weeklyOpen=!_weeklyOpen;
+  const body=document.getElementById('weekly-body');
+  const chev=document.getElementById('weekly-chev');
+  if(body)body.classList.toggle('open',_weeklyOpen);
+  if(chev)chev.classList.toggle('open',_weeklyOpen);
+  if(_weeklyOpen){const ta=document.getElementById('weekly-ta');if(ta)setTimeout(()=>ta.focus(),60);}
+}
+function saveWeekly(val){
+  localStorage.setItem(_weeklyKey(),val);
+  const prev=document.getElementById('weekly-preview');
+  if(prev){prev.textContent=val.trim()||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val.trim());}
+}
+
+// ── init ──
+load();
+initTheme();
+updateSoundBtn();
+initCompactView();
+initEmojiPresets();
+initTemplates();
+initIntention();
+initWeekly();
+initReminder();
+render();
+setInterval(renderPaceBox,60000);
+// ── Cycle 24: PWA theme-color meta tag sync ──
+function syncThemeColor(){
+  const mc=document.getElementById('meta-theme-color');
+  if(mc)mc.content=document.body.classList.contains('light')?'#f0f2f5':'#0d1117';
+}
+
+// ── Cycle 24: swipe-to-complete gesture for habit cards ──
+function initSwipeGestures(){
+  document.querySelectorAll('#list .habit[data-id]').forEach(el=>{
+    if(el._swipeInited)return;
+    el._swipeInited=true;
+    let sx=0,sy=0,dx=0,moving=false;
+    const id=el.dataset.id;
+    const THRESH=64;
+    el.addEventListener('touchstart',e=>{
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;moving=false;
+    },{passive:true});
+    el.addEventListener('touchmove',e=>{
+      const fx=e.touches[0].clientX-sx,fy=e.touches[0].clientY-sy;
+      if(!moving&&Math.abs(fy)>Math.abs(fx)+8)return;
+      if(fx<0)return;
+      moving=true;dx=fx;
+      el.style.transform=`translateX(${Math.min(90,dx)}px)`;
+      el.style.transition='none';
+      el.classList.toggle('swipe-right',dx>=THRESH);
+    },{passive:true});
+    el.addEventListener('touchend',e=>{
+      el.style.transition='transform .25s ease';
+      el.style.transform='';
+      el.classList.remove('swipe-right');
+      if(moving&&dx>=THRESH){
+        e.preventDefault();
+        const h=habits.find(x=>x.id===id);
+        if(h&&!h.paused)toggle(id,{currentTarget:el,target:el});
+      }
+      dx=0;moving=false;
+    },{passive:false});
+  });
+}
+
+// ── Cycle 27: collapsible category sections ──
+function _colKey(){return 'rh_cat_col'}
+function getCatCollapsed(){try{return JSON.parse(localStorage.getItem(_colKey())||'{}')}catch{return{}}}
+function toggleCatCollapse(cat,e){
+  e.stopPropagation();
+  const st=getCatCollapsed();
+  st[cat]=!st[cat];
+  localStorage.setItem(_colKey(),JSON.stringify(st));
+  renderList();
+}
+// ── Cycle 27: sticky bottom progress bar ──
+function updateProgressFooter(){
+  const fill=document.getElementById('progress-footer-fill');
+  if(!fill)return;
+  const rate=todayRate();
+  fill.style.width=rate+'%';
+  fill.style.background=rate===100?'var(--green)':rate>=50?'var(--gold)':'var(--sky)';
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('note-ovl').classList.contains('open')){closeNoteModal();return;}
+    if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
+    if(document.getElementById('overlay').classList.contains('open'))closeModal();
+    else if(searchQuery)clearSearch();
+    return;
+  }
+  // Cycle 20+29: keyboard shortcuts
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
+  if(document.getElementById('overlay').classList.contains('open'))return;
+  if(document.getElementById('note-ovl').classList.contains('open'))return;
+  if(e.key==='n'||e.key==='N')openModal();
+  else if(e.key==='t'||e.key==='T')toggleTheme();
+  else if(e.key==='/'||e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-inp')?.focus();}
+  else if(e.key==='c'||e.key==='C')toggleCompactView();
+  else if(e.key==='?'||e.key==='？')openKbdHelp();
+  else if(e.key==='z'||e.key==='Z')toggleCollapseAll();
+  else if(e.key==='d'||e.key==='D'){
+    const td=today(),dc=completions[td]||{};
+    const active=habits.filter(h=>!h.paused);
+    const undone=active.filter(h=>!dc[h.id]);
+    if(!undone.length)return;
+    const seed=parseInt(td.replace(/-/g,''))%undone.length;
+    toggle(undone[seed].id,null);
+  }
+});
+
+// ── Cycle 33: next milestone preview widget ──
+let _msOpen=true;
+function toggleMsWidget(){
+  _msOpen=!_msOpen;
+  const body=document.getElementById('ms-body');
+  const ch=document.getElementById('ms-chev');
+  if(body)body.classList.toggle('closed',!_msOpen);
+  if(ch)ch.classList.toggle('closed',!_msOpen);
+}
+function renderMilestoneWidget(){
+  const el=document.getElementById('ms-widget');
+  const sc=document.getElementById('ms-scroll');
+  if(!el||!sc)return;
+  const items=[];
+  habits.filter(h=>!h.paused).forEach(h=>{
+    const s=habitStreak(h.id);
+    if(s<1)return;
+    const next=MILESTONES.find(m=>m>s);
+    if(!next)return;
+    const prev=MILESTONES.filter(m=>m<=s).pop()||0;
+    const pct=Math.round((s-prev)/(next-prev)*100);
+    items.push({h,s,next,pct,rem:next-s});
+  });
+  items.sort((a,b)=>b.pct-a.pct);
+  if(!items.length){el.style.display='none';return;}
+  el.style.display='';
+  sc.innerHTML=items.map(({h,s,next,pct,rem})=>{
+    const nm=esc((h.emoji?h.emoji+' ':'')+h.name);
+    return `<div class="ms-card"><div class="ms-name">${nm}</div><div class="ms-bar-wrap"><div class="ms-bar-fill" style="width:${pct}%"></div></div><div class="ms-rem">あと${rem}日 → 🎯${next}日</div><div class="ms-cur">現在${s}日連続</div></div>`;
+  }).join('');
+}
+
+// ── Cycle 32: category batch complete ──
+function batchComplete(cat,e){
+  e.stopPropagation();
+  const td=today();
+  if(!completions[td])completions[td]={};
+  const catH=habits.filter(h=>h.category===cat&&!h.paused&&isScheduled(h,td));
+  const dc=completions[td];
+  const allDone=catH.every(h=>!!dc[h.id]);
+  if(allDone){
+    catH.forEach(h=>{completions[td][h.id]=null;});
+    celebrated=false;
+  }else{
+    const now=new Date().toISOString();
+    let anyNew=false;
+    catH.forEach(h=>{if(!dc[h.id]){completions[td][h.id]=now;checkHabitMilestone(h.id);anyNew=true;}});
+    if(anyNew){playTick();vib([30,20,30]);}
+  }
+  saveC();render();
+  if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();}
+}
+// ── Cycle 32: scroll to top ──
+function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
+window.addEventListener('scroll',()=>{
+  const b=document.getElementById('scroll-top');
+  if(b)b.classList.toggle('show',window.scrollY>250);
+},{passive:true});
+
+// ── Cycle 35: today's challenge widget ──
+function renderChallenge(){
+  const el=document.getElementById('challenge-box');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const active=habits.filter(h=>!h.paused);
+  if(!active.length){el.style.display='none';return;}
+  const allDone=active.every(h=>!!dc[h.id]);
+  if(allDone){
+    el.style.display='';
+    el.innerHTML=`<div class="challenge-ttl">🎯 今日のチャレンジ</div><div class="challenge-done">🏆 全チャレンジ達成！おめでとう！</div>`;
+    return;
+  }
+  const undone=active.filter(h=>!dc[h.id]);
+  if(!undone.length){el.style.display='none';return;}
+  const seed=parseInt(td.replace(/-/g,''))%undone.length;
+  const pick=undone[seed];
+  el.style.display='';
+  const nm=esc((pick.emoji?pick.emoji+' ':'')+pick.name);
+  el.innerHTML=`<div class="challenge-ttl">🎯 今日のチャレンジ</div><div class="challenge-card" onclick="scrollToHabit('${pick.id}')"><div><div class="challenge-name">${nm}</div><div class="challenge-hint">今日まずこれから始めよう！</div></div><span class="challenge-arrow">→</span></div>`;
+}
+function scrollToHabit(id){
+  const el=document.querySelector(`.habit[data-id="${id}"]`);
+  if(!el)return;
+  const sec=el.closest('.sec-habits');
+  if(sec&&sec.classList.contains('closed')){
+    const hdr=sec.previousElementSibling;
+    if(hdr&&hdr.classList.contains('sec-hdr'))hdr.click();
+  }
+  setTimeout(()=>{
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.add('highlight-pulse');
+    setTimeout(()=>el.classList.remove('highlight-pulse'),2200);
+  },sec&&sec.classList.contains('closed')?400:0);
+}
+
+// ── Cycle 34: reset today's completions ──
+function resetToday(){
+  const td=today(),dc=completions[td]||{};
+  const doneCount=habits.filter(h=>!!dc[h.id]).length;
+  if(!doneCount)return;
+  if(!confirm(`今日のチェック（${doneCount}件）を全て解除しますか？`))return;
+  const notes={};
+  for(const[k,v] of Object.entries(dc)){if(k.endsWith('_note'))notes[k]=v;}
+  completions[td]=notes;
+  celebrated=false;saveC();render();
+  const b=document.getElementById('banner');
+  b.textContent=`🔄 ${doneCount}件のチェックをリセットしました`;
+  b.classList.add('show');
+  setTimeout(()=>{b.classList.remove('show');setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';},400);},2500);
+}
+</script>
 </body>
 </html>
