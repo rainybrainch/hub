@@ -839,6 +839,18 @@
     /* Cycle 51: habit check ring pulse */
     @keyframes checkRing{0%{box-shadow:0 0 0 0 rgba(76,175,125,.65)}70%{box-shadow:0 0 0 10px rgba(76,175,125,0)}100%{box-shadow:none}}
     .habit.checking{animation:checkRing .55s ease-out}
+
+    /* Cycle 52: weekly mini calendar row */
+    .wk-row{display:flex;gap:6px;margin-bottom:16px;padding:11px 16px;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;transition:background .25s,border-color .25s}
+    .wk-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+    .wk-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;line-height:1;transition:all .3s}
+    .wk-dot-lbl{font-size:9px;font-weight:700;letter-spacing:.04em}
+    body.light .wk-row{border-color:rgba(0,0,0,.08)}
+
+    /* Cycle 52: habit anniversary badge */
+    .anniv-lbl{font-size:10px;font-weight:700;color:var(--purple);padding:2px 5px;background:rgba(155,109,214,.12);border:1px solid rgba(155,109,214,.25);border-radius:6px;line-height:1.5;flex-shrink:0}
+    body.light .anniv-lbl{background:rgba(155,109,214,.15);border-color:rgba(155,109,214,.3)}
+    body.compact .anniv-lbl{display:none}
   </style>
 </head>
 <body>
@@ -890,6 +902,9 @@
       <div class="stat-sub" id="s-week">今週: 0件</div>
     </div>
   </div>
+
+  <!-- Cycle 52: this week mini calendar -->
+  <div class="wk-row" id="wk-row" style="display:none"></div>
 
   <!-- Cycle 36: today's pace indicator -->
   <div class="pace-box" id="pace-box" style="display:none"></div>
@@ -1647,6 +1662,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const doneThisWeek=dots7.filter(Boolean).length;
   const isLowRate=!isPaused&&createdDaysAgo>=7&&doneThisWeek===0;
   const lowRateLbl=isLowRate?'<span class="low-rate-lbl">要注意</span>':'';
+  const anniversaryLbl=ANNIV_DAYS.includes(createdDaysAgo)?`<span class="anniv-lbl">🎂${createdDaysAgo}日</span>`:'';
   // Cycle 47: last-done badge for uncompleted habits with history
   let lastDoneLbl='';
   if(!isDone&&!isPaused){const ld=habitLastDone(h.id);if(ld>0)lastDoneLbl=`<span class="last-done-lbl">${ld}日前</span>`;}
@@ -1680,7 +1696,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}${accentClass}" style="${accentStyle}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${trendBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${diffBadge}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${streakGlow}${isLowRate?' low-rate':''}${accentClass}" style="${accentStyle}" data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${col}"></div>${dotsHtml}${cntBadge}${streakBadge}${trendBadge}${pbBadge}${lowRateLbl}${lastDoneLbl}${wgoalLbl}${diffBadge}${timeBadge}${anniversaryLbl}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1822,6 +1838,7 @@ function renderPaceBox(){
 function render(){
   renderHeader();
   renderStats();
+  renderWeekRow();
   renderPaceBox();
   renderChart();
   renderWeekComparison();
@@ -2269,6 +2286,8 @@ function launchConfetti(){
 
 // ── Cycle 13: habit streak milestone celebration ──
 const MILESTONES=[7,14,21,30,50,100];
+// Cycle 52: habit anniversary milestone days
+const ANNIV_DAYS=[7,30,90,180,365];
 function checkHabitMilestone(id){
   const s=habitStreak(id);
   if(!MILESTONES.includes(s))return;
@@ -2705,6 +2724,53 @@ function saveWeekly(val){
   if(prev){prev.textContent=val.trim()||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val.trim());}
 }
 
+// ── Cycle 52: weekly mini calendar row ──
+function renderWeekRow(){
+  const el=document.getElementById('wk-row');
+  if(!el||!habits.length){if(el)el.style.display='none';return;}
+  el.style.display='';
+  const now=new Date(),td=today();
+  const dow=(now.getDay()+6)%7;
+  const ws=new Date(now);ws.setDate(now.getDate()-dow);ws.setHours(0,0,0,0);
+  const isLight=document.body.classList.contains('light');
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(ws);d.setDate(ws.getDate()+i);return d;});
+  el.innerHTML=days.map(d=>{
+    const ds=toStr(d),isFuture=ds>td,isTdy=ds===td;
+    const rate=isFuture?-1:Math.round(dayRate(ds)*100);
+    const dlbl=DAYS[d.getDay()];
+    let bg,col,txt;
+    if(isFuture){bg=isLight?'rgba(0,0,0,.04)':'rgba(255,255,255,.04)';col=isLight?'rgba(0,0,0,.16)':'rgba(255,255,255,.14)';txt='–';}
+    else if(rate===100){bg='rgba(76,175,125,.2)';col='var(--green)';txt='✓';}
+    else if(rate>0){bg='rgba(245,200,66,.15)';col='var(--gold)';txt=rate+'%';}
+    else{bg=isLight?'rgba(0,0,0,.06)':'rgba(255,255,255,.06)';col=isLight?'rgba(0,0,0,.22)':'rgba(255,255,255,.22)';txt='0';}
+    const ring=isTdy?';box-shadow:0 0 0 2px var(--sky)':'';
+    const lblCol=isTdy?'color:var(--sky)':isLight?'color:rgba(0,0,0,.4)':'color:rgba(255,255,255,.4)';
+    return `<div class="wk-day"><div class="wk-dot" style="background:${bg};color:${col}${ring}">${txt}</div><span class="wk-dot-lbl" style="${lblCol}">${dlbl}</span></div>`;
+  }).join('');
+}
+
+// Cycle 52: one-time anniversary toast per day
+function checkHabitAnniversaries(){
+  const key='rh_anniv_'+today();
+  if(localStorage.getItem(key))return;
+  const now=Date.now();
+  const found=habits.find(h=>{
+    if(h.paused||!h.createdAt)return false;
+    const d=Math.floor((now-new Date(h.createdAt))/86400000);
+    return ANNIV_DAYS.includes(d);
+  });
+  if(!found)return;
+  localStorage.setItem(key,'1');
+  const dOld=Math.floor((now-new Date(found.createdAt))/86400000);
+  setTimeout(()=>{
+    const el=document.getElementById('milestone-toast');
+    if(!el)return;
+    el.textContent=`🎂 ${found.emoji?found.emoji+' ':''}${esc(found.name)} 誕生${dOld}日目！`;
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),4000);
+  },1800);
+}
+
 // ── init ──
 load();
 initTheme();
@@ -2720,6 +2786,7 @@ initIntention();
 initWeekly();
 initReminder();
 render();
+checkHabitAnniversaries();
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
 function syncThemeColor(){
