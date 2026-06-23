@@ -803,6 +803,42 @@
     body.light .habit-trend.down{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.25)}
     body.light .habit-trend.flat{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
     body.compact .habit-trend{display:none}
+
+    /* Cycle 51: monthly calendar view */
+    .cal-ovl{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .cal-ovl.open{opacity:1;pointer-events:auto}
+    .cal-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;width:calc(100% - 40px);max-width:380px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:88vh;overflow-y:auto}
+    .cal-ovl.open .cal-modal{transform:scale(1)}
+    .cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cal-nav{background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);font-size:14px;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:"Zen Maru Gothic",sans-serif;transition:all .15s;line-height:1}
+    .cal-nav:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .cal-month-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px}
+    .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px}
+    .cal-dow-lbl{font-size:9px;font-weight:700;color:var(--muted);text-align:center;padding:3px 0;letter-spacing:.05em}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .cal-cell{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:transform .12s,box-shadow .12s;gap:2px;-webkit-tap-highlight-color:transparent;position:relative}
+    .cal-cell:hover:not(.cal-empty){transform:scale(1.1);z-index:2}
+    .cal-cell.cal-empty{cursor:default;pointer-events:none}
+    .cal-cell.cal-today{box-shadow:0 0 0 2px var(--sky)}
+    .cal-cell-num{font-size:10px;font-weight:700;line-height:1}
+    .cal-cell-dot{width:5px;height:5px;border-radius:50%}
+    .cal-legend{display:flex;gap:12px;justify-content:center;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
+    .cal-leg-item{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
+    .cal-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .cal-detail{background:var(--dark3);border-radius:11px;padding:11px 13px;margin-top:12px;display:none}
+    .cal-detail.show{display:block}
+    .cal-detail-ttl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.05em}
+    .cal-detail-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px}
+    .cal-detail-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    body.light .cal-modal{border-color:rgba(0,0,0,.1)}
+    body.light .cal-nav{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
+    body.light .cal-nav:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .cal-legend{border-top-color:rgba(0,0,0,.07)}
+    body.light .cal-leg-item{color:rgba(0,0,0,.4)}
+    body.light .cal-detail-ttl{color:rgba(0,0,0,.4)}
+    /* Cycle 51: habit check ring pulse */
+    @keyframes checkRing{0%{box-shadow:0 0 0 0 rgba(76,175,125,.65)}70%{box-shadow:0 0 0 10px rgba(76,175,125,0)}100%{box-shadow:none}}
+    .habit.checking{animation:checkRing .55s ease-out}
   </style>
 </head>
 <body>
@@ -823,6 +859,7 @@
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
   <button class="hdr-btn" onclick="completeAllHabits()" title="全ての未完了習慣を一括完了（Eキー）">✓</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
+  <button class="hdr-btn" onclick="openCalendar()" title="月次カレンダービュー（全達成記録）">🗓</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -1037,6 +1074,28 @@
       <button class="note-save-btn" onclick="saveNote()">保存する</button>
       <button class="note-del-btn" onclick="deleteNote()">削除</button>
     </div>
+  </div>
+</div>
+
+<!-- Cycle 51: monthly calendar modal -->
+<div class="cal-ovl" id="cal-ovl" onclick="if(event.target===this)closeCalendar()">
+  <div class="cal-modal">
+    <div class="cal-hdr">
+      <button class="cal-nav" onclick="navCal(-1)">◀</button>
+      <span class="cal-month-ttl" id="cal-month-ttl"></span>
+      <button class="cal-nav" onclick="navCal(1)">▶</button>
+    </div>
+    <div class="cal-dow-row">
+      <span class="cal-dow-lbl">日</span><span class="cal-dow-lbl">月</span><span class="cal-dow-lbl">火</span><span class="cal-dow-lbl">水</span><span class="cal-dow-lbl">木</span><span class="cal-dow-lbl">金</span><span class="cal-dow-lbl">土</span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--green)"></span>完全達成</span>
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--gold)"></span>50%以上</span>
+      <span class="cal-leg-item"><span class="cal-leg-dot" style="background:var(--sky)"></span>記録あり</span>
+    </div>
+    <div class="cal-detail" id="cal-detail"></div>
+    <button class="kbd-close" style="margin-top:14px" onclick="closeCalendar()">閉じる（ESCでも）</button>
   </div>
 </div>
 
@@ -1849,7 +1908,7 @@ function toggle(id,evt){
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
-    playTick();vib(50);checkHabitMilestone(id);triggerCombo();earnXP(id,evt);
+    playTick();vib(50);checkHabitMilestone(id);triggerCombo();earnXP(id,evt);checkWeeklyGoal(id);
     // cycle 18: particle burst from checkbox position
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r)spawnBurst(r.left+r.width/2,r.top+r.height/2);}
   }
@@ -2761,6 +2820,7 @@ function updateProgressFooter(){
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
+    if(document.getElementById('cal-ovl')?.classList.contains('open')){closeCalendar();return;}
     if(document.getElementById('note-ovl').classList.contains('open')){closeNoteModal();return;}
     if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
@@ -3026,6 +3086,80 @@ function resetToday(){
   b.textContent=`🔄 ${doneCount}件のチェックをリセットしました`;
   b.classList.add('show');
   setTimeout(()=>{b.classList.remove('show');setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';},400);},2500);
+}
+
+// ── Cycle 51: monthly calendar view ──
+let _calYear=new Date().getFullYear(),_calMonth=new Date().getMonth();
+function openCalendar(){
+  _calYear=new Date().getFullYear();_calMonth=new Date().getMonth();
+  _renderCal();
+  document.getElementById('cal-ovl').classList.add('open');
+}
+function closeCalendar(){document.getElementById('cal-ovl').classList.remove('open');}
+function navCal(d){
+  _calMonth+=d;
+  if(_calMonth<0){_calMonth=11;_calYear--;}
+  else if(_calMonth>11){_calMonth=0;_calYear++;}
+  _renderCal();
+}
+function _renderCal(){
+  const ttl=document.getElementById('cal-month-ttl');
+  const grid=document.getElementById('cal-grid');
+  const det=document.getElementById('cal-detail');
+  if(!ttl||!grid)return;
+  ttl.textContent=`${_calYear}年${_calMonth+1}月`;
+  if(det)det.classList.remove('show');
+  const firstDow=new Date(_calYear,_calMonth,1).getDay();
+  const days=new Date(_calYear,_calMonth+1,0).getDate();
+  const td=today();
+  const isLight=document.body.classList.contains('light');
+  let html='';
+  for(let i=0;i<firstDow;i++)html+='<div class="cal-cell cal-empty"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFuture=ds>td;const isToday=ds===td;
+    const dc=completions[ds]||{};
+    const hasDone=Object.keys(dc).some(k=>!k.endsWith('_note')&&dc[k]);
+    const rate=hasDone?Math.round(dayRate(ds)*100):0;
+    let bg,dotCol;
+    if(isFuture){bg=isLight?'rgba(0,0,0,.03)':'rgba(255,255,255,.03)';dotCol='transparent';}
+    else if(rate===100){bg=isLight?'rgba(76,175,125,.15)':'rgba(76,175,125,.18)';dotCol='var(--green)';}
+    else if(rate>=50){bg=isLight?'rgba(245,200,66,.12)':'rgba(245,200,66,.15)';dotCol='var(--gold)';}
+    else if(rate>0){bg=isLight?'rgba(91,200,232,.08)':'rgba(91,200,232,.1)';dotCol='var(--sky)';}
+    else{bg=isLight?'rgba(0,0,0,.04)':'rgba(255,255,255,.04)';dotCol=isLight?'rgba(0,0,0,.08)':'rgba(255,255,255,.08)';}
+    const numColor=isFuture?isLight?'rgba(0,0,0,.2)':'rgba(255,255,255,.2)':'inherit';
+    html+=`<div class="cal-cell${isToday?' cal-today':''}" style="background:${bg}" onclick="showCalDay('${ds}')" title="${ds}（${rate}%）"><span class="cal-cell-num" style="color:${numColor}">${d}</span>${!isFuture?`<span class="cal-cell-dot" style="background:${dotCol}"></span>`:''}</div>`;
+  }
+  grid.innerHTML=html;
+}
+function showCalDay(ds){
+  const det=document.getElementById('cal-detail');
+  if(!det)return;
+  const dc=completions[ds]||{};
+  const doneH=habits.filter(h=>!!dc[h.id]);
+  const dtParts=ds.split('-');
+  const d=new Date(parseInt(dtParts[0]),parseInt(dtParts[1])-1,parseInt(dtParts[2]));
+  const dow=DAYS[d.getDay()];
+  const rate=Math.round(dayRate(ds)*100);
+  if(!doneH.length){
+    det.innerHTML=`<div class="cal-detail-ttl">${dtParts[1]}月${parseInt(dtParts[2])}日（${dow}）— 記録なし</div>`;
+    det.classList.add('show');return;
+  }
+  det.innerHTML=`<div class="cal-detail-ttl">${dtParts[1]}月${parseInt(dtParts[2])}日（${dow}） — ${rate}%達成（${doneH.length}件）</div>`+
+    doneH.map(h=>`<div class="cal-detail-item"><span class="cal-detail-dot" style="background:${CAT_COLORS[h.category]||'#fff'}"></span>${h.emoji?h.emoji+' ':''}${esc(h.name)}</div>`).join('');
+  det.classList.add('show');
+}
+
+// ── Cycle 51: weekly goal achievement toast ──
+function checkWeeklyGoal(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h||!h.weekGoal||h.weekGoal>=7)return;
+  const cnt=habitWeekDoneCount(id);
+  if(cnt!==h.weekGoal)return;
+  const toast=document.getElementById('milestone-toast');if(!toast)return;
+  const nm=h.emoji?h.emoji+' '+h.name:h.name;
+  toast.textContent=`🎯 週間目標達成！ ${nm}（${h.weekGoal}回/週）`;
+  toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3500);
 }
 </script>
 </body>
