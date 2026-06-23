@@ -53,6 +53,11 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @print { body { background: white; color: black; } .header-right, .calendar-nav button, .modal { display: none; } .calendar-section { border: none; padding: 0; } .day { border: 1px solid #ccc; } }
     @media (prefers-color-scheme: light) { body { background: linear-gradient(135deg, #f5f5f5 0%, #e8e8f0 100%); color: #333; } .header { border-bottom-color: rgba(91, 200, 232, 0.3); } .calendar-section { background: rgba(91, 200, 232, 0.05); } .day { background: rgba(255, 255, 255, 0.5); } }
+    body.light-mode { background: linear-gradient(135deg, #f5f5f5 0%, #e8e8f0 100%) !important; color: #333 !important; }
+    body.light-mode .header { border-bottom-color: rgba(91, 200, 232, 0.3) !important; }
+    body.light-mode .calendar-section { background: rgba(91, 200, 232, 0.05) !important; }
+    body.light-mode .day { background: rgba(255, 255, 255, 0.5) !important; }
+    .theme-toggle { cursor: pointer; font-size: 16px; }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
     .calendar-nav { display: flex; gap: 15px; align-items: center; }
@@ -143,7 +148,7 @@
         <div class="header-right" role="toolbar" aria-label="ユーザー操作">
           <div class="user-info">ユーザー: <span id="userEmail">-</span></div>
           <button class="btn-logout" id="logoutBtn">ログアウト</button>
-          <button class="btn-utility" id="exportBtn" title="Export JSON">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button>
+          <button class="btn-utility" id="exportBtn" title="Export JSON">📥</button><button class="btn-utility" id="importBtn" title="Import JSON">📤</button><button class="btn-utility" id="reportBtn" title="Monthly Report">📊</button><button class="btn-utility theme-toggle" id="themeBtn" title="Switch theme">🌙</button><button class="btn-utility" id="resetBtn" title="Reset all data">🗑️</button>
         </div>
       </div>
 
@@ -493,6 +498,27 @@
     });
 
     document.getElementById('exportBtn').addEventListener('click', exportAsJSON);
+
+    const themeBtn = document.getElementById('themeBtn');
+    const isDarkMode = localStorage.getItem('ask2_theme') !== 'light';
+    if (!isDarkMode) document.body.classList.add('light-mode');
+    themeBtn.textContent = isDarkMode ? '🌙' : '☀️';
+
+    themeBtn.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle('light-mode');
+      localStorage.setItem('ask2_theme', isLight ? 'light' : 'dark');
+      themeBtn.textContent = isLight ? '☀️' : '🌙';
+      showToast(isLight ? '☀️ ライトモード' : '🌙 ダークモード');
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('⚠️ すべてのデータを削除してもよろしいですか？\n\n この操作は取り消せません')) {
+        currentData = {};
+        localStorage.removeItem('ask2_data');
+        renderCalendar();
+        showToast('🗑️ すべてのデータが削除されました', 'success');
+      }
+    });
 
     document.getElementById('prevBtn').addEventListener('click', () => {
       currentDate.setMonth(currentDate.getMonth() - 1);
