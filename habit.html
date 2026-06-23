@@ -890,6 +890,15 @@
     /* Cycle 56: category all-done shimmer */
     @keyframes cat-done-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 2px var(--green),0 4px 18px rgba(76,175,125,.22)}}
     .sec-hdr.cat-all-done{animation:cat-done-glow 1.4s ease-in-out;border-radius:10px}
+    /* Cycle 57: focus filter tab */
+    .tab.active[data-cat="focus"]{background:var(--gold);border-color:transparent;color:var(--dark)}
+    .focus-empty{text-align:center;padding:32px 20px;color:var(--muted)}
+    .focus-empty-ico{font-size:38px;margin-bottom:10px}
+    .focus-empty-txt{font-size:13px;line-height:1.6}
+    /* Cycle 57: habit clone button in modal */
+    .modal-clone-btn{width:100%;padding:12px;border-radius:14px;background:rgba(91,200,232,.08);border:1px solid rgba(91,200,232,.2);color:var(--sky);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:background .15s;line-height:1}
+    .modal-clone-btn:hover{background:rgba(91,200,232,.15)}
+    body.light .modal-clone-btn{background:rgba(91,200,232,.07);border-color:rgba(91,200,232,.25);color:#1e8aab}
   </style>
 </head>
 <body>
@@ -1050,6 +1059,7 @@
 
   <div class="tabs">
     <button class="tab active" data-cat="all" onclick="setFilter('all')">全て</button>
+    <button class="tab" data-cat="focus" onclick="setFilter('focus')">⭐ フォーカス</button>
     <button class="tab" data-cat="学習" onclick="setFilter('学習')">📚 学習</button>
     <button class="tab" data-cat="運動" onclick="setFilter('運動')">💪 運動</button>
     <button class="tab" data-cat="創作" onclick="setFilter('創作')">🎨 創作</button>
@@ -1106,6 +1116,7 @@
       <button class="cat-btn" data-cat="自己改善" onclick="selCat('自己改善')">✨ 自己改善</button>
     </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
+    <button class="modal-clone-btn" id="modal-clone-btn" onclick="cloneHabit()" style="display:none">📋 この習慣を複製する</button>
   </div>
 </div>
 
@@ -1751,6 +1762,16 @@ function renderList(){
   const el=document.getElementById('list');
   const td=today(),dc=completions[td]||{};
   const focusIds=getFocusIds();
+  // Cycle 57: focus filter tab
+  if(filter==='focus'){
+    const focusOnly=habits.filter(h=>focusIds.includes(h.id)&&!h.paused);
+    if(!focusOnly.length){
+      el.innerHTML='<div class="focus-empty"><div class="focus-empty-ico">⭐</div><div class="focus-empty-txt">フォーカス習慣がありません<br>★ボタンで最大3件をピン留めできます</div></div>';
+      return;
+    }
+    el.innerHTML='<div class="focus-section"><div class="focus-ttl">📌 今日のフォーカス</div>'+focusOnly.map(h=>_hCard(h,dc,CAT_COLORS[h.category]||'#fff',focusIds)).join('')+'</div>';
+    initSwipeGestures();initLongPress();return;
+  }
   let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
   if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
 
@@ -2075,6 +2096,8 @@ function openModal(id=null){
     // Cycle 48: set difficulty & accent
     _selDifficulty=h&&h.difficulty?h.difficulty:2;initDiffBtns();
     _selAccent=h&&h.color?h.color:'';initAccentSwatches();
+    // Cycle 57: show clone button in edit mode
+    const cloneBtn=document.getElementById('modal-clone-btn');if(cloneBtn)cloneBtn.style.display='';
   }else{
     inp.value='';if(noteEl)noteEl.value='';
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
@@ -2092,6 +2115,8 @@ function openModal(id=null){
     // Cycle 48: reset difficulty & accent
     _selDifficulty=2;initDiffBtns();
     _selAccent='';initAccentSwatches();
+    // Cycle 57: hide clone button in add mode
+    const cloneBtn2=document.getElementById('modal-clone-btn');if(cloneBtn2)cloneBtn2.style.display='none';
   }
   setTimeout(()=>inp.focus(),300);
 }
@@ -3339,6 +3364,20 @@ function pruneOldCompletions(){
     if(k<cutoff){delete completions[k];pruned++;}
   }
   if(pruned>0)saveC();
+}
+
+// ── Cycle 57: clone habit ──
+function cloneHabit(){
+  if(!editingId)return;
+  const src=habits.find(h=>h.id===editingId);
+  if(!src)return;
+  const cloned={...src,id:'rh_'+Date.now(),name:src.name+' (コピー)',createdAt:Date.now()};
+  delete cloned.paused;
+  habits.push(cloned);
+  saveH();renderList();closeModal();
+  const b=document.getElementById('banner');
+  b.textContent='📋 習慣を複製しました！';b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),2500);
 }
 
 // ── Cycle 51: weekly goal achievement toast ──
