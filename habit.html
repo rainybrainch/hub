@@ -652,6 +652,16 @@
     @keyframes statPop{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
     .stat-val.stat-popping{animation:statPop .35s cubic-bezier(.34,1.56,.64,1)}
 
+    /* Cycle 41: monthly calendar view */
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px}
+    .cal-day-hdr{text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding:3px 0;letter-spacing:.05em}
+    .cal-cell{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;cursor:default;transition:transform .1s;min-height:22px}
+    .cal-cell:hover:not(.cal-future){transform:scale(1.15)}
+    .cal-cell.cal-today{box-shadow:0 0 0 2px var(--sky);color:var(--sky)}
+    .cal-cell.cal-other{opacity:.22}
+    .cal-cell.cal-future{opacity:.18}
+    body.light .cal-day-hdr{color:rgba(0,0,0,.4)}
+
     /* Cycle 39: habit card check flash */
     @keyframes checkFlash{0%{box-shadow:none}35%{box-shadow:0 0 0 3px rgba(76,175,125,.5),0 0 18px rgba(76,175,125,.25)}100%{box-shadow:none}}
     .habit.flash-done{animation:checkFlash .5s ease-out forwards}
@@ -734,6 +744,7 @@
         <button class="toggle-btn active" data-view="week" onclick="setChartView('week')">週</button>
         <button class="toggle-btn" data-view="month" onclick="setChartView('month')">月</button>
         <button class="toggle-btn" data-view="year" onclick="setChartView('year')">年</button>
+        <button class="toggle-btn" data-view="cal" onclick="setChartView('cal')">📅</button>
       </div>
     </div>
     <div id="chart"></div>
@@ -1076,7 +1087,7 @@ function todayRate(){return Math.round(dayRate(today())*100)}
 
 function totalDone(){
   let n=0;
-  for(const day of Object.values(completions))for(const v of Object.values(day))if(v)n++;
+  for(const day of Object.values(completions))for(const[k,v] of Object.entries(day))if(!k.endsWith('_note')&&v)n++;
   return n;
 }
 
@@ -1215,7 +1226,7 @@ function setChartView(v){
   chartView=v;
   document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
   const ttl=document.getElementById('chart-ttl');
-  if(ttl)ttl.textContent=v==='week'?'📊 週間達成率':v==='month'?'📅 過去30日 ヒートマップ':'📆 年間コントリビューション';
+  if(ttl)ttl.textContent=v==='week'?'📊 週間達成率':v==='month'?'📅 過去30日 ヒートマップ':v==='cal'?'📅 月間カレンダー':'📆 年間コントリビューション';
   renderChart();
 }
 
@@ -1246,6 +1257,38 @@ function renderChart(){
       cell.title=`${d.getMonth()+1}月${d.getDate()}日 ${Math.round(pct*100)}%達成`;
       c.appendChild(cell);
     }
+  }else if(chartView==='cal'){
+    // Cycle 41: monthly calendar view
+    c.className='';
+    const isLight=document.body.classList.contains('light');
+    const emptyBg=isLight?'rgba(0,0,0,.06)':'rgba(255,255,255,.06)';
+    const now=new Date();
+    const yr=now.getFullYear(),mo=now.getMonth();
+    const firstDay=new Date(yr,mo,1);
+    const lastDay=new Date(yr,mo+1,0);
+    const todayStr=today();
+    const startOffset=(firstDay.getDay()+6)%7;
+    const HDRS=['月','火','水','木','金','土','日'];
+    let html='<div class="cal-grid">';
+    HDRS.forEach(h=>{html+=`<div class="cal-day-hdr">${h}</div>`;});
+    for(let i=0;i<startOffset;i++)html+='<div class="cal-cell cal-other"></div>';
+    for(let d=1;d<=lastDay.getDate();d++){
+      const cell=new Date(yr,mo,d);
+      const ds=toStr(cell);
+      const isFuture=cell>now;
+      const isToday=ds===todayStr;
+      const rate=isFuture?0:dayRate(ds);
+      let bg=emptyBg;
+      if(!isFuture&&rate>0)bg=rate===1?'rgba(76,175,125,.3)':rate>=0.5?'rgba(245,200,66,.25)':'rgba(91,200,232,.2)';
+      const cls=['cal-cell',isToday?'cal-today':'',isFuture?'cal-future':''].filter(Boolean).join(' ');
+      const tip=isFuture?'':`${mo+1}月${d}日 ${Math.round(rate*100)}%`;
+      html+=`<div class="${cls}" style="background:${bg}" title="${tip}">${d}</div>`;
+    }
+    const totalCells=startOffset+lastDay.getDate();
+    const remainder=totalCells%7;
+    if(remainder>0)for(let i=0;i<7-remainder;i++)html+='<div class="cal-cell cal-other"></div>';
+    html+='</div>';
+    c.innerHTML=html;
   }else{
     // Cycle 37: year view — 52-week GitHub-style contribution calendar
     c.className='';
