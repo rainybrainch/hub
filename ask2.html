@@ -27,8 +27,12 @@
     .user-info { font-size: 12px; color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
     .btn-utility { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; background: rgba(91, 200, 232, 0.1); color: #5BC8E8; border: 1px solid rgba(91, 200, 232, 0.3); transition: all 0.2s; }
     .btn-utility:hover { background: rgba(91, 200, 232, 0.2); border-color: #5BC8E8; }
+    .btn-utility:focus-visible { outline: 2px solid #5BC8E8; outline-offset: 2px; }
     .btn-logout { padding: 8px 16px; background: rgba(232, 53, 74, 0.2); color: #E8354A; border: 1px solid #E8354A; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
     .btn-logout:hover { background: rgba(232, 53, 74, 0.4); }
+    .btn-logout:focus-visible { outline: 2px solid #E8354A; outline-offset: 2px; }
+    button:focus-visible { outline: 2px solid #5BC8E8; outline-offset: 2px; }
+    .day:focus-visible { outline: 2px solid #5BC8E8; outline-offset: -2px; }
     .calendar-section { background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(91, 200, 232, 0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px; }
     .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
     .calendar-nav { display: flex; gap: 15px; align-items: center; }
@@ -255,6 +259,9 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && e.ctrlKey && document.getElementById('detailModal').classList.contains('visible')) {
         document.getElementById('saveBtn').click();
+      }
+      if (e.key === 'Escape' && document.getElementById('detailModal').classList.contains('visible')) {
+        closeModal();
       }
     });
 
