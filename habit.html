@@ -719,6 +719,26 @@
     .skip-btn.on{color:var(--sky)}
     body.light .skip-btn{color:rgba(0,0,0,.15)}
     body.compact .skip-btn{display:none}
+
+    /* Cycle 44: widget visibility settings panel */
+    .wset-ovl{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .wset-ovl.open{opacity:1;pointer-events:auto}
+    .wset-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:20px;width:calc(100% - 48px);max-width:360px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:82vh;overflow-y:auto}
+    .wset-ovl.open .wset-modal{transform:scale(1)}
+    .wset-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px;margin-bottom:14px}
+    .wset-list{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+    .wset-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.05)}
+    .wset-name{font-size:12px;font-weight:700}
+    .wset-toggle{position:relative;width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,.15);border:none;cursor:pointer;transition:background .2s;flex-shrink:0}
+    .wset-toggle.on{background:var(--gold)}
+    .wset-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;pointer-events:none}
+    .wset-toggle.on::after{transform:translateX(18px)}
+    .wset-close{width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+    .wset-close:hover{background:rgba(255,255,255,.12)}
+    body.light .wset-item{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.06)}
+    body.light .wset-toggle{background:rgba(0,0,0,.12)}
+    body.light .wset-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .wset-close:hover{background:rgba(0,0,0,.1)}
   </style>
 </head>
 <body>
@@ -740,6 +760,7 @@
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
   <button class="hdr-btn" id="dayoff-btn" onclick="toggleDayOff()" title="今日をお休みデーに設定（ストリーク維持）">🌴</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
+  <button class="hdr-btn" onclick="openWidgetSettings()" title="ウィジェット表示設定（各セクションの表示/非表示）">⚙️</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -962,6 +983,15 @@
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
     </table>
     <button class="kbd-close" onclick="closeKbdHelp()">閉じる（ESCでも）</button>
+  </div>
+</div>
+
+<!-- Cycle 44: widget visibility settings overlay -->
+<div class="wset-ovl" id="wset-ovl" onclick="if(event.target===this)closeWidgetSettings()">
+  <div class="wset-modal">
+    <div class="wset-ttl">⚙️ ウィジェット表示設定</div>
+    <div class="wset-list" id="wset-list"></div>
+    <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
   </div>
 </div>
 
@@ -1727,6 +1757,7 @@ function render(){
   updateDocTitle();
   updateHeaderBadge();
   updateDayOffBtn();
+  applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -2019,6 +2050,7 @@ function renderMotto(){
 // ── filter ──
 function setFilter(cat){
   filter=cat;
+  localStorage.setItem('rh_filter',cat); // Cycle 44: persist last selected filter
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
   renderList();
 }
@@ -2495,6 +2527,8 @@ initIntention();
 initWeekly();
 initReminder();
 initModalSwipe();
+// Cycle 44: restore last selected category filter
+(()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
 render();
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
@@ -2586,6 +2620,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(document.getElementById('note-ovl').classList.contains('open')){closeNoteModal();return;}
     if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
+    if(document.getElementById('wset-ovl')?.classList.contains('open')){closeWidgetSettings();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
     return;
@@ -2703,6 +2738,51 @@ function scrollToHabit(id){
     el.classList.add('highlight-pulse');
     setTimeout(()=>el.classList.remove('highlight-pulse'),2200);
   },sec&&sec.classList.contains('closed')?400:0);
+}
+
+// ── Cycle 44: widget visibility settings ──
+const WIDGET_DEFS=[
+  {key:'w_pace',   name:'⏱ ペース指標',             id:'pace-box'},
+  {key:'w_chart',  name:'📊 週間/月間チャート',      id:'chart-box'},
+  {key:'w_weekly', name:'📓 週次振り返りメモ',        id:'weekly-box'},
+  {key:'w_dow',    name:'📈 曜日別平均達成率',        id:'dow-box'},
+  {key:'w_trend',  name:'📉 月別達成率トレンド',      id:'trend-box'},
+  {key:'w_year',   name:'📆 年間達成カレンダー',      id:'year-box'},
+  {key:'w_streak', name:'🔥 ストリークバッジ',        id:'streak-row'},
+  {key:'w_month',  name:'📅 月次サマリー',            id:'month-box'},
+  {key:'w_ranking',name:'🏅 週間ランキング',          id:'ranking-box'},
+  {key:'w_challenge',name:'🎯 今日のチャレンジ',      id:'challenge-box'},
+  {key:'w_motto',  name:'💬 モチベーションメッセージ',id:'motto-box'},
+  {key:'w_ach',    name:'🏆 実績バッジ',              id:'ach-box'},
+  {key:'w_ms',     name:'🎯 マイルストーンプレビュー',id:'ms-widget'},
+  {key:'w_intention',name:'📝 今日の意図メモ',        id:'intention-box'},
+  {key:'w_tod',    name:'🕐 時間帯別達成パターン',    id:'tod-box'},
+  {key:'w_timeline',name:'⏱ 今日のタイムライン',     id:'timeline-box'},
+];
+function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
+function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
+function applyWidgetViz(){
+  const v=getWidgetViz();
+  WIDGET_DEFS.forEach(w=>{if(v[w.key]===false){const el=document.getElementById(w.id);if(el)el.style.display='none';}});
+}
+function openWidgetSettings(){
+  const el=document.getElementById('wset-ovl');if(!el)return;
+  _renderWsetList();el.classList.add('open');
+}
+function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
+function _renderWsetList(){
+  const el=document.getElementById('wset-list');if(!el)return;
+  const v=getWidgetViz();
+  el.innerHTML=WIDGET_DEFS.map(w=>{
+    const on=v[w.key]!==false;
+    return `<div class="wset-item"><span class="wset-name">${w.name}</span><button class="wset-toggle${on?' on':''}" onclick="toggleWidgetViz('${w.key}')" aria-label="${on?'非表示':'表示'}"></button></div>`;
+  }).join('');
+}
+function toggleWidgetViz(key){
+  const v=getWidgetViz();
+  v[key]=!isWidgetOn(key);
+  localStorage.setItem('rh_widgets',JSON.stringify(v));
+  _renderWsetList();applyWidgetViz();
 }
 
 // ── Cycle 34: reset today's completions ──
