@@ -207,6 +207,10 @@
     /* Cycle 9: completion timestamp badge */
     .done-time{font-size:10px;color:var(--green);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2);border-radius:6px;line-height:1.5}
     body.light .done-time{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
+    /* Cycle 45: personal best streak badge */
+    .habit-best{font-size:10px;color:rgba(245,200,66,.65);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(245,200,66,.06);border:1px dashed rgba(245,200,66,.2);border-radius:6px;line-height:1.5}
+    body.light .habit-best{color:rgba(180,140,0,.7);background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.3)}
+    body.compact .habit-best{display:none}
 
     /* Cycle 11: per-habit 7-day mini dot calendar */
     .h-dots{display:flex;gap:3px;align-items:center;flex-shrink:0}
@@ -980,6 +984,7 @@
       <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
       <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">全カテゴリーを折りたたむ / 展開</td></tr>
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
+      <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
     </table>
     <button class="kbd-close" onclick="closeKbdHelp()">閉じる（ESCでも）</button>
@@ -1394,6 +1399,21 @@ function habitStreak(id){
   return s;
 }
 
+// Cycle 45: per-habit all-time personal best streak
+function habitBestStreak(id){
+  const dates=Object.keys(completions).filter(d=>completions[d]&&completions[d][id]).sort();
+  let best=0,cur=0,prev=null;
+  for(const d of dates){
+    if(prev){
+      const diff=Math.round((new Date(d)-new Date(prev))/86400000);
+      cur=diff===1?cur+1:1;
+    }else{cur=1;}
+    if(cur>best)best=cur;
+    prev=d;
+  }
+  return best;
+}
+
 // cycle 11: 7-day dot calendar per habit (oldest→newest)
 function habit7Days(id){
   const h=habits.find(x=>x.id===id);
@@ -1508,6 +1528,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
   const hs=habitStreak(h.id);
   const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  const hbs=habitBestStreak(h.id);
+  const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
   let timeBadge='';
   if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
@@ -1543,7 +1565,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2642,6 +2664,25 @@ document.addEventListener('keydown',e=>{
     if(!undone.length)return;
     const seed=parseInt(td.replace(/-/g,''))%undone.length;
     toggle(undone[seed].id,null);
+  }
+  // Cycle 45: number keys 1-9 toggle Nth visible habit
+  else if(e.key>='1'&&e.key<='9'){
+    const idx=parseInt(e.key)-1;
+    const td2=today(),dc2=completions[td2]||{};
+    const fIds=getFocusIds();
+    let vl=filter==='all'?habits:habits.filter(h=>h.category===filter);
+    if(searchQuery)vl=vl.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
+    const seen=new Set(),ordered=[];
+    vl.filter(h=>fIds.includes(h.id)&&!h.paused).forEach(h=>{if(!seen.has(h.id)){seen.add(h.id);ordered.push(h);}});
+    const cats2=filter==='all'?['学習','運動','創作','自己改善']:[filter];
+    for(const cat of cats2){
+      const rawC=vl.filter(h=>h.category===cat);
+      const ch=sortUndone?[...rawC].sort((a,b)=>{const aO=a.paused||!isScheduled(a,td2),bO=b.paused||!isScheduled(b,td2);if(aO!==bO)return aO?1:-1;return(dc2[a.id]?1:0)-(dc2[b.id]?1:0);}):
+        [...rawC].sort((a,b)=>{const aO=a.paused||!isScheduled(a,td2),bO=b.paused||!isScheduled(b,td2);return aO&&!bO?1:!aO&&bO?-1:0;});
+      ch.forEach(h=>{if(!seen.has(h.id)){seen.add(h.id);ordered.push(h);}});
+    }
+    const h=ordered[idx];
+    if(h)toggle(h.id,null);
   }
 });
 
