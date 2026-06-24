@@ -708,6 +708,17 @@
     /* Cycle 42: new habit card slide-in animation */
     @keyframes habitSlideIn{from{opacity:0;transform:translateY(-10px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
     .habit.new-item{animation:habitSlideIn .4s cubic-bezier(.34,1.56,.64,1) forwards}
+
+    /* Cycle 43: skip-today feature */
+    .habit.skipped-today{opacity:.4;cursor:default}
+    .skip-lbl{font-size:9px;color:var(--sky);font-weight:700;padding:2px 5px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:10px;line-height:1.5;flex-shrink:0;letter-spacing:.04em}
+    body.light .skip-lbl{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.25)}
+    body.compact .skip-lbl{display:none}
+    .skip-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .skip-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    .skip-btn.on{color:var(--sky)}
+    body.light .skip-btn{color:rgba(0,0,0,.15)}
+    body.compact .skip-btn{display:none}
   </style>
 </head>
 <body>
@@ -719,6 +730,7 @@
   <a href="index.html" class="back">← Hub</a>
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
+  <button class="hdr-btn" onclick="shareDailyCard()" title="今日の達成をシェア（コピー）">📱</button>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
@@ -954,7 +966,7 @@
 </div>
 
 <script>
-const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak', DOK = 'rh_dayoff_';
+const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak', DOK = 'rh_dayoff_', SKK = 'rh_skip_';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 // Cycle 15: preset emoji for habit icons
 const EMOJI_PRESETS=['📚','📖','✏️','💪','🏃','🧘','🎨','🎵','📝','💡','🌱','⭐','🎯','🔔','🌅','🏆','💎','🔥','⚡','💤','🥗','💊','🛌','🧠'];
@@ -1064,7 +1076,7 @@ function spawnBurst(x,y){
 // ── Cycle 28: dynamic document title ──
 function updateDocTitle(){
   const td=today();
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
   if(!active.length){document.title='習慣トラッカー | RAINYBRAIN';return;}
   const dc=completions[td]||{};
   const done=active.filter(h=>dc[h.id]).length,total=active.length;
@@ -1077,7 +1089,7 @@ function updateHeaderBadge(){
   const el=document.getElementById('hdr-progress');
   if(!el)return;
   const td=today();
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
   if(!active.length){el.style.display='none';_prevDone=-1;return;}
   el.style.display='';
   const dc=completions[td]||{};
@@ -1205,11 +1217,60 @@ function updateDayOffBtn(){
   document.body.classList.toggle('dayoff-today',isOff);
 }
 
+// ── Cycle 43: skip-today feature ──
+function getSkipIds(){try{return JSON.parse(localStorage.getItem(SKK+today())||'[]');}catch{return [];}}
+function isSkippedToday(id){return getSkipIds().includes(id);}
+function toggleSkip(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h||h.paused||!isScheduled(h,today()))return;
+  const sk=getSkipIds();
+  const idx=sk.indexOf(id);
+  if(idx>=0)sk.splice(idx,1);else sk.push(id);
+  localStorage.setItem(SKK+today(),JSON.stringify(sk));
+  celebrated=false;render();
+}
+
+// ── Cycle 43: daily achievement share card ──
+function shareDailyCard(){
+  const td=today(),dc=completions[td]||{};
+  const now=new Date();
+  const dateLabel=`${now.getMonth()+1}/${now.getDate()}（${DAYS[now.getDay()]}）`;
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  if(!active.length){
+    const b=document.getElementById('banner');
+    b.textContent='📭 習慣がありません';b.classList.add('show');
+    setTimeout(()=>b.classList.remove('show'),2000);return;
+  }
+  const lines=[`🗓 ${dateLabel}の習慣記録`,''];
+  active.forEach(h=>{
+    const done=!!dc[h.id];
+    const em=h.emoji?h.emoji+' ':'';
+    lines.push(`${done?'✅':'❌'} ${em}${h.name}`);
+  });
+  const doneCount=active.filter(h=>dc[h.id]).length;
+  const streak=calcStreak();
+  lines.push('','──────────');
+  lines.push(`${doneCount}/${active.length} 達成${streak>0?' 🔥'+streak+'日連続':''}`);
+  lines.push('#習慣トラッカー');
+  const text=lines.join('\n');
+  navigator.clipboard.writeText(text)
+    .then(()=>{
+      const b=document.getElementById('banner');
+      b.textContent='📱 今日の達成をコピーしました！';b.classList.add('show');
+      setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
+    })
+    .catch(()=>alert(text));
+}
+
 // ── stats ──
 function dayRate(dateStr){
   if(isDayOff(dateStr))return 1; // day off counts as perfect (streak preserved)
-  const relevant=habits.filter(h=>!h.paused&&isScheduled(h,dateStr));
-  if(!relevant.length)return 0;
+  const allActive=habits.filter(h=>!h.paused&&isScheduled(h,dateStr));
+  if(!allActive.length)return 0;
+  // Cycle 43: exclude today's skipped habits from rate calculation
+  const skipIds=dateStr===today()?getSkipIds():[];
+  const relevant=allActive.filter(h=>!skipIds.includes(h.id));
+  if(!relevant.length)return 1; // all active habits skipped → perfect day
   const dc=completions[dateStr]||{};
   return relevant.filter(h=>dc[h.id]).length/relevant.length;
 }
@@ -1276,21 +1337,29 @@ function habitStreak(id){
   const h=habits.find(x=>x.id===id);
   const freq=h?(h.frequency||'daily'):'daily';
   const dc0=completions[today()]||{};
+  const skipped=isSkippedToday(id); // Cycle 43: skip preserves streak
   let s=0;
   if(freq==='weekday'){
     const todayDow=new Date().getDay();
     let d=0;
-    if(todayDow>=1&&todayDow<=5&&!dc0[id])d=1;
+    if(todayDow>=1&&todayDow<=5&&!dc0[id]&&!skipped)d=1;
     for(;d<365;d++){
       const dow=daysAgo(d).getDay();
       if(dow===0||dow===6)continue;
-      if((completions[dateAgo(d)]||{})[id])s++;else break;
+      const done=!!(completions[dateAgo(d)]||{})[id];
+      if(done)s++;
+      else if(d===0&&skipped){} // today skipped: don't count but don't break streak
+      else break;
     }
     return s;
   }
-  const start=dc0[id]?0:1;
+  // daily freq
+  const start=(dc0[id]||skipped)?0:1;
   for(let d=start;d<365;d++){
-    if((completions[dateAgo(d)]||{})[id])s++;else break;
+    const done=!!(completions[dateAgo(d)]||{})[id];
+    if(done)s++;
+    else if(d===0&&skipped){} // today skipped: preserve streak, don't count today
+    else break;
   }
   return s;
 }
@@ -1433,6 +1502,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 40: custom accent color
   const hcol=h.color||'';
   const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
+  // Cycle 43: skip-today
+  const isSkipped=!isPaused&&!isWeekendOff&&!isDone&&isSkippedToday(h.id);
+  const skipLbl=isSkipped?'<span class="skip-lbl">スキップ</span>':'';
+  const skipBtn=!isPaused&&!isWeekendOff&&!isDone?`<button class="skip-btn${isSkipped?' on':''}" onclick="event.stopPropagation();toggleSkip('${h.id}')" title="${isSkipped?'スキップを解除':'今日はスキップ'}" aria-label="スキップ">${isSkipped?'↻':'⊘'}</button>`:'';
   // Cycle 29: completion quick note
   const qNote=isDone?getCompletionNote(h.id):'';
   const noteBtnHtml=isDone?`<button class="note-btn${qNote?' has-note':''}" onclick="openNoteModal('${h.id}',event)" title="${qNote?esc(qNote):'メモを追加'}" aria-label="メモ">${qNote?'📝':'✎'}</button>`:'';
@@ -1440,7 +1513,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${starBtn}${pauseBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1617,7 +1690,7 @@ function renderPaceBox(){
     return;
   }
   const dc=completions[td]||{};
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
   if(!active.length){el.style.display='none';return;}
   const remaining=active.filter(h=>!dc[h.id]).length;
   const now=new Date();
@@ -1661,7 +1734,7 @@ function updateFabBadge(){
   const el=document.getElementById('fab-badge');
   if(!el)return;
   const td=today(),dc=completions[td]||{};
-  const remaining=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!dc[h.id]).length;
+  const remaining=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id)&&!dc[h.id]).length;
   el.textContent=remaining||'';
   el.classList.toggle('zero',remaining===0);
 }
@@ -1672,6 +1745,7 @@ function toggle(id,evt){
   const _hh=habits.find(x=>x.id===id);
   if(_hh&&_hh.paused)return;
   if(_hh&&!isScheduled(_hh,today()))return;
+  if(isSkippedToday(id))return; // Cycle 43: skipped habits can't be toggled
   const td=today();
   if(!completions[td])completions[td]={};
   const wasCompleted=!!completions[td][id];
