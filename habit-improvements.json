@@ -525,6 +525,21 @@
         "deployedAt": "2026-06-24T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 42,
+      "timestamp": "2026-06-24T08:00:00Z",
+      "version": "v2.42",
+      "changes": [
+        "モーダルのスワイプダウン閉じるジェスチャー: 追加・編集モーダル（ボトムシート）を下にスワイプして閉じられるタッチジェスチャーを追加。initModalSwipe()関数がtouchstart/touchmove/touchendをリッスンし、下向きスワイプ中はmodal.style.transformでtranslateY()をリアルタイムに追従。80px以上でリリースするとcloseModal()を呼び出し、それ以下ではtransformをリセット（スプリングバック）。ドラッグ中は.modal.dragging{transition:none}でCSSトランジションを一時無効化しカクつきを防止。負のdelta（上スワイプ）は無効化してスクロールと干渉しない設計。modal._swipeModalInitedフラグで重複登録を防止。",
+        "新規習慣カードのスライドインアニメーション: saveHabit()で新規追加された習慣のIDを_newHabitIdに記録。renderList()のinnerHTML更新直後に対象カードを検索し.new-itemクラスを付与。@keyframes habitSlideIn（translateY(-10px) scale(0.97)→(0) scale(1)・0.4s cubic-bezier）でカードが上から滑らかにスライドインする演出を追加。500ms後にクラスを除去し_newHabitIdをリセット。編集時はID更新なし（新規のみ発火）。既存のrenderList()の描画フローに2行追加のみで副作用ゼロ。"
+      ],
+      "notes": "モーダルスワイプダウンはCycle 24のスワイプ-to-完了（習慣カード）・Cycle 26の長押し編集に続くモバイルジェスチャー拡張。ボトムシートパターンのモーダルでスワイプダウン閉じるは標準的なモバイルUXで、ユーザーが自然に期待する操作を実装。×ボタンなしでも直感的に閉じられる。スライドインアニメーションはCycle 18のパーティクルバースト・Cycle 2の紙吹雪に続く視覚フィードバック追加。習慣を新規追加した瞬間に新しいカードが上からスライドしてくることで「追加成功」を明確に伝え、テンプレート選択や一括追加時の達成感を高める。_newHabitIdはsaveHabit()の編集分岐では変更されないため既存の編集フローに影響ゼロ。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-24T08:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

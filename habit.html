@@ -702,6 +702,12 @@
     .dayoff-banner{background:linear-gradient(135deg,rgba(76,175,125,.12),rgba(76,175,125,.05));border:1px solid rgba(76,175,125,.25);border-radius:12px;padding:9px 16px;margin-bottom:14px;text-align:center;font-size:12px;font-weight:700;color:var(--green);display:none}
     body.light .dayoff-banner{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.3)}
     body.dayoff-today .habit:not(.done):not(.paused):not(.weekend-off){opacity:.4;pointer-events:none}
+
+    /* Cycle 42: modal swipe-down to close */
+    .modal.dragging{transition:none!important}
+    /* Cycle 42: new habit card slide-in animation */
+    @keyframes habitSlideIn{from{opacity:0;transform:translateY(-10px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .habit.new-item{animation:habitSlideIn .4s cubic-bezier(.34,1.56,.64,1) forwards}
   </style>
 </head>
 <body>
@@ -967,7 +973,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day';
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null;
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -1486,6 +1492,10 @@ function renderList(){
     html+='</div></div>';
   }
   el.innerHTML=html;
+  if(_newHabitId){
+    const nc=el.querySelector(`.habit[data-id="${_newHabitId}"]`);
+    if(nc){nc.classList.add('new-item');setTimeout(()=>{if(nc)nc.classList.remove('new-item');_newHabitId=null;},500);}
+  }
   updateCollapseAllBtn();
   initSwipeGestures();
   initLongPress();
@@ -1802,6 +1812,7 @@ function saveHabit(){
     if(selFreqVal!=='daily')nh.frequency=selFreqVal;
     if(selColorVal)nh.color=selColorVal;
     habits.push(nh);
+    _newHabitId=nh.id;
   }
   saveH();
   closeModal();
@@ -2409,12 +2420,39 @@ initTemplates();
 initIntention();
 initWeekly();
 initReminder();
+initModalSwipe();
 render();
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
 function syncThemeColor(){
   const mc=document.getElementById('meta-theme-color');
   if(mc)mc.content=document.body.classList.contains('light')?'#f0f2f5':'#0d1117';
+}
+
+// ── Cycle 42: modal swipe-down to close ──
+function initModalSwipe(){
+  const modal=document.querySelector('.modal');
+  if(!modal||modal._swipeModalInited)return;
+  modal._swipeModalInited=true;
+  let sy=0,dy=0,active=false;
+  modal.addEventListener('touchstart',e=>{
+    if(!document.getElementById('overlay').classList.contains('open'))return;
+    sy=e.touches[0].clientY;dy=0;active=true;
+    modal.classList.add('dragging');
+  },{passive:true});
+  modal.addEventListener('touchmove',e=>{
+    if(!active)return;
+    dy=e.touches[0].clientY-sy;
+    if(dy<0){dy=0;return;}
+    modal.style.transform=`translateY(${dy}px)`;
+  },{passive:true});
+  modal.addEventListener('touchend',()=>{
+    if(!active)return;
+    active=false;modal.classList.remove('dragging');
+    if(dy>80){modal.style.transform='';closeModal();}
+    else{modal.style.transform='';}
+    dy=0;
+  });
 }
 
 // ── Cycle 24: swipe-to-complete gesture for habit cards ──
