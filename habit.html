@@ -743,6 +743,39 @@
     body.light .wset-toggle{background:rgba(0,0,0,.12)}
     body.light .wset-close{background:rgba(0,0,0,.06);color:#1a1a2e}
     body.light .wset-close:hover{background:rgba(0,0,0,.1)}
+
+    /* Cycle 46: counter habit widget */
+    .habit-counter{display:flex;align-items:center;gap:4px;flex-shrink:0}
+    .ctr-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted);cursor:pointer;font-size:13px;width:22px;height:22px;border-radius:6px;transition:all .15s;line-height:1;flex-shrink:0;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .ctr-btn:hover:not([disabled]){background:rgba(255,255,255,.1);color:var(--white);border-color:rgba(255,255,255,.3)}
+    .ctr-btn[disabled]{opacity:.3;cursor:default}
+    .ctr-btn.inc{border-color:rgba(76,175,125,.4);color:var(--green)}
+    .ctr-btn.inc:hover:not([disabled]){background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.6)}
+    .ctr-val{font-family:"Dela Gothic One",sans-serif;font-size:11px;text-align:center;min-width:28px;line-height:1;color:var(--white)}
+    .ctr-val.done{color:var(--green)}
+    body.light .ctr-btn{border-color:rgba(0,0,0,.15);color:rgba(0,0,0,.4)}
+    body.light .ctr-btn.inc{border-color:rgba(76,175,125,.4);color:var(--green)}
+    body.light .ctr-btn:hover:not([disabled]){background:rgba(0,0,0,.06);color:#1a1a2e;border-color:rgba(0,0,0,.25)}
+    body.light .ctr-val{color:#1a1a2e}
+    /* Cycle 46: target count input in modal */
+    .target-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .target-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:30px}
+    .target-inp{width:54px;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px;color:var(--white);font-family:"Dela Gothic One",sans-serif;font-size:16px;text-align:center;outline:none;transition:border-color .15s;-moz-appearance:textfield}
+    .target-inp::-webkit-outer-spin-button,.target-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .target-inp:focus{border-color:rgba(76,175,125,.4)}
+    .target-unit{font-size:11px;color:var(--muted)}
+    body.light .target-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    /* Cycle 46: print optimization */
+    @media print{
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,#combo-toast{display:none!important}
+      body{background:white!important;color:black!important;padding-bottom:0}
+      .wrap{max-width:100%!important;padding:10px 16px!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box{display:none!important}
+      .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
+      .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
+      .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter{display:none!important}
+      .habit-sec{break-inside:avoid}
+    }
   </style>
 </head>
 <body>
@@ -934,6 +967,11 @@
       <button class="freq-btn sel" id="freq-daily" onclick="selFreq('daily')" type="button">📅 毎日</button>
       <button class="freq-btn" id="freq-weekday" onclick="selFreq('weekday')" type="button">🏢 平日のみ</button>
     </div>
+    <div class="target-row">
+      <span class="target-row-lbl">目標</span>
+      <input class="target-inp" id="target-inp" type="number" min="1" max="99" value="1" title="1=チェック型、2以上=カウンター型（N回達成で完了）">
+      <span class="target-unit">回 / 日（2以上でカウンター型）</span>
+    </div>
     <div class="color-row">
       <span class="color-row-lbl">色</span>
       <div class="color-swatches">
@@ -1001,7 +1039,7 @@
 </div>
 
 <script>
-const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak', DOK = 'rh_dayoff_', SKK = 'rh_skip_';
+const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak', DOK = 'rh_dayoff_', SKK = 'rh_skip_', CTK = 'rh_ctr_';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 // Cycle 15: preset emoji for habit icons
 const EMOJI_PRESETS=['📚','📖','✏️','💪','🏃','🧘','🎨','🎵','📝','💡','🌱','⭐','🎯','🔔','🌅','🏆','💎','🔥','⚡','💤','🥗','💊','🛌','🧠'];
@@ -1265,6 +1303,34 @@ function toggleSkip(id){
   celebrated=false;render();
 }
 
+// ── Cycle 46: counter habit helpers ──
+function _ctrs(ds){try{return JSON.parse(localStorage.getItem(CTK+(ds||today()))||'{}');}catch{return {};}}
+function getHabitCount(id){return _ctrs()[id]||0;}
+function _setCtr(id,n){const td=today();const c=_ctrs(td);if(n<=0)delete c[id];else c[id]=n;localStorage.setItem(CTK+td,JSON.stringify(c));}
+function incrCtr(id,evt){
+  const h=habits.find(x=>x.id===id);
+  if(!h||h.paused||isDayOff(today())||!isScheduled(h,today())||isSkippedToday(id))return;
+  const tc=h.targetCount||1;const td=today();const dc=completions[td]||{};
+  if(dc[id]){/* already done: tap resets count */delete dc[id];completions[td]=dc;saveC();_setCtr(id,0);celebrated=false;render();return;}
+  const nxt=Math.min(getHabitCount(id)+1,tc);_setCtr(id,nxt);
+  if(nxt>=tc){
+    if(!completions[td])completions[td]={};
+    completions[td][id]=new Date().toISOString();saveC();
+    playTick();vib(50);checkHabitMilestone(id);triggerCombo();
+    if(evt){const el=evt.target?.closest?.('.habit');if(el){const r=el.getBoundingClientRect();spawnBurst(r.left+r.width/2,r.top+r.height/2);}}
+    celebrated=false;
+  }
+  render();
+  if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();}
+}
+function decrCtr(id){
+  const cur=getHabitCount(id);if(cur<=0)return;
+  const nxt=cur-1;_setCtr(id,nxt);
+  const h=habits.find(x=>x.id===id);const tc=h?h.targetCount||1:1;
+  if(nxt<tc){const dc=completions[today()]||{};if(dc[id]){delete dc[id];completions[today()]=dc;saveC();celebrated=false;}}
+  render();
+}
+
 // ── Cycle 43: daily achievement share card ──
 function shareDailyCard(){
   const td=today(),dc=completions[td]||{};
@@ -1521,6 +1587,8 @@ function renderChart(){
 
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
+  const tc=h.targetCount||1;const isCounter=tc>1;
+  const ctrCount=isCounter?getHabitCount(h.id):0;
   const completedVal=dc[h.id];
   const isDone=!!completedVal;
   const isPaused=!!h.paused;
@@ -1565,7 +1633,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)"><div class="chk"><span class="chk-ico">✓</span></div><div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  const chkHtml=isCounter
+    ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
+    :`<div class="chk"><span class="chk-ico">✓</span></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1799,6 +1870,7 @@ function toggle(id,evt){
   if(_hh&&_hh.paused)return;
   if(_hh&&!isScheduled(_hh,today()))return;
   if(isSkippedToday(id))return; // Cycle 43: skipped habits can't be toggled
+  if(_hh&&(_hh.targetCount||1)>1){incrCtr(id,evt);return;} // Cycle 46: counter habits
   const td=today();
   if(!completions[td])completions[td]={};
   const wasCompleted=!!completions[td][id];
@@ -1891,6 +1963,7 @@ function openModal(id=null){
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
     selFreq(h&&h.frequency?h.frequency:'daily');
     selColor(h&&h.color?h.color:'');
+    const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -1902,6 +1975,7 @@ function openModal(id=null){
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
     selFreq('daily');
     selColor('');
+    const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -1931,13 +2005,16 @@ function saveHabit(){
   if(!name||!selCatVal)return;
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;}
+    const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;}
   }else{
+    const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
     if(emoji)nh.emoji=emoji;
     if(selFreqVal!=='daily')nh.frequency=selFreqVal;
     if(selColorVal)nh.color=selColorVal;
+    if(tcSave>1)nh.targetCount=tcSave;
     habits.push(nh);
     _newHabitId=nh.id;
   }
