@@ -765,9 +765,27 @@
     .target-inp:focus{border-color:rgba(76,175,125,.4)}
     .target-unit{font-size:11px;color:var(--muted)}
     body.light .target-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    /* Cycle 47: streak shield badge */
+    .shield-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(91,200,232,.12);border:1px solid rgba(91,200,232,.3);border-radius:14px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--sky);margin-left:6px;flex-shrink:0;transition:all .25s}
+    body.light .shield-badge{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.35)}
+    .shield-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(91,200,232,.22),rgba(91,200,232,.08));border:1px solid rgba(91,200,232,.5);color:var(--sky);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;z-index:455;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;text-align:center;max-width:calc(100vw - 40px);box-shadow:0 4px 16px rgba(91,200,232,.2)}
+    .shield-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 47: tough habit flag */
+    .tough-badge{font-size:10px;color:#FF7B5C;font-weight:700;padding:2px 5px;background:rgba(255,123,92,.1);border:1px solid rgba(255,123,92,.25);border-radius:6px;line-height:1.5;flex-shrink:0}
+    body.light .tough-badge{background:rgba(255,123,92,.1);border-color:rgba(255,123,92,.3)}
+    body.compact .tough-badge{display:none}
+    .tough-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .tough-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:30px}
+    .tough-toggle-btn{padding:9px 16px;border-radius:10px;border:2px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+    .tough-toggle-btn:hover{color:var(--white)}
+    .tough-toggle-btn.sel{background:rgba(255,123,92,.15);border-color:#FF7B5C;color:#FF7B5C}
+    body.light .tough-toggle-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .tough-toggle-btn:hover{color:#1a1a2e}
+    body.light .tough-toggle-btn.sel{background:rgba(255,123,92,.1);border-color:#FF7B5C;color:#c0441e}
+
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box{display:none!important}
@@ -873,6 +891,7 @@
 
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
+    <span class="shield-badge" id="shield-badge" style="display:none"></span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -985,12 +1004,18 @@
         <button class="color-swatch" data-col="#FF9BCC" onclick="selColor('#FF9BCC')" type="button" title="ピンク" style="background:#FF9BCC"></button>
       </div>
     </div>
+    <div class="tough-row">
+      <span class="tough-row-lbl">難度</span>
+      <button class="tough-toggle-btn" id="tough-btn-off" type="button" onclick="toggleTough(false)">普通</button>
+      <button class="tough-toggle-btn" id="tough-btn-on" type="button" onclick="toggleTough(true)">⚡ 難しい</button>
+    </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
 
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 <div class="milestone-toast" id="milestone-toast"></div>
+<div class="shield-toast" id="shield-toast"></div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -1039,7 +1064,7 @@
 </div>
 
 <script>
-const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak', DOK = 'rh_dayoff_', SKK = 'rh_skip_', CTK = 'rh_ctr_';
+const HK = 'rh_habits', CK = 'rh_completions', BK = 'rh_best_streak', DOK = 'rh_dayoff_', SKK = 'rh_skip_', CTK = 'rh_ctr_', SHIELDK = 'rh_shield';
 const CAT_COLORS = {'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
 // Cycle 15: preset emoji for habit icons
 const EMOJI_PRESETS=['📚','📖','✏️','💪','🏃','🧘','🎨','🎵','📝','💡','🌱','⭐','🎯','🔔','🌅','🏆','💎','🔥','⚡','💤','🥗','💊','🛌','🧠'];
@@ -1058,7 +1083,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false;
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -1128,13 +1153,13 @@ function selColor(c){
 function vib(pattern){if(navigator.vibrate)navigator.vibrate(pattern)}
 
 // ── Cycle 18: particle burst on habit check ──
-function spawnBurst(x,y){
-  const cols=['#4CAF7D','#5BC8E8','#F5C842','#9B6DD6'];
+function spawnBurst(x,y,count=8){
+  const cols=['#4CAF7D','#5BC8E8','#F5C842','#9B6DD6','#FF7B5C','#FF9BCC'];
   const wrap=document.createElement('div');
   wrap.style.cssText=`position:fixed;left:${x}px;top:${y}px;pointer-events:none;z-index:999`;
-  for(let i=0;i<8;i++){
+  for(let i=0;i<count;i++){
     const s=document.createElement('span');
-    const angle=(i/8)*Math.PI*2,dist=16+Math.random()*14;
+    const angle=(i/count)*Math.PI*2,dist=16+Math.random()*18;
     s.className='chk-burst-dot';
     s.style.background=cols[i%cols.length];
     s.style.animationDelay=`${(Math.random()*40).toFixed(0)}ms`;
@@ -1364,16 +1389,22 @@ function shareDailyCard(){
 }
 
 // ── stats ──
-function dayRate(dateStr){
-  if(isDayOff(dateStr))return 1; // day off counts as perfect (streak preserved)
+// Cycle 47: rawDayRate = original logic without shield check
+function rawDayRate(dateStr){
+  if(isDayOff(dateStr))return 1;
   const allActive=habits.filter(h=>!h.paused&&isScheduled(h,dateStr));
   if(!allActive.length)return 0;
-  // Cycle 43: exclude today's skipped habits from rate calculation
   const skipIds=dateStr===today()?getSkipIds():[];
   const relevant=allActive.filter(h=>!skipIds.includes(h.id));
-  if(!relevant.length)return 1; // all active habits skipped → perfect day
+  if(!relevant.length)return 1;
   const dc=completions[dateStr]||{};
   return relevant.filter(h=>dc[h.id]).length/relevant.length;
+}
+// Cycle 47: dayRate checks shield-protected dates first
+function dayRate(dateStr){
+  const sd=getShield();
+  if(sd.used&&sd.used.includes(dateStr))return 1; // shielded day counts as perfect
+  return rawDayRate(dateStr);
 }
 function todayRate(){return Math.round(dayRate(today())*100)}
 
@@ -1399,6 +1430,59 @@ function updateBestStreak(current){
   const best=getBestStreak();
   if(current>best){localStorage.setItem(BK,current);return current}
   return best;
+}
+
+// ── Cycle 47: streak shield ──
+function getShield(){
+  try{return JSON.parse(localStorage.getItem(SHIELDK)||'{"avail":0,"used":[],"lastMile":0}');}
+  catch(e){return {avail:0,used:[],lastMile:0};}
+}
+function saveShield(sd){localStorage.setItem(SHIELDK,JSON.stringify(sd));}
+function processShield(){
+  const sd=getShield();
+  // Award shield at every 7-day streak milestone (up to max 2)
+  const streak=calcStreak();
+  const mile=Math.floor(streak/7);
+  if(mile>sd.lastMile&&sd.avail<2){
+    sd.avail=Math.min(2,sd.avail+(mile-sd.lastMile));
+    sd.lastMile=mile;
+    saveShield(sd);
+    showShieldToast(`🛡 ストリークシールド獲得！（残り${sd.avail}個）`);
+  }
+  // Auto-consume shield for yesterday if it was missed
+  const yest=dateAgo(1);
+  if(rawDayRate(yest)<1&&!sd.used.includes(yest)&&sd.avail>0){
+    sd.avail--;
+    sd.used=[...sd.used,yest].slice(-30); // keep last 30
+    saveShield(sd);
+    showShieldToast(`🛡 シールド発動！昨日のストリークを守りました`);
+  }
+  updateShieldBadge(sd);
+}
+function showShieldToast(msg){
+  const el=document.getElementById('shield-toast');
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+function updateShieldBadge(sd){
+  const el=document.getElementById('shield-badge');
+  if(!el)return;
+  if(!sd)sd=getShield();
+  if(sd.avail>0){
+    el.textContent=`🛡 ×${sd.avail}`;
+    el.style.display='';
+  }else{
+    el.style.display='none';
+  }
+}
+
+// ── Cycle 47: tough habit flag ──
+function toggleTough(val){
+  selTough=val;
+  document.getElementById('tough-btn-off').classList.toggle('sel',!val);
+  document.getElementById('tough-btn-on').classList.toggle('sel',val);
 }
 
 // cycle 5+25: JSON/CSV export
@@ -1609,7 +1693,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const lowRateLbl=isLowRate?'<span class="low-rate-lbl">要注意</span>':'';
   const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
-  const nameRowHtml=h.emoji?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span></div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+  const toughBadge=h.tough?`<span class="tough-badge">⚡難</span>`:'';
+  const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span>${toughBadge}</div>`:`<span class="habit-name">${esc(h.name)}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
@@ -1830,6 +1915,7 @@ function renderPaceBox(){
 function render(){
   renderHeader();
   renderStats();
+  processShield(); // Cycle 47: check shield state
   renderPaceBox();
   renderChart();
   renderWeekComparison();
@@ -1878,8 +1964,8 @@ function toggle(id,evt){
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
     playTick();vib(50);checkHabitMilestone(id);triggerCombo();
-    // cycle 18: particle burst from checkbox position
-    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r)spawnBurst(r.left+r.width/2,r.top+r.height/2);}
+    // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
+    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
   }
   saveC();
   render();
@@ -1964,6 +2050,7 @@ function openModal(id=null){
     selFreq(h&&h.frequency?h.frequency:'daily');
     selColor(h&&h.color?h.color:'');
     const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
+    toggleTough(!!(h&&h.tough));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -1976,6 +2063,7 @@ function openModal(id=null){
     selFreq('daily');
     selColor('');
     const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
+    toggleTough(false);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -2006,7 +2094,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -2015,6 +2103,7 @@ function saveHabit(){
     if(selFreqVal!=='daily')nh.frequency=selFreqVal;
     if(selColorVal)nh.color=selColorVal;
     if(tcSave>1)nh.targetCount=tcSave;
+    if(selTough)nh.tough=true;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -2628,6 +2717,7 @@ initReminder();
 initModalSwipe();
 // Cycle 44: restore last selected category filter
 (()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
+toggleTough(false); // Cycle 47: init tough buttons
 render();
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
