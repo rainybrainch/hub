@@ -783,6 +783,50 @@
     body.light .tough-toggle-btn:hover{color:#1a1a2e}
     body.light .tough-toggle-btn.sel{background:rgba(255,123,92,.1);border-color:#FF7B5C;color:#c0441e}
 
+    /* Cycle 48: weekly habit matrix */
+    .wm-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px;transition:background .25s,border-color .25s}
+    .wm-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+    .wm-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .wm-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
+    .wm-chev.open{transform:rotate(180deg)}
+    .wm-body{padding-top:10px;overflow-x:auto;display:none}
+    .wm-body.open{display:block}
+    .wm-table{border-collapse:collapse;min-width:240px;width:100%}
+    .wm-th{font-size:9px;font-weight:700;color:var(--muted);text-align:center;padding:2px 4px}
+    .wm-th.wm-today-col{color:var(--sky)}
+    .wm-td-name{font-size:11px;font-weight:700;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px 6px 3px 0}
+    .wm-cell{width:22px;height:22px;border-radius:5px;margin:2px auto;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+    .wm-cell.wm-done{background:rgba(76,175,125,.22);border:1px solid rgba(76,175,125,.38);color:var(--green)}
+    .wm-cell.wm-miss{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)}
+    .wm-cell.wm-today{background:rgba(91,200,232,.07);border:1px dashed rgba(91,200,232,.35)}
+    .wm-cell.wm-skip{background:rgba(91,200,232,.05);border:1px solid rgba(91,200,232,.15);color:var(--sky);font-size:8px}
+    .wm-pct{font-size:10px;font-weight:700;color:var(--gold);padding-left:8px;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+    body.light .wm-box{border-color:rgba(0,0,0,.08)}
+    body.light .wm-td-name{color:#1a1a2e}
+    body.light .wm-cell.wm-done{background:rgba(76,175,125,.18);border-color:rgba(76,175,125,.35)}
+    body.light .wm-cell.wm-miss{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}
+    body.light .wm-cell.wm-today{background:rgba(91,200,232,.06);border-color:rgba(91,200,232,.22)}
+    /* Cycle 48: yesterday fix modal */
+    .yfix-ovl{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .yfix-ovl.open{opacity:1;pointer-events:auto}
+    .yfix-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:20px;width:calc(100% - 48px);max-width:360px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:80vh;overflow-y:auto}
+    .yfix-ovl.open .yfix-modal{transform:scale(1)}
+    .yfix-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px;margin-bottom:14px}
+    .yfix-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .yfix-item:last-child{border-bottom:none}
+    .yfix-chk{width:22px;height:22px;border-radius:7px;border:2px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s cubic-bezier(.34,1.56,.64,1)}
+    .yfix-chk.done{background:var(--green);border-color:var(--green)}
+    .yfix-ico{font-size:12px;color:var(--dark);font-weight:900;display:none}
+    .yfix-chk.done .yfix-ico{display:block}
+    .yfix-name{font-size:13px;font-weight:700;flex:1}
+    .yfix-close{margin-top:14px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+    .yfix-close:hover{background:rgba(255,255,255,.12)}
+    body.light .yfix-item{border-bottom-color:rgba(0,0,0,.06)}
+    body.light .yfix-chk{border-color:rgba(0,0,0,.2)}
+    body.light .yfix-name{color:#1a1a2e}
+    body.light .yfix-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .yfix-close:hover{background:rgba(0,0,0,.1)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,#combo-toast{display:none!important}
@@ -816,6 +860,7 @@
   <button class="hdr-btn" id="dayoff-btn" onclick="toggleDayOff()" title="今日をお休みデーに設定（ストリーク維持）">🌴</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
   <button class="hdr-btn" onclick="openWidgetSettings()" title="ウィジェット表示設定（各セクションの表示/非表示）">⚙️</button>
+  <button class="hdr-btn" onclick="openYFix()" title="昨日の習慣記録を修正（Yキー）">昨</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -870,6 +915,17 @@
     </div>
     <div class="weekly-body" id="weekly-body">
       <textarea class="weekly-ta" id="weekly-ta" rows="3" placeholder="今週の気づき・改善点・感謝など..." oninput="saveWeekly(this.value)" maxlength="200"></textarea>
+    </div>
+  </div>
+
+  <!-- Cycle 48: weekly habit matrix widget -->
+  <div class="wm-box" id="wm-box" style="display:none">
+    <div class="wm-hdr" onclick="toggleWmWidget()">
+      <span class="wm-ttl">📋 今週の習慣グリッド</span>
+      <span class="wm-chev" id="wm-chev">▼</span>
+    </div>
+    <div class="wm-body" id="wm-body">
+      <div id="wm-table-wrap"></div>
     </div>
   </div>
 
@@ -1046,6 +1102,7 @@
       <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
       <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
       <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">全カテゴリーを折りたたむ / 展開</td></tr>
+      <tr><td><kbd class="kbdkey">Y</kbd></td><td class="kbd-desc">昨日の習慣記録を修正</td></tr>
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
@@ -1060,6 +1117,15 @@
     <div class="wset-ttl">⚙️ ウィジェット表示設定</div>
     <div class="wset-list" id="wset-list"></div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
+  </div>
+</div>
+
+<!-- Cycle 48: yesterday fix modal -->
+<div class="yfix-ovl" id="yfix-ovl" onclick="if(event.target===this)closeYFix()">
+  <div class="yfix-modal">
+    <div class="yfix-ttl" id="yfix-ttl">📅 昨日の習慣</div>
+    <div id="yfix-list"></div>
+    <button class="yfix-close" onclick="closeYFix()">閉じる（ESCでも）</button>
   </div>
 </div>
 
@@ -1912,6 +1978,99 @@ function renderPaceBox(){
   el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div><div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
 }
 
+// ── Cycle 48: weekly habit matrix widget ──
+let _wmOpen=false;
+function toggleWmWidget(){
+  _wmOpen=!_wmOpen;
+  const body=document.getElementById('wm-body');
+  const chev=document.getElementById('wm-chev');
+  if(body)body.classList.toggle('open',_wmOpen);
+  if(chev)chev.classList.toggle('open',_wmOpen);
+}
+function renderWeekMatrix(){
+  const el=document.getElementById('wm-box');
+  const tw=document.getElementById('wm-table-wrap');
+  if(!el||!tw)return;
+  const activeH=habits.filter(h=>!h.paused);
+  if(!activeH.length){el.style.display='none';return;}
+  el.style.display='';
+  // Build this week Mon→today
+  const todayDate=new Date();
+  const todayStr=today();
+  const dow=todayDate.getDay(); // 0=Sun
+  const daysSinceMon=dow===0?6:dow-1;
+  const weekDates=[];
+  for(let i=0;i<=daysSinceMon;i++){
+    const d=new Date(todayDate);
+    d.setDate(todayDate.getDate()-daysSinceMon+i);
+    weekDates.push(toStr(d));
+  }
+  const dayLabels=weekDates.map(ds=>{
+    const d=new Date(ds+'T00:00:00');
+    return ds===todayStr?'今':DAYS[d.getDay()];
+  });
+  let html='<table class="wm-table"><thead><tr><th class="wm-th" style="text-align:left">習慣</th>';
+  dayLabels.forEach((lbl,i)=>{
+    const isT=weekDates[i]===todayStr;
+    html+=`<th class="wm-th${isT?' wm-today-col':''}">${lbl}</th>`;
+  });
+  html+='<th class="wm-th">今週</th></tr></thead><tbody>';
+  activeH.forEach(h=>{
+    const nm=(h.emoji?h.emoji:'')+esc(h.name.length>7?h.name.slice(0,7)+'…':h.name);
+    html+=`<tr><td class="wm-td-name" title="${esc(h.name)}">${nm}</td>`;
+    let wDone=0,wSched=0;
+    weekDates.forEach(ds=>{
+      const sched=isScheduled(h,ds);
+      const dc=completions[ds]||{};
+      const done=!!dc[h.id];
+      const isT=ds===todayStr;
+      const sk=isT&&isSkippedToday(h.id);
+      let cls,content;
+      if(!sched){cls='wm-miss';content='<span style="opacity:.2;font-size:8px">—</span>';}
+      else if(sk){cls='wm-skip';content='⊘';wSched++;}
+      else if(done){cls='wm-done';content='✓';wDone++;wSched++;}
+      else if(isT){cls='wm-today';content='';wSched++;}
+      else{cls='wm-miss';content='';wSched++;}
+      html+=`<td style="text-align:center"><div class="wm-cell ${cls}">${content}</div></td>`;
+    });
+    const pct=wSched>0?`${wDone}/${wSched}`:'—';
+    html+=`<td class="wm-pct">${pct}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  tw.innerHTML=html;
+}
+
+// ── Cycle 48: yesterday fix modal ──
+function openYFix(){
+  const yest=dateAgo(1);
+  const yestDate=daysAgo(1);
+  const ttl=document.getElementById('yfix-ttl');
+  if(ttl)ttl.textContent=`📅 昨日の習慣（${yestDate.getMonth()+1}/${yestDate.getDate()}）`;
+  _renderYFixList(yest);
+  document.getElementById('yfix-ovl').classList.add('open');
+}
+function closeYFix(){document.getElementById('yfix-ovl')?.classList.remove('open');}
+function _renderYFixList(yest){
+  const el=document.getElementById('yfix-list');
+  if(!el)return;
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,yest));
+  if(!active.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:12px;font-size:13px">昨日は対象習慣がありません</div>';return;}
+  const dc=completions[yest]||{};
+  el.innerHTML=active.map(h=>{
+    const done=!!dc[h.id];
+    const em=h.emoji?h.emoji+' ':'';
+    return `<div class="yfix-item" onclick="toggleYFix('${h.id}','${yest}')"><div class="yfix-chk${done?' done':''}"><span class="yfix-ico">✓</span></div><span class="yfix-name">${esc(em+h.name)}</span></div>`;
+  }).join('');
+}
+function toggleYFix(id,yest){
+  if(!completions[yest])completions[yest]={};
+  const done=!!completions[yest][id];
+  completions[yest][id]=done?null:new Date(yest+'T12:00:00').toISOString();
+  saveC();
+  _renderYFixList(yest);
+  renderStats();updateProgressFooter();updateDocTitle();updateHeaderBadge();
+}
+
 function render(){
   renderHeader();
   renderStats();
@@ -1921,6 +2080,7 @@ function render(){
   renderWeekComparison();
   renderDayOfWeekChart();
   renderMonthlyTrend();
+  renderWeekMatrix(); // Cycle 48
   renderYearCalendar();
   renderMonthStats();
   renderWeeklyRanking();
@@ -2810,6 +2970,7 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('note-ovl').classList.contains('open')){closeNoteModal();return;}
     if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
     if(document.getElementById('wset-ovl')?.classList.contains('open')){closeWidgetSettings();return;}
+    if(document.getElementById('yfix-ovl')?.classList.contains('open')){closeYFix();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
     return;
@@ -2824,6 +2985,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='c'||e.key==='C')toggleCompactView();
   else if(e.key==='?'||e.key==='？')openKbdHelp();
   else if(e.key==='z'||e.key==='Z')toggleCollapseAll();
+  else if(e.key==='y'||e.key==='Y')openYFix();
   else if(e.key==='d'||e.key==='D'){
     const td=today(),dc=completions[td]||{};
     const active=habits.filter(h=>!h.paused);
@@ -2953,6 +3115,7 @@ const WIDGET_DEFS=[
   {key:'w_pace',   name:'⏱ ペース指標',             id:'pace-box'},
   {key:'w_chart',  name:'📊 週間/月間チャート',      id:'chart-box'},
   {key:'w_weekly', name:'📓 週次振り返りメモ',        id:'weekly-box'},
+  {key:'w_wm',     name:'📋 今週のグリッド',          id:'wm-box'},
   {key:'w_dow',    name:'📈 曜日別平均達成率',        id:'dow-box'},
   {key:'w_trend',  name:'📉 月別達成率トレンド',      id:'trend-box'},
   {key:'w_year',   name:'📆 年間達成カレンダー',      id:'year-box'},
