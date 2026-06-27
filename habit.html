@@ -870,12 +870,29 @@
     body.light .hl-preview.has-text{color:#1a1a2e}
     body.light .hl-inp{color:#1a1a2e;border-top-color:rgba(76,175,125,.15)}
 
+    /* Cycle 51: mood × achievement correlation widget */
+    .mood-stats-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .mood-stats-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .mood-stats-rows{display:flex;flex-direction:column;gap:5px}
+    .mood-stat-row{display:flex;align-items:center;gap:8px}
+    .mood-stat-emoji{font-size:14px;width:22px;text-align:center;flex-shrink:0;line-height:1}
+    .mood-stat-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+    .mood-stat-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+    .mood-stat-pct{font-size:10px;font-weight:700;min-width:30px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+    .mood-stat-cnt{font-size:9px;color:var(--muted);flex-shrink:0;min-width:18px;text-align:right}
+    .mood-stats-insight{font-size:10px;color:var(--muted);margin-top:9px;padding-top:7px;border-top:1px solid rgba(255,255,255,.05);font-style:italic}
+    body.light .mood-stats-box{border-color:rgba(0,0,0,.08)}
+    body.light .mood-stat-bar-wrap{background:rgba(0,0,0,.06)}
+    body.light .mood-stats-insight{border-top-color:rgba(0,0,0,.06)}
+    /* Cycle 51: glass sheen on dark mode habit cards */
+    body:not(.light) .habit:not(.done):not(.paused){background-image:linear-gradient(180deg,rgba(255,255,255,.022) 0%,transparent 55%)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.highlight-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter{display:none!important}
@@ -1045,6 +1062,9 @@
       <div style="display:flex;gap:4px;align-items:center" id="mood-hdots"></div>
     </div>
   </div>
+
+  <!-- Cycle 51: mood vs achievement correlation -->
+  <div class="mood-stats-box" id="mood-stats-box" style="display:none"></div>
 
   <!-- Cycle 50: daily highlight note -->
   <div class="highlight-box" id="highlight-box">
@@ -2160,6 +2180,7 @@ function render(){
   renderTimeOfDayChart();
   renderTimeline();
   renderMoodWidget();
+  renderMoodStats(); // Cycle 51
   renderHighlightBox();
   renderList();
   renderChallenge();
@@ -3202,6 +3223,7 @@ const WIDGET_DEFS=[
   {key:'w_tod',    name:'🕐 時間帯別達成パターン',    id:'tod-box'},
   {key:'w_timeline', name:'⏱ 今日のタイムライン',    id:'timeline-box'},
   {key:'w_mood',     name:'😊 今日の気分',           id:'mood-box'},
+  {key:'w_mood_stats',name:'📊 気分×達成率の相関',   id:'mood-stats-box'},
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
@@ -3276,6 +3298,51 @@ function renderMoodWidget(){
       return `<div class="mood-hdot" style="background:${color}" title="${d}: ${lbl}"></div>`;
     }).join('');
   }
+}
+
+// ── Cycle 51: mood × achievement correlation ──
+function renderMoodStats(){
+  const el=document.getElementById('mood-stats-box');
+  if(!el)return;
+  const byMood=[0,0,0,0,0],cntMood=[0,0,0,0,0];
+  for(let i=1;i<=30;i++){
+    const ds=dateAgo(i);
+    const m=getMood(ds);
+    if(m<1)continue;
+    const dc=completions[ds]||{};
+    const isOff=isDayOff(ds);
+    const active=habits.filter(h=>!h.paused&&isScheduled(h,ds));
+    if(!active.length)continue;
+    const done=isOff?active.length:active.filter(h=>!!(dc[h.id])).length;
+    byMood[m-1]+=done/active.length*100;
+    cntMood[m-1]++;
+  }
+  const totalEntries=cntMood.reduce((a,b)=>a+b,0);
+  if(totalEntries<5){el.style.display='none';return;}
+  el.style.display='';
+  const avgs=byMood.map((s,i)=>cntMood[i]>0?Math.round(s/cntMood[i]):null);
+  const validAvgs=avgs.filter(x=>x!==null);
+  const maxAvg=validAvgs.length?Math.max(...validAvgs,1):100;
+  const rows=MOOD_EMOJIS.map((e,i)=>{
+    if(cntMood[i]===0)return '';
+    const pct=avgs[i]||0;
+    const barW=Math.round(pct/maxAvg*100);
+    const moodColor=MOOD_COLORS[i].startsWith('rgba')?'rgba(255,255,255,.35)':MOOD_COLORS[i];
+    return `<div class="mood-stat-row"><span class="mood-stat-emoji">${e}</span><div class="mood-stat-bar-wrap"><div class="mood-stat-bar-fill" style="width:${barW}%;background:${moodColor}"></div></div><span class="mood-stat-pct" style="color:${moodColor}">${pct}%</span><span class="mood-stat-cnt">${cntMood[i]}日</span></div>`;
+  }).join('');
+  // insight: check if mood correlates with rate
+  let insight='';
+  const highMoodAvg=avgs.slice(3).filter(x=>x!==null);
+  const lowMoodAvg=avgs.slice(0,2).filter(x=>x!==null);
+  if(highMoodAvg.length&&lowMoodAvg.length){
+    const hAvg=Math.round(highMoodAvg.reduce((a,b)=>a+b,0)/highMoodAvg.length);
+    const lAvg=Math.round(lowMoodAvg.reduce((a,b)=>a+b,0)/lowMoodAvg.length);
+    const diff=hAvg-lAvg;
+    if(diff>5)insight=`💡 気分が良い日は悪い日より平均 <b>${diff}%</b> 達成率が高い`;
+    else if(diff<-5)insight=`💡 気分が悪い日でもしっかり達成できている（差: ${Math.abs(diff)}%）`;
+    else insight=`💡 気分に関わらず安定した達成率を維持中`;
+  }
+  el.innerHTML=`<div class="mood-stats-ttl">📊 気分と達成率の関係（過去30日）</div><div class="mood-stats-rows">${rows}</div>${insight?`<div class="mood-stats-insight">${insight}</div>`:''}`;
 }
 
 // ── Cycle 50: daily highlight note ──
