@@ -337,8 +337,10 @@
     body.compact .star-btn{display:none}
     /* Cycle 19: monthly stats card */
     .month-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px}
-    .month-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-    .month-hdr-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .month-hdr{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+    .month-hdr-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);flex:1}
+    .month-copy-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;opacity:.6;transition:opacity .15s;line-height:1;margin-left:auto}
+    .month-copy-btn:hover{opacity:1}
     .month-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
     .month-chev.open{transform:rotate(180deg)}
     .month-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
@@ -884,6 +886,17 @@
     body.light .mood-stats-box{border-color:rgba(0,0,0,.08)}
     body.light .mood-stat-bar-wrap{background:rgba(0,0,0,.06)}
     body.light .mood-stats-insight{border-top-color:rgba(0,0,0,.06)}
+    /* Cycle 52: habit estimated duration badge */
+    .dur-badge{font-size:10px;color:var(--muted);font-weight:700;padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;line-height:1.5;flex-shrink:0}
+    body.light .dur-badge{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.compact .dur-badge{display:none}
+    .dur-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .dur-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:30px}
+    .dur-inp{width:54px;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px;color:var(--white);font-family:"Dela Gothic One",sans-serif;font-size:16px;text-align:center;outline:none;transition:border-color .15s;-moz-appearance:textfield}
+    .dur-inp::-webkit-outer-spin-button,.dur-inp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .dur-inp:focus{border-color:rgba(91,200,232,.4)}
+    .dur-unit{font-size:11px;color:var(--muted)}
+    body.light .dur-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
     /* Cycle 51: glass sheen on dark mode habit cards */
     body:not(.light) .habit:not(.done):not(.paused){background-image:linear-gradient(180deg,rgba(255,255,255,.022) 0%,transparent 55%)}
 
@@ -895,7 +908,7 @@
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
-      .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter{display:none!important}
+      .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn{display:none!important}
       .habit-sec{break-inside:avoid}
     }
   </style>
@@ -1132,6 +1145,11 @@
       <span class="target-row-lbl">目標</span>
       <input class="target-inp" id="target-inp" type="number" min="1" max="99" value="1" title="1=チェック型、2以上=カウンター型（N回達成で完了）">
       <span class="target-unit">回 / 日（2以上でカウンター型）</span>
+    </div>
+    <div class="dur-row">
+      <span class="dur-row-lbl">⏱</span>
+      <input class="dur-inp" id="dur-inp" type="number" min="1" max="180" placeholder="—" title="推定所要時間（分）：任意。ペースボックスの「残り推定時間」に使用">
+      <span class="dur-unit">分 / 回（任意）</span>
     </div>
     <div class="color-row">
       <span class="color-row-lbl">色</span>
@@ -1848,6 +1866,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const noteHtml=h.note?`<span class="habit-note">${esc(h.note)}</span>`:'';
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
   const toughBadge=h.tough?`<span class="tough-badge">⚡難</span>`:'';
+  const durBadge=h.duration?`<span class="dur-badge">⏱${h.duration}m</span>`:'';
   const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span>${toughBadge}</div>`:`<span class="habit-name">${esc(h.name)}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
@@ -1877,7 +1896,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const chkHtml=isCounter
     ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${copyBtnHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${copyBtnHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2065,7 +2084,10 @@ function renderPaceBox(){
   el.style.display='';
   const paceColor=remaining===0?'var(--green)':hoursLeft<2?'var(--red)':hoursLeft<6?'var(--gold)':'var(--sky)';
   const msg=remaining===0?'今日の習慣完了！🎉':remaining===1?'あと1件で全完了！':hoursLeft<2?`急いで！残り${remaining}件`:'ペース継続中';
-  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div><div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
+  const remMins=remaining>0?active.filter(h=>!dc[h.id]&&h.duration>=1).reduce((s,h)=>s+h.duration,0):0;
+  const remEstStr=remMins>0?(remMins>=60?`${Math.floor(remMins/60)}h${remMins%60>0?String(remMins%60).padStart(2,'0')+'m':''}`:remMins+'m'):'';
+  const estHtml=remEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--muted)">${remEstStr}</span><span class="pace-lbl">残り推定</span></div>`:'';
+  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${estHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
 }
 
 // ── Cycle 48: weekly habit matrix widget ──
@@ -2303,6 +2325,7 @@ function openModal(id=null){
     selFreq(h&&h.frequency?h.frequency:'daily');
     selColor(h&&h.color?h.color:'');
     const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
+    const durEl=document.getElementById('dur-inp');if(durEl)durEl.value=(h&&h.duration>=1)?h.duration:'';
     toggleTough(!!(h&&h.tough));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
@@ -2316,6 +2339,7 @@ function openModal(id=null){
     selFreq('daily');
     selColor('');
     const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
+    const durElN=document.getElementById('dur-inp');if(durElN)durElN.value='';
     toggleTough(false);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -2344,10 +2368,11 @@ function saveHabit(){
   const note=((document.getElementById('note-inp')||{}).value||'').trim();
   const emoji=((document.getElementById('emoji-inp')||{}).value||'').trim();
   if(!name||!selCatVal)return;
+  const durSave=parseInt((document.getElementById('dur-inp')||{}).value||'0');
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -2357,6 +2382,7 @@ function saveHabit(){
     if(selColorVal)nh.color=selColorVal;
     if(tcSave>1)nh.targetCount=tcSave;
     if(selTough)nh.tough=true;
+    if(durSave>=1&&durSave<=180)nh.duration=durSave;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -2735,7 +2761,22 @@ function renderMonthStats(){
   habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
   const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
+}
+
+function copyMonthSummary(y,m,day,total,rate){
+  const lines=[`📆 ${y}年${m}月のまとめ（${day}日時点）`,`完了件数: ${total}件　達成率: ${rate}%`,''];
+  const now=new Date();
+  for(let d=1;d<=day;d++){
+    const ds=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dc=completions[ds]||{};
+    const done=habits.filter(h=>dc[h.id]).length;
+    const tot=habits.length;
+    const bar='█'.repeat(done)+'░'.repeat(Math.max(0,tot-done));
+    lines.push(`${String(d).padStart(2,' ')}日 ${bar} ${done}/${tot}`);
+  }
+  const text=lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>showSnack('月間サマリーをコピーしました')).catch(()=>showSnack('コピーに失敗しました'));
 }
 
 // ── Cycle 22: Achievement badges ──
