@@ -837,12 +837,45 @@
     body.light .habit-fixed{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.4)}
     body.compact .habit-fixed{display:none}
 
+    /* Cycle 50: daily mood tracker */
+    .mood-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .mood-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .mood-btns{display:flex;gap:6px}
+    .mood-btn{flex:1;padding:8px 2px;border:2px solid rgba(255,255,255,.08);border-radius:10px;background:none;font-size:22px;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);text-align:center;line-height:1}
+    .mood-btn:hover{background:rgba(255,255,255,.07);transform:scale(1.12)}
+    .mood-btn.sel{border-color:var(--sky);background:rgba(91,200,232,.12);transform:scale(1.15)}
+    .mood-history{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)}
+    .mood-hist-lbl{font-size:9px;color:var(--muted);flex-shrink:0;letter-spacing:.08em}
+    .mood-hdot{width:12px;height:12px;border-radius:50%;cursor:default;transition:transform .15s;flex-shrink:0}
+    .mood-hdot:hover{transform:scale(1.4)}
+    body.light .mood-box{border-color:rgba(0,0,0,.08)}
+    body.light .mood-btn{border-color:rgba(0,0,0,.1)}
+    body.light .mood-btn:hover{background:rgba(0,0,0,.05)}
+    body.light .mood-btn.sel{border-color:var(--sky);background:rgba(91,200,232,.1)}
+    body.light .mood-history{border-top-color:rgba(0,0,0,.06)}
+    /* Cycle 50: daily highlight note */
+    .highlight-box{background:linear-gradient(135deg,rgba(76,175,125,.07),rgba(76,175,125,.02));border:1px solid rgba(76,175,125,.18);border-radius:14px;padding:12px 16px;margin-bottom:16px;transition:all .3s}
+    .hl-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .hl-ico{font-size:14px;flex-shrink:0}
+    .hl-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--green);flex-shrink:0}
+    .hl-preview{flex:1;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px}
+    .hl-preview.has-text{color:var(--white)}
+    .hl-chev{font-size:10px;color:var(--muted);transition:transform .25s;display:inline-block;flex-shrink:0}
+    .hl-chev.open{transform:rotate(180deg)}
+    .hl-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+    .hl-body.open{max-height:80px}
+    .hl-inp{width:100%;background:none;border:none;border-top:1px solid rgba(76,175,125,.12);color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;padding:10px 0 4px;outline:none;resize:none;line-height:1.5;display:block}
+    .hl-inp::placeholder{color:var(--muted)}
+    body.light .highlight-box{border-color:rgba(76,175,125,.25);background:linear-gradient(135deg,rgba(76,175,125,.09),rgba(76,175,125,.03))}
+    body.light .hl-preview.has-text{color:#1a1a2e}
+    body.light .hl-inp{color:#1a1a2e;border-top-color:rgba(76,175,125,.15)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.highlight-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter{display:none!important}
@@ -1001,6 +1034,29 @@
   <div class="timeline-box" id="timeline-box" style="display:none">
     <div class="chart-ttl">⏱ 今日のタイムライン</div>
     <div id="timeline-list"></div>
+  </div>
+
+  <!-- Cycle 50: daily mood tracker -->
+  <div class="mood-box" id="mood-box">
+    <div class="mood-ttl">今日の気分</div>
+    <div class="mood-btns" id="mood-btns"></div>
+    <div class="mood-history" id="mood-history" style="display:none">
+      <span class="mood-hist-lbl">過去7日</span>
+      <div style="display:flex;gap:4px;align-items:center" id="mood-hdots"></div>
+    </div>
+  </div>
+
+  <!-- Cycle 50: daily highlight note -->
+  <div class="highlight-box" id="highlight-box">
+    <div class="hl-hdr" onclick="toggleHighlight()">
+      <span class="hl-ico">⭐</span>
+      <span class="hl-ttl">今日のハイライト</span>
+      <span class="hl-preview" id="hl-preview">今日の振り返りを記録...</span>
+      <span class="hl-chev" id="hl-chev">▼</span>
+    </div>
+    <div class="hl-body" id="hl-body">
+      <textarea class="hl-inp" id="hl-inp" placeholder="今日一番印象に残ったこと・達成・気づきを記録（最大100文字）" maxlength="100" rows="2" oninput="onHighlightInput(this.value)"></textarea>
+    </div>
   </div>
 
   <div class="tabs">
@@ -2103,6 +2159,8 @@ function render(){
   renderMilestoneWidget();
   renderTimeOfDayChart();
   renderTimeline();
+  renderMoodWidget();
+  renderHighlightBox();
   renderList();
   renderChallenge();
   updateFabBadge();
@@ -3142,7 +3200,9 @@ const WIDGET_DEFS=[
   {key:'w_ms',     name:'🎯 マイルストーンプレビュー',id:'ms-widget'},
   {key:'w_intention',name:'📝 今日の意図メモ',        id:'intention-box'},
   {key:'w_tod',    name:'🕐 時間帯別達成パターン',    id:'tod-box'},
-  {key:'w_timeline',name:'⏱ 今日のタイムライン',     id:'timeline-box'},
+  {key:'w_timeline', name:'⏱ 今日のタイムライン',    id:'timeline-box'},
+  {key:'w_mood',     name:'😊 今日の気分',           id:'mood-box'},
+  {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
@@ -3184,6 +3244,61 @@ function habitFix30(id){
   let done=0;
   for(let i=1;i<=30;i++){if(!!(completions[dateAgo(i)]||{})[id])done++;}
   return done;
+}
+
+// ── Cycle 50: daily mood tracker ──
+const MOOD_EMOJIS=['😩','😔','😐','😊','💪'];
+const MOOD_COLORS=['#E8354A','#9B6DD6','rgba(255,255,255,.3)','#F5C842','#4CAF7D'];
+const MOOD_LABELS=['つらい','しんどい','普通','良い','最高！'];
+function getMood(date){return parseInt(localStorage.getItem('rh_mood_'+date)||'0')||0;}
+function setMood(level){
+  localStorage.setItem('rh_mood_'+today(),String(level));
+  renderMoodWidget();
+}
+function renderMoodWidget(){
+  const btns=document.getElementById('mood-btns');
+  if(!btns)return;
+  const cur=getMood(today());
+  btns.innerHTML=MOOD_EMOJIS.map((e,i)=>
+    `<button class="mood-btn${cur===i+1?' sel':''}" onclick="setMood(${i+1})" title="${MOOD_LABELS[i]}">${e}</button>`
+  ).join('');
+  const hist=document.getElementById('mood-history');
+  const dotWrap=document.getElementById('mood-hdots');
+  const past=[];
+  for(let i=6;i>=0;i--){const d=dateAgo(i);past.push({d,m:getMood(d)});}
+  const hasData=past.some(x=>x.m>0);
+  if(hist)hist.style.display=hasData?'':'none';
+  if(dotWrap&&hasData){
+    const emptyColor=document.body.classList.contains('light')?'rgba(0,0,0,.1)':'rgba(255,255,255,.12)';
+    dotWrap.innerHTML=past.map(({d,m})=>{
+      const color=m>0?MOOD_COLORS[m-1]:emptyColor;
+      const lbl=m>0?MOOD_EMOJIS[m-1]:'未記録';
+      return `<div class="mood-hdot" style="background:${color}" title="${d}: ${lbl}"></div>`;
+    }).join('');
+  }
+}
+
+// ── Cycle 50: daily highlight note ──
+let _hlOpen=false;
+function getHighlight(){return localStorage.getItem('rh_hl_'+today())||'';}
+function toggleHighlight(){
+  _hlOpen=!_hlOpen;
+  document.getElementById('hl-body')?.classList.toggle('open',_hlOpen);
+  document.getElementById('hl-chev')?.classList.toggle('open',_hlOpen);
+  if(_hlOpen)setTimeout(()=>document.getElementById('hl-inp')?.focus(),320);
+}
+function onHighlightInput(val){
+  const trimmed=val.slice(0,100);
+  localStorage.setItem('rh_hl_'+today(),trimmed);
+  const prv=document.getElementById('hl-preview');
+  if(prv){prv.textContent=trimmed||'今日の振り返りを記録...';prv.classList.toggle('has-text',!!trimmed);}
+}
+function renderHighlightBox(){
+  const txt=getHighlight();
+  const prv=document.getElementById('hl-preview');
+  const inp=document.getElementById('hl-inp');
+  if(prv){prv.textContent=txt||'今日の振り返りを記録...';prv.classList.toggle('has-text',!!txt);}
+  if(inp&&inp.value!==txt)inp.value=txt;
 }
 
 // ── Cycle 34: reset today's completions ──
