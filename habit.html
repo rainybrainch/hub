@@ -544,7 +544,7 @@
     body.light .info-btn{color:rgba(0,0,0,.18)}
     body.compact .info-btn{display:none}
     .habit-detail{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-top:none;border-radius:0 0 12px 12px;max-height:0;overflow:hidden;transition:max-height .35s ease}
-    .habit-detail.open{max-height:140px}
+    .habit-detail.open{max-height:260px}
     body.compact .habit-detail{display:none!important}
     body.light .habit-detail{border-color:rgba(0,0,0,.08)}
     .hd-inner{padding:10px 14px 12px}
@@ -945,6 +945,27 @@
     body.light .restore-btn:hover{border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.08);color:var(--green)}
     body.light .arc-del-btn{color:rgba(0,0,0,.12)}
 
+    /* Cycle 55: weekly grade badge */
+    .grade-badge{display:inline-flex;align-items:center;border-radius:14px;padding:3px 10px;font-size:12px;font-weight:900;margin-left:6px;flex-shrink:0;font-family:"Dela Gothic One",sans-serif;transition:all .25s}
+    .grade-badge.grade-a{background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.3);color:var(--green)}
+    .grade-badge.grade-b{background:rgba(91,200,232,.12);border:1px solid rgba(91,200,232,.3);color:var(--sky)}
+    .grade-badge.grade-c{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);color:var(--gold)}
+    .grade-badge.grade-d{background:rgba(255,123,92,.1);border:1px solid rgba(255,123,92,.25);color:#FF7B5C}
+    .grade-badge.grade-f{background:rgba(232,53,74,.08);border:1px solid rgba(232,53,74,.2);color:var(--red)}
+    body.light .grade-badge.grade-a{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.35)}
+    body.light .grade-badge.grade-b{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.35)}
+    body.light .grade-badge.grade-c{background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.4)}
+    body.light .grade-badge.grade-d{background:rgba(255,123,92,.1);border-color:rgba(255,123,92,.3)}
+    body.light .grade-badge.grade-f{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.25)}
+    /* Cycle 55: quick note history in habit detail panel */
+    .hd-notes{margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.05)}
+    .hd-notes-ttl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+    .hd-note-item{display:flex;align-items:flex-start;gap:6px;padding:2px 0;font-size:10px;line-height:1.5}
+    .hd-note-date{color:var(--muted);flex-shrink:0;min-width:30px;font-variant-numeric:tabular-nums}
+    .hd-note-text{color:var(--sky);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    body.light .hd-notes{border-top-color:rgba(0,0,0,.06)}
+    body.light .hd-note-text{color:#1e8aab}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1074,6 +1095,7 @@
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
+    <span class="grade-badge" id="grade-badge" style="display:none"></span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -2252,6 +2274,7 @@ function render(){
   renderPaceBox();
   renderChart();
   renderWeekComparison();
+  renderWeekGrade();
   renderDayOfWeekChart();
   renderMonthlyTrend();
   renderWeekMatrix(); // Cycle 48
@@ -2614,6 +2637,25 @@ function renderWeekComparison(){
   if(diff>0){el.textContent=`↑ 先週比+${diff}%`;el.className='week-cmp up';}
   else if(diff<0){el.textContent=`↓ 先週比${diff}%`;el.className='week-cmp down';}
   else{el.textContent='= 先週と同じ';el.className='week-cmp same';}
+}
+
+// ── Cycle 55: weekly grade badge ──
+function getWeekGrade(){
+  const r=Math.round(weekAvg(0)*100);
+  if(r>=90)return{label:'A',cls:'grade-a'};
+  if(r>=75)return{label:'B',cls:'grade-b'};
+  if(r>=55)return{label:'C',cls:'grade-c'};
+  if(r>=35)return{label:'D',cls:'grade-d'};
+  return{label:'F',cls:'grade-f'};
+}
+function renderWeekGrade(){
+  const el=document.getElementById('grade-badge');
+  if(!el)return;
+  if(!habits.length){el.style.display='none';return;}
+  const g=getWeekGrade();
+  el.textContent='今週 '+g.label;
+  el.className='grade-badge '+g.cls;
+  el.style.display='';
 }
 
 // ── celebration (cycle 2 新機能) ──
@@ -3016,7 +3058,18 @@ function _habitDetailHtml(id){
   let cnt30=0;
   for(let i=0;i<30;i++)if((completions[dateAgo(i)]||{})[id])cnt30++;
   const rate30=Math.round(cnt30/30*100);
-  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div></div></div>`;
+  const noteItems=[];
+  for(let i=0;i<14;i++){
+    const ds=dateAgo(i);
+    const note=(completions[ds]||{})[id+'_note'];
+    if(note&&note.trim()){
+      const d=daysAgo(i);
+      const lbl=i===0?'今日':i===1?'昨日':`${d.getMonth()+1}/${d.getDate()}`;
+      noteItems.push(`<div class="hd-note-item"><span class="hd-note-date">${lbl}</span><span class="hd-note-text">${esc(note.trim())}</span></div>`);
+    }
+  }
+  const noteSec=noteItems.length?`<div class="hd-notes"><div class="hd-notes-ttl">メモ履歴</div>${noteItems.join('')}</div>`:'';
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div></div>${noteSec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
