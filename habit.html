@@ -1048,6 +1048,14 @@
     body.light .font-size-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
     body.light .font-size-btn.active{background:rgba(245,200,66,.2);color:var(--gold-d)}
 
+    /* Cycle 60: next habit suggestion toast */
+    .next-habit-toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(12px);background:rgba(13,17,23,.96);border:1px solid rgba(91,200,232,.3);color:var(--sky);font-size:12px;font-weight:700;padding:8px 14px;border-radius:20px;z-index:420;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(0,0,0,.4);display:none}
+    .next-habit-toast.show{opacity:1;transform:translateX(-50%) translateY(0);display:block}
+    body.light .next-habit-toast{background:rgba(240,242,245,.97);color:#1e8aab;border-color:rgba(91,200,232,.35)}
+    /* Cycle 60: night deadline risk pulse */
+    @keyframes nightRisk{0%,100%{box-shadow:0 0 0 0 rgba(232,53,74,0)}50%{box-shadow:0 0 0 3px rgba(232,53,74,.35)}}
+    body.night-mode .habit.night-risk:not(.done):not(.paused):not(.skipped-today){animation:nightRisk 2s ease-in-out infinite}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1086,6 +1094,7 @@
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 <div class="combo-toast" id="combo-toast"></div>
+<div class="next-habit-toast" id="next-habit-toast"></div>
 <!-- Cycle 53: habit focus timer bar -->
 <div class="timer-bar" id="timer-bar">
   <span class="timer-habit-name" id="timer-habit-name"></span>
@@ -2167,7 +2176,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const chkHtml=isCounter
     ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 60: night-risk pulse for habits with streak ≥ 3 after 22:00
+  const _hr=new Date().getHours();
+  const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2490,6 +2502,7 @@ function render(){
   updateHeaderBadge();
   updateDayOffBtn();
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
+  updateNightMode(); // Cycle 60: night mode class for pulse animation
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -2519,6 +2532,7 @@ function toggle(id,evt){
     playTick();vib(50);checkHabitMilestone(id);triggerCombo();
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
+    showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
   }
   saveC();
   render();
@@ -2531,6 +2545,25 @@ function toggle(id,evt){
   }else if(todayRate()<100){
     celebrated=false;
   }
+}
+
+// ── Cycle 60: Next habit suggestion toast ──
+let _nextToastTimer=null;
+function showNextHabitSuggestion(completedId){
+  const el=document.getElementById('next-habit-toast');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const next=habits.find(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id)&&!dc[h.id]&&h.id!==completedId);
+  if(!next)return;
+  el.textContent='次: '+(next.emoji?next.emoji+' ':'')+next.name;
+  el.style.display='block';
+  requestAnimationFrame(()=>el.classList.add('show'));
+  clearTimeout(_nextToastTimer);
+  _nextToastTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>{el.style.display='none';},300);},2500);
+}
+// ── Cycle 60: Night mode class for pulse animation ──
+function updateNightMode(){
+  document.body.classList.toggle('night-mode',new Date().getHours()>=22);
 }
 
 // ── Cycle 10: Undo delete snackbar ──
