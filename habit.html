@@ -1032,6 +1032,21 @@
     body.light .weekly-goal-row{border-bottom-color:rgba(0,0,0,.07)}
     /* Cycle 58: avg completion time stat in habit detail panel */
     .hd-stat-time{font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+    /* Cycle 59: week-over-week trend badge */
+    .trend-badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.04em}
+    .trend-badge.up{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.25)}
+    .trend-badge.down{color:var(--red);background:rgba(232,53,74,.08);border:1px solid rgba(232,53,74,.15)}
+    body.light .trend-badge.up{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.3)}
+    body.light .trend-badge.down{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.2)}
+    body.compact .trend-badge{display:none}
+    /* Cycle 59: font size accessibility toggle */
+    body.font-sm{font-size:13px}
+    body.font-lg{font-size:16px}
+    .font-size-btn{background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:pointer;font-size:11px;font-weight:700;padding:4px 8px;border-radius:8px;transition:all .15s;flex-shrink:0;font-family:"Zen Maru Gothic",sans-serif}
+    .font-size-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .font-size-btn.active{background:rgba(245,200,66,.15);border-color:var(--gold);color:var(--gold)}
+    body.light .font-size-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .font-size-btn.active{background:rgba(245,200,66,.2);color:var(--gold-d)}
 
     /* Cycle 46: print optimization */
     @media print{
@@ -1252,6 +1267,11 @@
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
     <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
     <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px" title="全カテゴリーを折りたたむ/展開（Zキー）">≡ 全折</button>
+    <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
+      <button class="font-size-btn" data-size="sm" onclick="_applyFontSize('sm',true)" title="小さいテキスト">A-</button>
+      <button class="font-size-btn" data-size="normal" onclick="_applyFontSize('normal',true)" title="標準テキスト">A</button>
+      <button class="font-size-btn" data-size="lg" onclick="_applyFontSize('lg',true)" title="大きいテキスト">A+</button>
+    </span>
   </div>
   <div class="search-row">
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
@@ -2099,6 +2119,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const fix30=habitFix30(h.id);
   const fixBadge=fix30>=24?`<span class="habit-fixed" title="過去30日で${fix30}日達成（定着済み）">🌟 定着</span>`:'';
+  const trend=habitTrend(h.id);
+  const trendBadge=trend!=='none'?`<span class="trend-badge ${trend}" title="${trend==='up'?'先週より好調↑':'先週より低調↓'}">${trend==='up'?'↑好調':'↓低調'}</span>`:'';
   const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
   let timeBadge='';
   if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);timeBadge=`<span class="done-time">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>`;}
@@ -2145,7 +2167,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const chkHtml=isCounter
     ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2646,6 +2668,19 @@ function saveHabit(){
   closeModal();
   celebrated=false;
   render();
+}
+
+// ── Cycle 59: font size accessibility ──
+function initFontSize(){
+  const s=localStorage.getItem('rh_font_size')||'normal';
+  _applyFontSize(s,false);
+}
+function _applyFontSize(s,save){
+  document.body.classList.remove('font-sm','font-lg');
+  if(s==='sm')document.body.classList.add('font-sm');
+  if(s==='lg')document.body.classList.add('font-lg');
+  if(save)localStorage.setItem('rh_font_size',s);
+  document.querySelectorAll('.font-size-btn').forEach(b=>b.classList.toggle('active',b.dataset.size===s));
 }
 
 // ── theme (cycle 7 + 17: system preference auto-detect) ──
@@ -3303,6 +3338,7 @@ function saveWeekly(val){
 // ── init ──
 load();
 initTheme();
+initFontSize();
 updateSoundBtn();
 initCompactView();
 initEmojiPresets();
@@ -3618,6 +3654,19 @@ function habitFix30(id){
   let done=0;
   for(let i=1;i<=30;i++){if(!!(completions[dateAgo(i)]||{})[id])done++;}
   return done;
+}
+// Cycle 59: week-over-week trend (requires ≥14 days since creation)
+function habitTrend(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h)return'none';
+  const age=Math.floor((Date.now()-new Date(h.createdAt).getTime())/86400000);
+  if(age<14)return'none';
+  let recent=0,prev=0;
+  for(let i=1;i<=7;i++)if(!!(completions[dateAgo(i)]||{})[id])recent++;
+  for(let i=8;i<=14;i++)if(!!(completions[dateAgo(i)]||{})[id])prev++;
+  if(recent>=prev+2)return'up';
+  if(recent<=prev-2)return'down';
+  return'none';
 }
 
 // ── Cycle 50: daily mood tracker ──
