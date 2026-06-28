@@ -900,9 +900,28 @@
     /* Cycle 51: glass sheen on dark mode habit cards */
     body:not(.light) .habit:not(.done):not(.paused){background-image:linear-gradient(180deg,rgba(255,255,255,.022) 0%,transparent 55%)}
 
+    /* Cycle 53: habit focus timer bar */
+    .timer-bar{position:sticky;top:57px;z-index:99;background:rgba(13,17,23,.95);border-bottom:1px solid rgba(91,200,232,.25);padding:8px 20px;display:none;align-items:center;gap:10px;backdrop-filter:blur(10px);overflow:hidden}
+    .timer-bar.active{display:flex}
+    .timer-habit-name{flex:1;font-size:12px;font-weight:700;color:var(--sky);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .timer-countdown{font-family:"Dela Gothic One",sans-serif;font-size:17px;color:var(--white);flex-shrink:0;font-variant-numeric:tabular-nums;min-width:46px;text-align:center;letter-spacing:.04em}
+    .timer-progress{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--sky),var(--green));transition:width 1s linear;pointer-events:none}
+    .timer-stop-btn,.timer-done-btn{border-radius:10px;font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;flex-shrink:0;transition:all .15s}
+    .timer-stop-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted)}
+    .timer-stop-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .timer-done-btn{background:var(--green);border:none;color:var(--dark);display:none}
+    .timer-done-btn.show{display:block}
+    .timer-btn{background:none;border:none;color:rgba(255,255,255,.22);cursor:pointer;font-size:11px;padding:3px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .timer-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
+    body.light .timer-bar{background:rgba(240,242,245,.96);border-bottom-color:rgba(91,200,232,.3)}
+    body.light .timer-countdown{color:#1a1a2e}
+    body.light .timer-stop-btn{border-color:rgba(0,0,0,.15);color:rgba(0,0,0,.5)}
+    body.light .timer-stop-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.compact .timer-btn{display:none}
+
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
@@ -938,6 +957,14 @@
   <div class="hdr-date" id="hdr-date"></div>
 </header>
 <div class="combo-toast" id="combo-toast"></div>
+<!-- Cycle 53: habit focus timer bar -->
+<div class="timer-bar" id="timer-bar">
+  <span class="timer-habit-name" id="timer-habit-name"></span>
+  <span class="timer-countdown" id="timer-countdown">25:00</span>
+  <button class="timer-stop-btn" onclick="stopTimer()">■ 中止</button>
+  <button class="timer-done-btn" id="timer-done-btn" onclick="timerComplete()">✓ 完了</button>
+  <div class="timer-progress" id="timer-progress"></div>
+</div>
 
 <div class="wrap">
   <div class="stats">
@@ -1890,13 +1917,15 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const quickNoteHtml=qNote?`<span class="habit-quick-note">${esc(qNote)}</span>`:'';
   // Cycle 30: habit detail panel
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
+  // Cycle 53: focus timer button
+  const timerBtn=!isDone&&!isPaused&&!isWeekendOff?`<button class="timer-btn" onclick="event.stopPropagation();startTimer('${h.id}')" title="${h.duration?h.duration+'分タイマー':'25分タイマー（ポモドーロ）'}" aria-label="タイマー開始">▶</button>`:'';
   // Cycle 49: duplicate habit button
   const copyBtnHtml=`<button class="copy-btn" onclick="event.stopPropagation();copyHabit('${h.id}')" title="この習慣を複製" aria-label="複製">📋</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
   const chkHtml=isCounter
     ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${copyBtnHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2086,7 +2115,9 @@ function renderPaceBox(){
   const msg=remaining===0?'今日の習慣完了！🎉':remaining===1?'あと1件で全完了！':hoursLeft<2?`急いで！残り${remaining}件`:'ペース継続中';
   const remMins=remaining>0?active.filter(h=>!dc[h.id]&&h.duration>=1).reduce((s,h)=>s+h.duration,0):0;
   const remEstStr=remMins>0?(remMins>=60?`${Math.floor(remMins/60)}h${remMins%60>0?String(remMins%60).padStart(2,'0')+'m':''}`:remMins+'m'):'';
-  const estHtml=remEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--muted)">${remEstStr}</span><span class="pace-lbl">残り推定</span></div>`:'';
+  let etaHtml='';
+  if(remMins>0){const ed=new Date(now.getTime()+remMins*60000);etaHtml=`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--sky);font-size:14px">${String(ed.getHours()).padStart(2,'0')}:${String(ed.getMinutes()).padStart(2,'0')}</span><span class="pace-lbl">完了予測</span></div>`;}
+  const estHtml=remEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--muted)">${remEstStr}</span><span class="pace-lbl">残り推定</span></div>${etaHtml}`:'';
   el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${estHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
 }
 
@@ -3423,6 +3454,52 @@ function resetToday(){
   b.textContent=`🔄 ${doneCount}件のチェックをリセットしました`;
   b.classList.add('show');
   setTimeout(()=>{b.classList.remove('show');setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';},400);},2500);
+}
+// ── Cycle 53: habit focus timer ──
+let _timerHabitId=null,_timerTotal=0,_timerLeft=0,_timerInterval=null;
+function startTimer(id){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  if(_timerInterval){clearInterval(_timerInterval);_timerInterval=null;}
+  _timerHabitId=id;
+  _timerTotal=((h.duration>=1&&h.duration<=180)?h.duration:25)*60;
+  _timerLeft=_timerTotal;
+  _updateTimerUI();
+  document.getElementById('timer-bar').classList.add('active');
+  const nm=(h.emoji?h.emoji+' ':'')+h.name+(h.duration?` (${h.duration}分)`:' (25分)');
+  document.getElementById('timer-habit-name').textContent=nm;
+  document.getElementById('timer-done-btn').classList.remove('show');
+  document.getElementById('timer-progress').style.transition='none';
+  document.getElementById('timer-progress').style.width='0%';
+  setTimeout(()=>{const pr=document.getElementById('timer-progress');if(pr)pr.style.transition='width 1s linear';},50);
+  _timerInterval=setInterval(_timerTick,1000);
+  vib(30);
+}
+function _timerTick(){
+  if(_timerLeft<=1){_timerLeft=0;clearInterval(_timerInterval);_timerInterval=null;_updateTimerUI();_timerFinish();return;}
+  _timerLeft--;_updateTimerUI();
+}
+function _updateTimerUI(){
+  const m=Math.floor(_timerLeft/60),s=_timerLeft%60;
+  const cd=document.getElementById('timer-countdown');
+  const pr=document.getElementById('timer-progress');
+  if(cd)cd.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  if(pr&&_timerTotal>0)pr.style.width=((_timerTotal-_timerLeft)/_timerTotal*100)+'%';
+}
+function _timerFinish(){
+  const pr=document.getElementById('timer-progress');if(pr)pr.style.width='100%';
+  const done=document.getElementById('timer-done-btn');if(done)done.classList.add('show');
+  playTick();vib([80,40,180]);
+  const h=habits.find(x=>x.id===_timerHabitId);
+  if(h){const t=document.getElementById('milestone-toast');if(t){t.textContent=`⏰ ${h.name} タイマー完了！`;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}}
+}
+function timerComplete(){
+  if(_timerHabitId){const td=today();if(!(completions[td]||{})[_timerHabitId]){const h=habits.find(x=>x.id===_timerHabitId);if(h&&!h.paused)toggle(_timerHabitId,null);}}
+  stopTimer();
+}
+function stopTimer(){
+  if(_timerInterval){clearInterval(_timerInterval);_timerInterval=null;}
+  const bar=document.getElementById('timer-bar');if(bar)bar.classList.remove('active');
+  _timerHabitId=null;_timerLeft=0;_timerTotal=0;
 }
 </script>
 </body>
