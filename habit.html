@@ -1002,6 +1002,23 @@
     body.loaded .chart-box{animation:fadeInUp .3s ease .26s both}
     body.loaded .streak-row{animation:fadeInUp .3s ease .33s both}
 
+    /* Cycle 57: 30-day SVG line chart */
+    .lc-svg{width:100%;display:block;overflow:visible}
+    .lc-grid{stroke:rgba(255,255,255,.07);stroke-width:1}
+    body.light .lc-grid{stroke:rgba(0,0,0,.07)}
+    .lc-line{fill:none;stroke:var(--sky);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .lc-dot{fill:var(--sky);stroke:var(--dark2);stroke-width:1.5}
+    body.light .lc-dot{stroke:#f0f2f5}
+    .lc-dot-today{fill:var(--gold);stroke:var(--dark2);stroke-width:1.5}
+    body.light .lc-dot-today{stroke:#f0f2f5}
+    .lc-lbl{fill:rgba(255,255,255,.35);font-size:8px;font-family:"Zen Maru Gothic",sans-serif;text-anchor:middle}
+    body.light .lc-lbl{fill:rgba(0,0,0,.35)}
+    .lc-pct{fill:rgba(255,255,255,.28);font-size:7px;font-family:"Dela Gothic One",sans-serif;text-anchor:end}
+    body.light .lc-pct{fill:rgba(0,0,0,.28)}
+    /* Cycle 57: weekly time invested badge */
+    .week-time-badge{font-size:10px;color:var(--sky);font-weight:700;padding:2px 7px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:8px;flex-shrink:0;white-space:nowrap;letter-spacing:.04em}
+    body.light .week-time-badge{background:rgba(91,200,232,.08);border-color:rgba(91,200,232,.22)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1082,9 +1099,11 @@
     <div class="chart-hdr">
       <div class="chart-ttl" id="chart-ttl">📊 週間達成率</div>
       <span class="week-cmp same" id="week-cmp"></span>
+      <span class="week-time-badge" id="week-time-badge" style="display:none"></span>
       <div class="chart-toggle">
         <button class="toggle-btn active" data-view="week" onclick="setChartView('week')">週</button>
         <button class="toggle-btn" data-view="month" onclick="setChartView('month')">月</button>
+        <button class="toggle-btn" data-view="line" onclick="setChartView('line')">折線</button>
       </div>
     </div>
     <div id="chart"></div>
@@ -1928,7 +1947,9 @@ function setChartView(v){
   chartView=v;
   document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
   const ttl=document.getElementById('chart-ttl');
-  if(ttl)ttl.textContent=v==='week'?'📊 週間達成率':'📅 過去30日 ヒートマップ';
+  if(ttl)ttl.textContent=v==='week'?'📊 週間達成率':v==='line'?'📈 30日 達成推移':'📅 過去30日 ヒートマップ';
+  const badge=document.getElementById('week-time-badge');
+  if(badge)badge.style.display=v==='line'?'':'none';
   renderChart();
 }
 
@@ -1945,6 +1966,9 @@ function renderChart(){
       col.innerHTML=`<div class="bar-wrap"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%" title="${pct}%"></div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
       c.appendChild(col);
     }
+  }else if(chartView==='line'){
+    c.className='';
+    renderLineChart(c);
   }else{
     c.className='heatmap';
     for(let i=29;i>=0;i--){
@@ -1958,6 +1982,88 @@ function renderChart(){
       c.appendChild(cell);
     }
   }
+}
+
+// Cycle 57: SVG 30-day line chart
+function renderLineChart(c){
+  const W=c.parentElement?c.parentElement.clientWidth||320:320;
+  const H=120,PAD_L=28,PAD_R=8,PAD_T=10,PAD_B=20;
+  const iW=W-PAD_L-PAD_R,iH=H-PAD_T-PAD_B;
+  const N=30;
+  const rates=[];
+  for(let i=N-1;i>=0;i--)rates.push(dayRate(dateAgo(i)));
+  const ns=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  ns.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  ns.setAttribute('class','lc-svg');
+  // grid lines at 0%, 50%, 100%
+  [0,.5,1].forEach(pct=>{
+    const y=PAD_T+iH*(1-pct);
+    const gl=document.createElementNS('http://www.w3.org/2000/svg','line');
+    gl.setAttribute('class','lc-grid');
+    gl.setAttribute('x1',PAD_L);gl.setAttribute('x2',PAD_L+iW);
+    gl.setAttribute('y1',y);gl.setAttribute('y2',y);
+    ns.appendChild(gl);
+    const pctLbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    pctLbl.setAttribute('class','lc-pct');
+    pctLbl.setAttribute('x',PAD_L-2);pctLbl.setAttribute('y',y+3);
+    pctLbl.textContent=`${Math.round(pct*100)}`;
+    ns.appendChild(pctLbl);
+  });
+  // build polyline points
+  const pts=rates.map((r,i)=>{
+    const x=PAD_L+i/(N-1)*iW;
+    const y=PAD_T+iH*(1-r);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  pl.setAttribute('class','lc-line');
+  pl.setAttribute('points',pts.join(' '));
+  ns.appendChild(pl);
+  // dots + day labels every 5 days
+  rates.forEach((r,i)=>{
+    const x=PAD_L+i/(N-1)*iW;
+    const y=PAD_T+iH*(1-r);
+    const isToday=i===N-1;
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('class',isToday?'lc-dot-today':'lc-dot');
+    dot.setAttribute('cx',x.toFixed(1));dot.setAttribute('cy',y.toFixed(1));
+    dot.setAttribute('r',isToday?4:2.5);
+    const d=daysAgo(N-1-i);
+    dot.setAttribute('title',`${d.getMonth()+1}/${d.getDate()} ${Math.round(r*100)}%`);
+    ns.appendChild(dot);
+    if(i%(Math.floor(N/6))===0||isToday){
+      const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+      lbl.setAttribute('class','lc-lbl');
+      lbl.setAttribute('x',x.toFixed(1));lbl.setAttribute('y',H-4);
+      lbl.textContent=isToday?'今日':`${d.getMonth()+1}/${d.getDate()}`;
+      ns.appendChild(lbl);
+    }
+  });
+  c.appendChild(ns);
+  renderWeekTimeBadge();
+}
+
+// Cycle 57: weekly time invested badge
+function weeklyTimeInvested(){
+  const habits=getHabits();
+  let totalMin=0;
+  for(let i=6;i>=0;i--){
+    const ds=dateAgo(i);
+    habits.forEach(h=>{
+      if(h.duration&&isDone(h.id,ds))totalMin+=parseInt(h.duration)||0;
+    });
+  }
+  return totalMin;
+}
+
+function renderWeekTimeBadge(){
+  const badge=document.getElementById('week-time-badge');
+  if(!badge)return;
+  const min=weeklyTimeInvested();
+  if(min<=0){badge.style.display='none';return;}
+  const h=Math.floor(min/60),m=min%60;
+  badge.textContent=`⏱ 今週 ${h>0?h+'h ':''}${m>0?m+'m':''}`;
+  if(chartView==='line')badge.style.display='';
 }
 
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
@@ -2320,6 +2426,7 @@ function render(){
   renderPaceBox();
   renderChart();
   renderWeekComparison();
+  renderWeekTimeBadge();
   renderWeekGrade();
   renderDayOfWeekChart();
   renderMonthlyTrend();
