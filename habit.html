@@ -919,9 +919,35 @@
     body.light .timer-stop-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
     body.compact .timer-btn{display:none}
 
+    /* Cycle 54: habit archive */
+    .archive-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .archive-btn:hover{color:var(--gold);background:rgba(245,200,66,.1)}
+    body.light .archive-btn{color:rgba(0,0,0,.15)}
+    body.compact .archive-btn{display:none}
+    .archived-section{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-top:8px;transition:background .25s,border-color .25s}
+    .archived-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .archived-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);flex:1}
+    .archived-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
+    .archived-chev.open{transform:rotate(180deg)}
+    .archived-body{padding-top:8px;display:none}
+    .archived-body.open{display:block}
+    .archived-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .archived-item:last-child{border-bottom:none;padding-bottom:0}
+    .archived-name{flex:1;font-size:13px;font-weight:700;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .archived-cat{font-size:9px;color:var(--muted);opacity:.6;flex-shrink:0}
+    .restore-btn{background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:pointer;font-size:10px;padding:3px 8px;border-radius:8px;transition:all .15s;flex-shrink:0;font-family:"Zen Maru Gothic",sans-serif;font-weight:700;line-height:1.5}
+    .restore-btn:hover{color:var(--green);border-color:rgba(76,175,125,.4);background:rgba(76,175,125,.1)}
+    .arc-del-btn{background:none;border:none;color:rgba(255,255,255,.14);cursor:pointer;font-size:15px;padding:3px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .arc-del-btn:hover{color:var(--red);background:rgba(232,53,74,.1)}
+    body.light .archived-section{border-color:rgba(0,0,0,.08)}
+    body.light .archived-item{border-bottom-color:rgba(0,0,0,.05)}
+    body.light .restore-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.4)}
+    body.light .restore-btn:hover{border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.08);color:var(--green)}
+    body.light .arc-del-btn{color:rgba(0,0,0,.12)}
+
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
@@ -1371,7 +1397,7 @@ function spawnBurst(x,y,count=8){
 // ── Cycle 28: dynamic document title ──
 function updateDocTitle(){
   const td=today();
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id));
   if(!active.length){document.title='習慣トラッカー | RAINYBRAIN';return;}
   const dc=completions[td]||{};
   const done=active.filter(h=>dc[h.id]).length,total=active.length;
@@ -1384,7 +1410,7 @@ function updateHeaderBadge(){
   const el=document.getElementById('hdr-progress');
   if(!el)return;
   const td=today();
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id));
   if(!active.length){el.style.display='none';_prevDone=-1;return;}
   el.style.display='';
   const dc=completions[td]||{};
@@ -1558,7 +1584,7 @@ function shareDailyCard(){
   const td=today(),dc=completions[td]||{};
   const now=new Date();
   const dateLabel=`${now.getMonth()+1}/${now.getDate()}（${DAYS[now.getDay()]}）`;
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td));
   if(!active.length){
     const b=document.getElementById('banner');
     b.textContent='📭 習慣がありません';b.classList.add('show');
@@ -1589,7 +1615,7 @@ function shareDailyCard(){
 // Cycle 47: rawDayRate = original logic without shield check
 function rawDayRate(dateStr){
   if(isDayOff(dateStr))return 1;
-  const allActive=habits.filter(h=>!h.paused&&isScheduled(h,dateStr));
+  const allActive=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,dateStr));
   if(!allActive.length)return 0;
   const skipIds=dateStr===today()?getSkipIds():[];
   const relevant=allActive.filter(h=>!skipIds.includes(h.id));
@@ -1921,11 +1947,13 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const timerBtn=!isDone&&!isPaused&&!isWeekendOff?`<button class="timer-btn" onclick="event.stopPropagation();startTimer('${h.id}')" title="${h.duration?h.duration+'分タイマー':'25分タイマー（ポモドーロ）'}" aria-label="タイマー開始">▶</button>`:'';
   // Cycle 49: duplicate habit button
   const copyBtnHtml=`<button class="copy-btn" onclick="event.stopPropagation();copyHabit('${h.id}')" title="この習慣を複製" aria-label="複製">📋</button>`;
+  // Cycle 54: archive button
+  const archiveBtnHtml=`<button class="archive-btn" onclick="event.stopPropagation();archiveHabit('${h.id}')" title="アーカイブ（リストから非表示、データは保持）" aria-label="アーカイブ">📦</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
   const chkHtml=isCounter
     ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -1934,6 +1962,7 @@ function renderList(){
   const focusIds=getFocusIds();
   let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
   if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
+  list=list.filter(h=>!h.archived);
 
   if(!list.length){
     const msg=searchQuery?`「${esc(searchQuery)}」に一致する習慣はありません`:'＋ボタンで習慣を追加しよう！';
@@ -1976,6 +2005,8 @@ function renderList(){
     ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
     html+='</div></div>';
   }
+  const archivedHabits=habits.filter(h=>h.archived);
+  if(archivedHabits.length){const arChev=_archivedOpen?'open':'';html+=`<div class="archived-section"><div class="archived-hdr" onclick="toggleArchivedSection()"><span class="archived-ttl">📦 アーカイブ済み（${archivedHabits.length}件）</span><span class="archived-chev${arChev?' '+arChev:''}" id="archived-chev">▼</span></div><div class="archived-body${arChev?' '+arChev:''}" id="archived-body">`+archivedHabits.map(h=>`<div class="archived-item">${h.emoji?`<span>${h.emoji}</span>`:''}<span class="archived-name">${esc(h.name)}</span><span class="archived-cat">${h.category}</span><button class="restore-btn" onclick="unarchiveHabit('${h.id}')">↩ 復元</button><button class="arc-del-btn" onclick="del('${h.id}')" title="完全削除">×</button></div>`).join('')+`</div></div>`;}
   el.innerHTML=html;
   if(_newHabitId){
     const nc=el.querySelector(`.habit[data-id="${_newHabitId}"]`);
@@ -2102,7 +2133,7 @@ function renderPaceBox(){
     return;
   }
   const dc=completions[td]||{};
-  const active=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id));
   if(!active.length){el.style.display='none';return;}
   const remaining=active.filter(h=>!dc[h.id]).length;
   const now=new Date();
@@ -2134,7 +2165,7 @@ function renderWeekMatrix(){
   const el=document.getElementById('wm-box');
   const tw=document.getElementById('wm-table-wrap');
   if(!el||!tw)return;
-  const activeH=habits.filter(h=>!h.paused);
+  const activeH=habits.filter(h=>!h.paused&&!h.archived);
   if(!activeH.length){el.style.display='none';return;}
   el.style.display='';
   // Build this week Mon→today
@@ -2250,7 +2281,7 @@ function updateFabBadge(){
   const el=document.getElementById('fab-badge');
   if(!el)return;
   const td=today(),dc=completions[td]||{};
-  const remaining=habits.filter(h=>!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id)&&!dc[h.id]).length;
+  const remaining=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id)&&!dc[h.id]).length;
   el.textContent=remaining||'';
   el.classList.toggle('zero',remaining===0);
 }
@@ -3323,6 +3354,12 @@ function toggleWidgetViz(key){
   localStorage.setItem('rh_widgets',JSON.stringify(v));
   _renderWsetList();applyWidgetViz();
 }
+
+// ── Cycle 54: habit archive ──
+let _archivedOpen=false;
+function archiveHabit(id){const h=habits.find(x=>x.id===id);if(!h)return;h.archived=true;saveH();render();}
+function unarchiveHabit(id){const h=habits.find(x=>x.id===id);if(!h)return;delete h.archived;saveH();render();}
+function toggleArchivedSection(){_archivedOpen=!_archivedOpen;document.getElementById('archived-body')?.classList.toggle('open',_archivedOpen);document.getElementById('archived-chev')?.classList.toggle('open',_archivedOpen);}
 
 // ── Cycle 49: habit duplicate ──
 function copyHabit(id){

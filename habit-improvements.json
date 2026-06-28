@@ -718,6 +718,25 @@
         "deployedAt": "2026-06-28T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 54,
+      "version": "v2.54",
+      "timestamp": "2026-06-28T01:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣アーカイブ機能",
+          "description": "各習慣カードに📦ボタンを追加。押すと習慣をアーカイブ状態に設定し、メインリストから非表示にしつつLocalStorageのデータは完全保持。リスト下部に折りたたみ式「📦 アーカイブ済み」セクションを表示し、↩復元ボタンで即時復元・×ボタンで完全削除が可能。rawDayRate/updateDocTitle/updateHeaderBadge/updateFabBadge/shareDailyCard/renderPaceBox/renderWeekMatrixの各関数にも!h.archivedフィルターを追加し、アーカイブ済み習慣が統計・進捗・バッジに影響しないよう対応。"
+        }
+      ],
+      "notes": "Cycle 54は習慣アーカイブ機能を実装。「一時停止」(paused)が一時的な休止なのに対し、「アーカイブ」はやめたい習慣を記録を残したまま退場させる機能。habit.archivedフラグをLocalStorageに保存し、メインリストのrenderList()でフィルター除外。アーカイブセクションはデフォルト折りたたみで邪魔にならず、必要時に展開可能。コンパクトモードではアーカイブボタン非表示。印刷時もセクション全体を非表示。既存データへの影響なし・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-28T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
