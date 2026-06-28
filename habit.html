@@ -1019,6 +1019,20 @@
     .week-time-badge{font-size:10px;color:var(--sky);font-weight:700;padding:2px 7px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:8px;flex-shrink:0;white-space:nowrap;letter-spacing:.04em}
     body.light .week-time-badge{background:rgba(91,200,232,.08);border-color:rgba(91,200,232,.22)}
 
+    /* Cycle 58: weekly goal input in weekly-box */
+    .weekly-goal-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .weekly-goal-lbl{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.08em;flex-shrink:0}
+    .weekly-goal-inp{flex:1;background:none;border:none;border-bottom:1px solid rgba(255,255,255,.1);color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;padding:3px 0;outline:none;transition:border-color .15s}
+    .weekly-goal-inp:focus{border-bottom-color:rgba(245,200,66,.45)}
+    .weekly-goal-inp::placeholder{color:var(--muted)}
+    body.light .weekly-goal-lbl{color:var(--gold-d)}
+    body.light .weekly-goal-inp{color:#1a1a2e;border-bottom-color:rgba(0,0,0,.1)}
+    body.light .weekly-goal-inp::placeholder{color:rgba(0,0,0,.35)}
+    body.light .weekly-goal-inp:focus{border-bottom-color:rgba(212,160,23,.5)}
+    body.light .weekly-goal-row{border-bottom-color:rgba(0,0,0,.07)}
+    /* Cycle 58: avg completion time stat in habit detail panel */
+    .hd-stat-time{font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1116,7 +1130,11 @@
       <span class="weekly-chev" id="weekly-chev">▼</span>
     </div>
     <div class="weekly-body" id="weekly-body">
-      <textarea class="weekly-ta" id="weekly-ta" rows="3" placeholder="今週の気づき・改善点・感謝など..." oninput="saveWeekly(this.value)" maxlength="200"></textarea>
+      <div class="weekly-goal-row">
+        <span class="weekly-goal-lbl">🎯 今週の目標</span>
+        <input class="weekly-goal-inp" id="weekly-goal-inp" type="text" placeholder="今週やり遂げたいことを一言..." maxlength="50" oninput="saveWeeklyGoal(this.value)">
+      </div>
+      <textarea class="weekly-ta" id="weekly-ta" rows="3" placeholder="今週の気づき・改善点・感謝など..." oninput="saveWeekly(this.value)" maxlength="200" style="margin-top:8px"></textarea>
     </div>
   </div>
 
@@ -3222,7 +3240,12 @@ function _habitDetailHtml(id){
     }
   }
   const noteSec=noteItems.length?`<div class="hd-notes"><div class="hd-notes-ttl">メモ履歴</div>${noteItems.join('')}</div>`:'';
-  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div></div>${noteSec}</div>`;
+  // Cycle 58: average completion time from ISO timestamps (past 60 days)
+  const tsMins=[];
+  for(let i=0;i<60;i++){const ds=dateAgo(i);const v=(completions[ds]||{})[id];if(v&&typeof v==='string'&&v.length>4){const t=new Date(v);if(!isNaN(t.getTime()))tsMins.push(t.getHours()*60+t.getMinutes());}}
+  let avgTimeStat='';
+  if(tsMins.length>=5){const avg=Math.round(tsMins.reduce((a,b)=>a+b,0)/tsMins.length);const hh=String(Math.floor(avg/60)).padStart(2,'0');const mm=String(avg%60).padStart(2,'0');avgTimeStat=`<div class="hd-stat"><div class="hd-stat-val hd-stat-time">${hh}:${mm}</div><div class="hd-stat-lbl">平均完了時刻</div></div>`;}
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${noteSec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
@@ -3245,12 +3268,23 @@ function toggleHabitDetail(id,e){
 // ── Cycle 31: weekly reflection note ──
 function _weeklyKey(){const now=new Date();const m=new Date(now);m.setDate(m.getDate()-((m.getDay()+6)%7));return 'rh_week_'+toStr(m);}
 let _weeklyOpen=false;
+function _weeklyGoalKey(){return 'rh_wgoal_'+(_weeklyKey().split('rh_week_')[1]||'');}
+function initWeeklyGoal(){
+  const val=localStorage.getItem(_weeklyGoalKey())||'';
+  const inp=document.getElementById('weekly-goal-inp');
+  if(inp)inp.value=val;
+}
+function saveWeeklyGoal(val){
+  if(val.trim())localStorage.setItem(_weeklyGoalKey(),val.trim());
+  else localStorage.removeItem(_weeklyGoalKey());
+}
 function initWeekly(){
   const val=localStorage.getItem(_weeklyKey())||'';
   const ta=document.getElementById('weekly-ta');
   const prev=document.getElementById('weekly-preview');
   if(ta)ta.value=val;
   if(prev){prev.textContent=val||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val);}
+  initWeeklyGoal(); // Cycle 58
 }
 function toggleWeekly(){
   _weeklyOpen=!_weeklyOpen;
