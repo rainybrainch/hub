@@ -761,6 +761,30 @@
         "deployedAt": "2026-06-28T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 56,
+      "version": "v2.56",
+      "timestamp": "2026-06-28T03:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "全習慣 統計一覧モーダル",
+          "description": "累計完了数カード（s-total）をクリッカブルにし、タップ／Sキーで全習慣の統計一覧モーダルを開けるようにした。モーダルには各習慣の30日達成率（カラーバー付き）、現在ストリーク、累計完了数を表形式で表示。ESCキーまたはオーバーレイタップで閉じる。アーカイブ済み習慣は除外。パーセンテージに応じてgreen/gold/redで色分け表示。"
+        },
+        {
+          "type": "enhancement",
+          "title": "ページロード フェードインアニメーション",
+          "description": "初期化完了後にbody.loadedクラスを付与し、統計カード3枚・週間チャート・ストリーク行を50ms間隔でfadeInUp（translateY+opacity）アニメーションで順番に表示。既存のCSS @keyframes fadeInUpを定義し、nth-child指定で各要素に異なるdelayを設定。ページの起動感を向上させ、コンテンツが一度に表示される重さを軽減。"
+        }
+      ],
+      "notes": "累計完了カードを統計モーダルのトリガーとして再利用することで、ヘッダーに新しいボタンを追加せずに済んだ。ページロードアニメーションはbody.loadedクラスによるCSS制御で実装し、JavaScriptのオーバーヘッドを最小化。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-28T03:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

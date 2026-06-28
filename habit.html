@@ -966,6 +966,42 @@
     body.light .hd-notes{border-top-color:rgba(0,0,0,.06)}
     body.light .hd-note-text{color:#1e8aab}
 
+    /* Cycle 56: all-habits stats overview modal */
+    .stats-ovl{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .stats-ovl.open{opacity:1;pointer-events:auto}
+    .stats-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:20px;width:calc(100% - 32px);max-width:480px;transform:scale(.94);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:84vh;overflow-y:auto}
+    .stats-ovl.open .stats-modal{transform:scale(1)}
+    .stats-modal-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px;margin-bottom:14px}
+    .smt{width:100%;border-collapse:collapse}
+    .smt th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:4px 5px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .smt td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;font-size:11px}
+    .smt tr:last-child td{border-bottom:none}
+    .smt-name-cell{font-weight:700;display:flex;align-items:center;gap:5px;max-width:150px}
+    .smt-name-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .smt-pct{font-family:"Dela Gothic One",sans-serif;font-size:12px;text-align:right;white-space:nowrap}
+    .smt-pct.hi{color:var(--green)}.smt-pct.md{color:var(--gold)}.smt-pct.lo{color:var(--red)}
+    .smt-bar{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:4px}
+    .smt-bar-f{height:100%;border-radius:2px;transition:width .5s}
+    .smov-close{margin-top:14px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+    .smov-close:hover{background:rgba(255,255,255,.12)}
+    body.light .stats-modal{border-color:rgba(0,0,0,.1)}
+    body.light .smt th{border-bottom-color:rgba(0,0,0,.08);color:rgba(0,0,0,.4)}
+    body.light .smt td{border-bottom-color:rgba(0,0,0,.05)}
+    body.light .smt-bar{background:rgba(0,0,0,.1)}
+    body.light .smov-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .smov-close:hover{background:rgba(0,0,0,.1)}
+    /* Cycle 56: clickable cumulative stat card */
+    .stat.clickable{cursor:pointer}
+    .stat.clickable:hover{background:rgba(255,255,255,.04);transform:scale(1.03)}
+    body.light .stat.clickable:hover{background:rgba(0,0,0,.04)}
+    /* Cycle 56: page load stagger fade-in */
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    body.loaded .stats>.stat:nth-child(1){animation:fadeInUp .3s ease .05s both}
+    body.loaded .stats>.stat:nth-child(2){animation:fadeInUp .3s ease .12s both}
+    body.loaded .stats>.stat:nth-child(3){animation:fadeInUp .3s ease .19s both}
+    body.loaded .chart-box{animation:fadeInUp .3s ease .26s both}
+    body.loaded .streak-row{animation:fadeInUp .3s ease .33s both}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1030,9 +1066,9 @@
       <div class="stat-lbl">🔥 連続記録</div>
       <div class="stat-sub" id="s-best">最高: 0日</div>
     </div>
-    <div class="stat">
+    <div class="stat clickable" onclick="openStatsModal()" title="全習慣の統計一覧（Sキー）">
       <div class="stat-val green" id="s-total">0</div>
-      <div class="stat-lbl">累計完了</div>
+      <div class="stat-lbl">累計完了 📊</div>
     </div>
   </div>
 
@@ -1280,6 +1316,7 @@
       <tr><td><kbd class="kbdkey">/</kbd> または <kbd class="kbdkey">F</kbd></td><td class="kbd-desc">習慣を検索</td></tr>
       <tr><td><kbd class="kbdkey">C</kbd></td><td class="kbd-desc">コンパクトビュー切替</td></tr>
       <tr><td><kbd class="kbdkey">?</kbd></td><td class="kbd-desc">このヘルプを表示</td></tr>
+      <tr><td><kbd class="kbdkey">S</kbd></td><td class="kbd-desc">全習慣 統計一覧を表示</td></tr>
       <tr><td><kbd class="kbdkey">Z</kbd></td><td class="kbd-desc">全カテゴリーを折りたたむ / 展開</td></tr>
       <tr><td><kbd class="kbdkey">Y</kbd></td><td class="kbd-desc">昨日の習慣記録を修正</td></tr>
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
@@ -1305,6 +1342,15 @@
     <div class="yfix-ttl" id="yfix-ttl">📅 昨日の習慣</div>
     <div id="yfix-list"></div>
     <button class="yfix-close" onclick="closeYFix()">閉じる（ESCでも）</button>
+  </div>
+</div>
+
+<!-- Cycle 56: all-habits stats overview modal -->
+<div class="stats-ovl" id="stats-ovl" onclick="if(event.target===this)closeStatsModal()">
+  <div class="stats-modal">
+    <div class="stats-modal-ttl">📊 全習慣 統計一覧</div>
+    <div id="stats-ovl-wrap"></div>
+    <button class="smov-close" onclick="closeStatsModal()">閉じる（ESCでも）</button>
   </div>
 </div>
 
@@ -3128,6 +3174,7 @@ initModalSwipe();
 (()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
 toggleTough(false); // Cycle 47: init tough buttons
 render();
+document.body.classList.add('loaded');
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
 function syncThemeColor(){
@@ -3220,6 +3267,7 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
     if(document.getElementById('wset-ovl')?.classList.contains('open')){closeWidgetSettings();return;}
     if(document.getElementById('yfix-ovl')?.classList.contains('open')){closeYFix();return;}
+    if(document.getElementById('stats-ovl')?.classList.contains('open')){closeStatsModal();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
     return;
@@ -3233,6 +3281,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='/'||e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('search-inp')?.focus();}
   else if(e.key==='c'||e.key==='C')toggleCompactView();
   else if(e.key==='?'||e.key==='？')openKbdHelp();
+  else if(e.key==='s'||e.key==='S')openStatsModal();
   else if(e.key==='z'||e.key==='Z')toggleCollapseAll();
   else if(e.key==='y'||e.key==='Y')openYFix();
   else if(e.key==='d'||e.key==='D'){
@@ -3590,6 +3639,35 @@ function stopTimer(){
   if(_timerInterval){clearInterval(_timerInterval);_timerInterval=null;}
   const bar=document.getElementById('timer-bar');if(bar)bar.classList.remove('active');
   _timerHabitId=null;_timerLeft=0;_timerTotal=0;
+}
+
+// ── Cycle 56: all-habits stats overview modal ──
+function openStatsModal(){
+  const el=document.getElementById('stats-ovl');if(!el)return;
+  _renderStatsOvl();el.classList.add('open');
+}
+function closeStatsModal(){document.getElementById('stats-ovl')?.classList.remove('open');}
+function _renderStatsOvl(){
+  const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
+  const all=habits.filter(h=>!h.archived);
+  if(!all.length){wrap.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px">習慣がありません</p>';return;}
+  const rows=all.map(h=>{
+    const pct30=Math.round(habitFix30(h.id)/30*100);
+    const strk=habitStreak(h.id);
+    const total=habitTotalCount(h.id);
+    const cc=h.color||(CAT_COLORS[h.category]||'#888');
+    const cls=pct30>=80?'hi':pct30>=50?'md':'lo';
+    const bc=pct30>=80?'var(--green)':pct30>=50?'var(--gold)':'var(--red)';
+    const em=h.emoji?h.emoji+' ':'';
+    const lbl=h.paused?`<span style="font-size:8px;padding:1px 4px;background:rgba(255,255,255,.07);border-radius:3px;color:var(--muted);margin-left:3px">停止</span>`:'';
+    return `<tr>
+      <td><div class="smt-name-cell"><span style="width:6px;height:6px;border-radius:50%;background:${cc};flex-shrink:0;display:inline-block"></span><span class="smt-name-txt">${em}${esc(h.name)}</span>${lbl}</div></td>
+      <td style="text-align:right"><span class="smt-bar"><span class="smt-bar-f" style="width:${pct30}%;background:${bc}"></span></span><span class="smt-pct ${cls}">${pct30}%</span></td>
+      <td style="text-align:center;font-family:'Dela Gothic One',sans-serif;font-size:12px;color:${strk>0?'var(--gold)':'var(--muted)'}">${strk>0?'🔥'+strk:'-'}</td>
+      <td style="text-align:center;color:var(--muted);font-family:'Dela Gothic One',sans-serif;font-size:12px">${total}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 </script>
 </body>
