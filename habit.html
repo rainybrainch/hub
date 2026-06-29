@@ -1064,6 +1064,42 @@
     .habit-wrap.drag-over-top{border-top:2px solid var(--sky);padding-top:6px}
     .habit.dragging{opacity:.4;transform:scale(.98)}
 
+    /* Cycle 62: monthly calendar modal */
+    .cal-ovl{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+    .cal-ovl.open{opacity:1;pointer-events:all}
+    .cal-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;width:min(360px,94vw);max-height:90vh;overflow-y:auto;transform:scale(.9) translateY(20px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .cal-ovl.open .cal-modal{transform:scale(1) translateY(0)}
+    .cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cal-month-ttl{font-family:"Dela Gothic One",sans-serif;font-size:16px;flex:1;text-align:center}
+    .cal-nav-btn{background:none;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--white);cursor:pointer;font-size:16px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+    .cal-nav-btn:hover{background:rgba(255,255,255,.08)}
+    .cal-close-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;transition:color .15s;flex-shrink:0;line-height:1}
+    .cal-close-btn:hover{color:var(--white)}
+    .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px}
+    .cal-dow-lbl{text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding:2px 0}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .cal-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;position:relative;border:2px solid transparent}
+    .cal-cell.cal-empty{pointer-events:none;opacity:0}
+    .cal-cell.cal-future{opacity:.25;pointer-events:none}
+    .cal-cell.cal-full{background:rgba(76,175,125,.25);color:var(--green)}
+    .cal-cell.cal-partial{background:rgba(245,200,66,.15);color:var(--gold)}
+    .cal-cell.cal-miss{background:rgba(255,255,255,.05);color:var(--muted)}
+    .cal-cell.cal-dayoff{background:rgba(91,200,232,.15);color:var(--sky)}
+    .cal-cell.cal-today{border-color:var(--gold)}
+    .cal-cell.cal-selected{border-color:var(--sky)}
+    .cal-cell:hover:not(.cal-empty):not(.cal-future){opacity:.8;transform:scale(1.08)}
+    .cal-detail{margin-top:14px;border-top:1px solid rgba(255,255,255,.06);padding-top:14px}
+    .cal-detail-ttl{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.05em}
+    .cal-detail-rate{font-family:"Dela Gothic One",sans-serif;font-size:24px;margin-bottom:10px}
+    .cal-detail-list{display:flex;flex-direction:column;gap:5px}
+    .cal-detail-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.03)}
+    .cal-detail-row.done{color:var(--green)}
+    .cal-detail-row.miss{color:var(--muted);opacity:.7}
+    /* Cycle 62: comeback toast */
+    .comeback-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-20px);background:linear-gradient(135deg,#1a4a2e,#1e3a1e);border:1px solid rgba(76,175,125,.5);color:var(--green);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 6px 24px rgba(76,175,125,.3);z-index:448;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center;display:none}
+    .comeback-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    body.light .comeback-toast{background:linear-gradient(135deg,#d4f0e0,#c8eccc);border-color:rgba(76,175,125,.4);color:#2d7a50}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1098,6 +1134,7 @@
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
   <button class="hdr-btn" onclick="openWidgetSettings()" title="ウィジェット表示設定（各セクションの表示/非表示）">⚙️</button>
   <button class="hdr-btn" onclick="openYFix()" title="昨日の習慣記録を修正（Yキー）">昨</button>
+  <button class="hdr-btn" id="cal-btn" onclick="openCalModal()" title="月間カレンダーで振り返り">🗓</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -1362,6 +1399,7 @@
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 <div class="milestone-toast" id="milestone-toast"></div>
 <div class="shield-toast" id="shield-toast"></div>
+<div class="comeback-toast" id="comeback-toast"></div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -2546,6 +2584,9 @@ function toggle(id,evt){
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
+    // Cycle 62: comeback toast for 3+ day gap
+    const _gap=daysSinceLastCompletion(id);
+    if(_gap!==null&&_gap>=3)showComebackToast(_hh,_gap);
   }
   saveC();
   render();
@@ -3979,6 +4020,117 @@ function _renderStatsOvl(){
   }).join('');
   wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
+
+// ── Cycle 62: Monthly Calendar Modal ──
+let _calYear=null,_calMonth=null,_calSelDate=null;
+function openCalModal(){
+  const now=new Date();
+  _calYear=now.getFullYear();_calMonth=now.getMonth();_calSelDate=null;
+  _renderCalModal();
+  const ovl=document.getElementById('cal-ovl');
+  ovl.style.display='flex';
+  requestAnimationFrame(()=>ovl.classList.add('open'));
+}
+function closeCalModal(){
+  const ovl=document.getElementById('cal-ovl');
+  ovl.classList.remove('open');
+  setTimeout(()=>{ovl.style.display='none';},300);
+}
+function bgCalClose(e){if(e.target===document.getElementById('cal-ovl'))closeCalModal();}
+function calNav(delta){
+  _calMonth+=delta;
+  if(_calMonth<0){_calMonth=11;_calYear--;}
+  else if(_calMonth>11){_calMonth=0;_calYear++;}
+  _calSelDate=null;
+  _renderCalModal();
+}
+function _renderCalModal(){
+  const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('cal-month-ttl').textContent=`${_calYear}年 ${MONTHS[_calMonth]}`;
+  const grid=document.getElementById('cal-grid');
+  const td=today();
+  const firstDay=new Date(_calYear,_calMonth,1).getDay();
+  const daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
+  let cells='';
+  for(let i=0;i<firstDay;i++)cells+=`<div class="cal-cell cal-empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFuture=ds>td;
+    let cls='cal-miss';
+    if(!isFuture){
+      if(isDayOff(ds))cls='cal-dayoff';
+      else{const r=rawDayRate(ds);if(r===1)cls='cal-full';else if(r>0)cls='cal-partial';}
+    }
+    const todayCls=ds===td?' cal-today':'';
+    const selCls=ds===_calSelDate?' cal-selected':'';
+    const futureCls=isFuture?' cal-future':'';
+    cells+=`<div class="cal-cell ${cls}${todayCls}${selCls}${futureCls}" onclick="selectCalDay('${ds}')">${d}</div>`;
+  }
+  grid.innerHTML=cells;
+  const det=document.getElementById('cal-detail');
+  if(_calSelDate){_renderCalDetail(_calSelDate);det.style.display='';}
+  else{det.style.display='none';}
+}
+function selectCalDay(ds){
+  _calSelDate=(_calSelDate===ds)?null:ds;
+  _renderCalModal();
+}
+function _renderCalDetail(ds){
+  const det=document.getElementById('cal-detail');
+  const isOff=isDayOff(ds);
+  const rate=Math.round(rawDayRate(ds)*100);
+  const dc=completions[ds]||{};
+  const dated=new Date(ds+'T12:00:00');
+  const DAYS2=['日','月','火','水','木','金','土'];
+  const dtStr=`${dated.getMonth()+1}月${dated.getDate()}日（${DAYS2[dated.getDay()]}）`;
+  let rateHtml='';
+  if(isOff){rateHtml=`<div class="cal-detail-rate" style="color:var(--sky)">🌴 お休み</div>`;}
+  else{const col=rate===100?'var(--green)':rate>0?'var(--gold)':'var(--muted)';rateHtml=`<div class="cal-detail-rate" style="color:${col}">${rate}%</div>`;}
+  const schHabits=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,ds));
+  const rows=schHabits.map(h=>{
+    const done=!!dc[h.id];
+    const em=h.emoji?h.emoji+' ':'';
+    return `<div class="cal-detail-row ${done?'done':'miss'}">${done?'✓':'○'} ${em}${esc(h.name)}</div>`;
+  }).join('');
+  det.innerHTML=`<div class="cal-detail-ttl">${dtStr}</div>${rateHtml}<div class="cal-detail-list">${rows||'<div style="color:var(--muted);font-size:12px">習慣なし</div>'}</div>`;
+}
+
+// ── Cycle 62: Comeback toast ──
+function daysSinceLastCompletion(id){
+  for(let i=1;i<=30;i++){
+    const ds=dateAgo(i);
+    if(completions[ds]&&completions[ds][id])return i;
+  }
+  return null;
+}
+let _comebackTimer=null;
+function showComebackToast(h,daysSince){
+  const el=document.getElementById('comeback-toast');
+  if(!el)return;
+  const em=h.emoji?h.emoji+' ':'';
+  el.textContent=`⭐ ${daysSince}日ぶりに ${em}${h.name} 達成！`;
+  el.style.display='block';
+  requestAnimationFrame(()=>el.classList.add('show'));
+  clearTimeout(_comebackTimer);
+  _comebackTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>{el.style.display='none';},400);},3000);
+}
 </script>
+
+<!-- Cycle 62: monthly calendar modal -->
+<div class="cal-ovl" id="cal-ovl" onclick="bgCalClose(event)" style="display:none">
+  <div class="cal-modal">
+    <div class="cal-hdr">
+      <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+      <div class="cal-month-ttl" id="cal-month-ttl"></div>
+      <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+      <button class="cal-close-btn" onclick="closeCalModal()">✕</button>
+    </div>
+    <div class="cal-dow">
+      <div class="cal-dow-lbl">日</div><div class="cal-dow-lbl">月</div><div class="cal-dow-lbl">火</div><div class="cal-dow-lbl">水</div><div class="cal-dow-lbl">木</div><div class="cal-dow-lbl">金</div><div class="cal-dow-lbl">土</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-detail" id="cal-detail" style="display:none"></div>
+  </div>
+</div>
 </body>
 </html>

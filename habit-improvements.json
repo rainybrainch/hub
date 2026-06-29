@@ -905,6 +905,30 @@
         "deployedAt": "2026-06-29T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 62,
+      "version": "v2.62",
+      "timestamp": "2026-06-29T01:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "月間カレンダーモーダルを追加",
+          "description": "ヘッダーに🗓ボタンを追加し、クリックで月間カレンダーモーダルを開く機能。日別の達成率をカラーコード（緑=100%、黄=部分達成、グレー=未達成、シアン=お休み、金枠=今日）で表示し、各日セルをタップすると下部のデテール欄にその日の習慣達成一覧と達成率を表示。◀▶ナビゲーションで月の切り替えが可能。isScheduled()・rawDayRate()・isDayOff()・completions既存データを直接参照するためLocalStorage構造変更なし。z-index 600で全UIの最前面に表示。"
+        },
+        {
+          "type": "feature",
+          "title": "復帰トーストを追加",
+          "description": "習慣チェック時に直近30日間を遡って最後の達成日を検索するdaysSinceLastCompletion()関数を追加。3日以上ぶりに習慣を達成した場合、「⭐ X日ぶりに [emoji] 習慣名 達成！」というグリーングロー付きの復帰トースト（.comeback-toast、z-index 448）を3秒間表示。toggle()関数の!wasCompletedブロック内からshowComebackToast()を呼び出し、習慣名・絵文字・日数を組み合わせた表示でモチベーション回復を促す設計。LocalStorage変更なし・既存機能との完全互換。"
+        }
+      ],
+      "notes": "Cycle 62は「振り返りUI」と「達成フィードバック強化」の2軸。月間カレンダーはCycle 23（週間チャート）・Cycle 43（年間ヒートマップ）とは異なり、当月全体を一覧できるインタラクティブなモーダルとして実装し、過去データの詳細確認を直感的に可能にした。復帰トーストはCycle 57（記念日トースト）・Cycle 45（コンボトースト）に続くフィードバック強化であり、長期間放置された習慣の再開を祝福し継続意欲を喚起する新しい演出。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
