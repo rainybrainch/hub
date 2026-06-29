@@ -1226,8 +1226,8 @@
         "deployedAt": "2026-06-29T18:00:00Z",
         "status": "success"
       }
-    }
-    ,{
+    },
+    {
       "cycle": 75,
       "version": "v2.75",
       "timestamp": "2026-06-29T19:00:00Z",
@@ -1250,6 +1250,31 @@
         "commit": "",
         "deployedAt": "2026-06-29T19:00:00Z",
         "status": "success"
+      }
+    },
+    {
+      "cycle": 76,
+      "version": "v2.76",
+      "timestamp": "2026-06-29T20:00:00Z",
+      "theme": "🎲 ランダム習慣ルーレット + 💾 LocalStorageデータサイズメーター",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "🎲 ランダム習慣ルーレット",
+          "description": "ソート行に🎲ボタンを追加。押すと本日未完了・スケジュール済み・一時停止なし・スキップなしの習慣からランダム1件を選び、スムーズスクロール＋1.2秒ハイライトアニメーション表示。カテゴリーが折りたたまれていれば自動展開。Rキーショートカット対応。全完了時は「🎉全習慣完了！」トースト表示。"
+        },
+        {
+          "type": "feature",
+          "title": "💾 LocalStorageデータサイズメーター",
+          "description": "ウィジェット設定モーダルに現在のrh_*キーのLocalStorageデータ使用量を表示。_calcStorageSize()がB/KB/MB単位で自動換算してopenWidgetSettings()が呼ばれるたびにリアルタイム更新。"
+        }
+      ],
+      "deploy": {
+        "branch": "main",
+        "files": [
+          "habit.html",
+          "habit-improvements.json"
+        ]
       }
     }
   ]
