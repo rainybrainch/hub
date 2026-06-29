@@ -778,6 +778,20 @@
     /* Cycle 71: habit anniversary toast */
     .anniversary-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(155,109,214,.92),rgba(100,64,180,.95));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(155,109,214,.5);z-index:452;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
     .anniversary-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 72: category donut chart */
+    .donut-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .donut-wrap{display:flex;align-items:center;gap:14px}
+    .donut-legend{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+    .donut-legend-item{display:flex;align-items:center;gap:6px;font-size:11px}
+    .donut-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .donut-legend-name{flex:1;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+    .donut-legend-val{font-family:"Dela Gothic One",sans-serif;font-size:11px;flex-shrink:0}
+    body.light .donut-box{border-color:rgba(0,0,0,.08)}
+    /* Cycle 72: counter habit inline progress bar */
+    .ctr-progress-wrap{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:5px;overflow:hidden;width:100%}
+    .ctr-progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--green));border-radius:2px;transition:width .4s cubic-bezier(.34,1.56,.64,1)}
+    body.light .ctr-progress-wrap{background:rgba(0,0,0,.08)}
+
     /* Cycle 47: tough habit flag */
     .tough-badge{font-size:10px;color:#FF7B5C;font-weight:700;padding:2px 5px;background:rgba(255,123,92,.1);border:1px solid rgba(255,123,92,.25);border-radius:6px;line-height:1.5;flex-shrink:0}
     body.light .tough-badge{background:rgba(255,123,92,.1);border-color:rgba(255,123,92,.3)}
@@ -1286,6 +1300,9 @@
 
   <!-- Cycle 41: day-off banner -->
   <div class="dayoff-banner" id="dayoff-banner">🌴 今日はお休みデー — 全ての習慣がスキップされています。ゆっくり休もう！</div>
+
+  <!-- Cycle 72: category donut chart -->
+  <div id="donut-box" class="donut-box" style="display:none"></div>
 
   <!-- Cycle 36: today's pace indicator -->
   <div class="pace-box" id="pace-box" style="display:none"></div>
@@ -2390,6 +2407,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 54: archive button
   const archiveBtnHtml=`<button class="archive-btn" onclick="event.stopPropagation();archiveHabit('${h.id}')" title="アーカイブ（リストから非表示、データは保持）" aria-label="アーカイブ">📦</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
+  // Cycle 72: counter habit inline progress bar
+  const ctrProgressHtml=isCounter&&!isDone?`<div class="ctr-progress-wrap"><div class="ctr-progress-fill" style="width:${Math.min(Math.round(ctrCount/tc*100),100)}%"></div></div>`:'';
   const chkHtml=isCounter
     ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
@@ -2405,7 +2424,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 70: important flag
   const impClass=h.important?' important':'';
   const impBadge=h.important?'<span class="imp-badge">⭐重要</span>':'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2715,6 +2734,7 @@ function toggleYFix(id,yest){
 function render(){
   renderHeader();
   renderStats();
+  renderDonutChart(); // Cycle 72: category donut
   processShield(); // Cycle 47: check shield state
   renderPaceBox();
   renderChart();
@@ -4113,6 +4133,7 @@ function scrollToHabit(id){
 
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
+  {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
   {key:'w_pace',   name:'⏱ ペース指標',             id:'pace-box'},
   {key:'w_chart',  name:'📊 週間/月間チャート',      id:'chart-box'},
   {key:'w_weekly', name:'📓 週次振り返りメモ',        id:'weekly-box'},
@@ -4628,6 +4649,42 @@ function _showAnniversaryToast(h,days){
   el.textContent=`${emoji} ${em}${esc(h.name)} 登録${days}日！`;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),4500);
+}
+
+// ── Cycle 72: category donut chart ──
+function renderDonutChart(){
+  const el=document.getElementById('donut-box');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const activeH=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id));
+  if(!activeH.length){el.style.display='none';return;}
+  const CATS=['学習','運動','創作','自己改善'];
+  const C={学習:'#5BC8E8',運動:'#4CAF7D',創作:'#9B6DD6',自己改善:'#F5C842'};
+  const catStats=CATS.map(cat=>{
+    const ch=activeH.filter(h=>h.category===cat);
+    if(!ch.length)return null;
+    return{cat,total:ch.length,done:ch.filter(h=>!!dc[h.id]).length,color:C[cat]};
+  }).filter(Boolean);
+  if(!catStats.length){el.style.display='none';return;}
+  el.style.display='';
+  const isOff=isDayOff(td);
+  const totalActive=activeH.length;
+  const totalDone=isOff?totalActive:activeH.filter(h=>!!dc[h.id]).length;
+  const pct=Math.round(totalDone/totalActive*100);
+  const r=26,cx=32,cy=32,circ=2*Math.PI*r;
+  const isLight=document.body.classList.contains('light');
+  const emptyColor=isLight?'rgba(0,0,0,.08)':'rgba(255,255,255,.08)';
+  const textFill=isLight?'#1a1a2e':'#ffffff';
+  let offset=0,segs='',legend='';
+  catStats.forEach(({cat,total,done,color})=>{
+    const totalArc=circ*(total/totalActive);
+    const doneArc=circ*(isOff?total:done)/totalActive;
+    segs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${emptyColor}" stroke-width="7" stroke-dasharray="${totalArc} ${circ-totalArc}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    if(doneArc>0.01)segs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-dasharray="${doneArc} ${circ-doneArc}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="round"/>`;
+    offset+=totalArc;
+    legend+=`<div class="donut-legend-item"><div class="donut-legend-dot" style="background:${color}"></div><span class="donut-legend-name">${cat}</span><span class="donut-legend-val" style="color:${color}">${done}/${total}</span></div>`;
+  });
+  el.innerHTML=`<div class="chart-ttl" style="margin-bottom:10px">🍩 カテゴリー別達成</div><div class="donut-wrap"><svg width="64" height="64" viewBox="0 0 64 64" style="flex-shrink:0">${segs}<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" style="font-family:'Dela Gothic One',sans-serif;font-size:11px;fill:${textFill}">${pct}%</text></svg><div class="donut-legend">${legend}</div></div>`;
 }
 </script>
 
