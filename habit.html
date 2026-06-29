@@ -1060,6 +1060,12 @@
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
     body.light .score-badge{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(255,123,92,.15));border-color:rgba(245,200,66,.4)}
     .score-badge.hi{box-shadow:0 0 10px rgba(245,200,66,.3);border-color:rgba(245,200,66,.55)}
+    /* Cycle 64: score flyout animation */
+    .score-flyout{position:fixed;z-index:900;font-family:'Dela Gothic One',sans-serif;font-size:14px;font-weight:700;color:var(--gold);pointer-events:none;white-space:nowrap;opacity:1;text-shadow:0 0 8px rgba(245,200,66,.6);transition:transform .9s cubic-bezier(.25,.46,.45,.94),opacity .9s ease-out}
+    .score-flyout.fly{transform:translateY(-54px) scale(0.8);opacity:0}
+    /* Cycle 64: category completion header flash */
+    @keyframes catDoneFlash{0%,100%{background:transparent}40%{background:rgba(245,200,66,.14);border-radius:6px}}
+    .sec-hdr.cat-done-flash{animation:catDoneFlash .65s ease-out 2}
     /* Cycle 61: drag-and-drop reorder visual */
     .habit-wrap.drag-over-top{border-top:2px solid var(--sky);padding-top:6px}
     .habit.dragging{opacity:.4;transform:scale(.98)}
@@ -2615,7 +2621,8 @@ function toggle(id,evt){
   if(!wasCompleted){
     playTick();vib(50);checkHabitMilestone(id);triggerCombo();
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
-    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
+    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);// Cycle 64: score flyout
+    if(_hh){const _sfPts=calcHabitPts(_hh);if(_sfPts>0)showScoreFlyout(r.left+r.width/2,r.top,_sfPts);}}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
     // Cycle 62: comeback toast for 3+ day gap
     const _gap=daysSinceLastCompletion(id);
@@ -2627,6 +2634,7 @@ function toggle(id,evt){
       const _t=document.getElementById('milestone-toast');
       if(_t){_t.textContent=`⬆ ${_hh.name} Lv.${_lvUp}「${LV_NAMES[_lvUp]}」へ昇格！`;_t.classList.add('show');setTimeout(()=>_t.classList.remove('show'),3500);}
     }
+    if(_hh)checkCategoryComplete(_hh.category); // Cycle 64: category completion flash
   }
   saveC();
   render();
@@ -2697,6 +2705,41 @@ function renderScoreBadge(){
     if(t){t.textContent=`🎉 新記録！${score}pt`;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
   }
   _lastScore=score;
+}
+
+// ── Cycle 64: score flyout & category completion flash ──
+function calcHabitPts(h){
+  let pts=10;
+  pts+=Math.min(habitStreak(h.id),20);
+  if(h.tough)pts+=5;
+  if(new Date().getHours()<12)pts+=3;
+  return pts;
+}
+function showScoreFlyout(x,y,pts){
+  const div=document.createElement('div');
+  div.className='score-flyout';
+  div.textContent='+'+pts+'pt';
+  document.body.appendChild(div);
+  const w=div.offsetWidth;
+  div.style.left=(x-w/2)+'px';
+  div.style.top=(y-12)+'px';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>div.classList.add('fly')));
+  setTimeout(()=>div.remove(),1200);
+}
+function checkCategoryComplete(cat){
+  const td=today();
+  const dc=completions[td]||{};
+  const ch=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id)&&h.category===cat);
+  if(!ch.length||!ch.every(h=>dc[h.id]))return;
+  setTimeout(()=>{
+    document.querySelectorAll('.sec-hdr').forEach(el=>{
+      if(el.querySelector('.sec-name')?.textContent===cat){
+        el.classList.remove('cat-done-flash');void el.offsetWidth;
+        el.classList.add('cat-done-flash');
+        setTimeout(()=>el.classList.remove('cat-done-flash'),1400);
+      }
+    });
+  },80);
 }
 
 // ── Cycle 61: Drag-and-drop habit reorder ──
