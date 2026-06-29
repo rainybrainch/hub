@@ -1199,6 +1199,33 @@
     .hd-next-ms{font-size:10px;color:var(--muted);margin-top:8px;text-align:center;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.04)}
     body.light .hd-next-ms{background:rgba(0,0,0,.04)}
     .hd-next-ms strong{color:var(--gold);font-weight:900}
+    /* Cycle 73: OLED pure black mode */
+    body.oled{--dark:#000000;--dark2:#0a0a0a;--dark3:#111111;--muted:rgba(255,255,255,.4)}
+    body.oled .hdr{background:#000;border-bottom-color:rgba(255,255,255,.08)}
+    body.oled .habit{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+    body.oled .stat{background:#0a0a0a}
+    body.oled .chart-box,body.oled .trend-box,body.oled .year-box,body.oled .tod-box,
+    body.oled .timeline-box,body.oled .ranking-box,body.oled .month-box,body.oled .ms-widget,
+    body.oled .challenge-box,body.oled .pace-box,body.oled .streak-row,body.oled .motto-box,
+    body.oled .intention-box,body.oled .weekly-box,body.oled .ach-box,body.oled .mood-box,
+    body.oled .mood-stats-box,body.oled .highlight-box,body.oled .wm-box,body.oled .dow-box,
+    body.oled .donut-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+    body.oled .modal-inner{background:#000;border-color:rgba(255,255,255,.08)}
+    body.oled .overlay{background:rgba(0,0,0,.9)}
+    body.oled .progress-footer{background:rgba(255,255,255,.04)}
+    body.oled .scroll-top{background:#0a0a0a;border-color:rgba(255,255,255,.1)}
+    body.oled .snackbar{background:#0a0a0a}
+    /* Cycle 73: category summary bars */
+    .cat-summary-box{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:0 0 12px;padding:10px 12px;background:var(--dark2);border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+    body.light .cat-summary-box{background:#fff;border-color:rgba(0,0,0,.07)}
+    body.oled .cat-summary-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+    .cat-sum-item{display:flex;flex-direction:column;gap:4px}
+    .cat-sum-header{display:flex;justify-content:space-between;align-items:center}
+    .cat-sum-name{font-size:10px;font-weight:700;color:var(--muted)}
+    .cat-sum-pct{font-size:10px;font-weight:700}
+    .cat-sum-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+    body.light .cat-sum-bar{background:rgba(0,0,0,.08)}
+    .cat-sum-fill{height:100%;border-radius:3px;transition:width .4s ease}
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1297,6 +1324,9 @@
       <div class="stat-lbl">累計完了 📊</div>
     </div>
   </div>
+
+  <!-- Cycle 73: category summary bars -->
+  <div class="cat-summary-box" id="cat-summary-box"></div>
 
   <!-- Cycle 41: day-off banner -->
   <div class="dayoff-banner" id="dayoff-banner">🌴 今日はお休みデー — 全ての習慣がスキップされています。ゆっくり休もう！</div>
@@ -2762,6 +2792,7 @@ function render(){
   updateDocTitle();
   updateHeaderBadge();
   updateDayOffBtn();
+  renderCatSummary(); // Cycle 73: category summary bars
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   checkHabitAnniversaries(); // Cycle 71: anniversary toast
@@ -3108,11 +3139,12 @@ function _applyFontSize(s,save){
   document.querySelectorAll('.font-size-btn').forEach(b=>b.classList.toggle('active',b.dataset.size===s));
 }
 
-// ── theme (cycle 7 + 17: system preference auto-detect) ──
+// ── theme (cycle 7 + 17: system preference auto-detect; cycle 73: OLED mode) ──
 function initTheme(){
   const saved=localStorage.getItem('rh_theme');
   if(saved){
-    if(saved==='light')document.body.classList.add('light');
+    document.body.classList.toggle('light',saved==='light');
+    document.body.classList.toggle('oled',saved==='oled');
   }else{
     // Auto-detect from OS preference when no manual override
     if(window.matchMedia('(prefers-color-scheme: light)').matches)document.body.classList.add('light');
@@ -3121,20 +3153,32 @@ function initTheme(){
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',e=>{
     if(!localStorage.getItem('rh_theme')){
       document.body.classList.toggle('light',e.matches);
+      document.body.classList.remove('oled');
       updateThemeBtn();renderChart();
     }
   });
   updateThemeBtn();
 }
 function toggleTheme(){
-  const isLight=document.body.classList.toggle('light');
-  localStorage.setItem('rh_theme',isLight?'light':'dark');
+  const b=document.body;
+  // Cycle 73: 3-state cycle — dark → oled → light → dark
+  if(!b.classList.contains('light')&&!b.classList.contains('oled')){
+    b.classList.add('oled');
+    localStorage.setItem('rh_theme','oled');
+  }else if(b.classList.contains('oled')){
+    b.classList.remove('oled');b.classList.add('light');
+    localStorage.setItem('rh_theme','light');
+  }else{
+    b.classList.remove('light');
+    localStorage.setItem('rh_theme','dark');
+  }
   updateThemeBtn();
   renderChart();
 }
 function updateThemeBtn(){
   const btn=document.getElementById('theme-btn');
-  if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀️';
+  const b=document.body;
+  if(btn)btn.textContent=b.classList.contains('light')?'🌙':b.classList.contains('oled')?'☀️':'⬛';
   syncThemeColor();
 }
 
@@ -3889,10 +3933,12 @@ render();
 document.body.classList.add('loaded');
 _checkAutoWReport(); // Cycle 70: auto weekly report on Monday
 setInterval(renderPaceBox,60000);
-// ── Cycle 24: PWA theme-color meta tag sync ──
+// ── Cycle 24: PWA theme-color meta tag sync (Cycle 73: OLED) ──
 function syncThemeColor(){
   const mc=document.getElementById('meta-theme-color');
-  if(mc)mc.content=document.body.classList.contains('light')?'#f0f2f5':'#0d1117';
+  if(!mc)return;
+  const b=document.body;
+  mc.content=b.classList.contains('light')?'#f0f2f5':b.classList.contains('oled')?'#000000':'#0d1117';
 }
 
 // ── Cycle 42: modal swipe-down to close ──
@@ -4131,6 +4177,30 @@ function scrollToHabit(id){
   },sec&&sec.classList.contains('closed')?400:0);
 }
 
+// ── Cycle 73: category summary bars ──
+const CAT_BAR_COLORS={'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
+function renderCatSummary(){
+  const el=document.getElementById('cat-summary-box');if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const cats=['学習','運動','創作','自己改善'];
+  const rows=cats.map(cat=>{
+    const hs=habits.filter(h=>h.category===cat&&!h.paused&&!h.archived&&isScheduled(h,td));
+    if(!hs.length)return null;
+    const done=hs.filter(h=>!!dc[h.id]).length;
+    const pct=Math.round(done/hs.length*100);
+    const col=CAT_BAR_COLORS[cat]||'#888';
+    return `<div class="cat-sum-item">
+      <div class="cat-sum-header">
+        <span class="cat-sum-name">${cat}</span>
+        <span class="cat-sum-pct" style="color:${col}">${done}/${hs.length}</span>
+      </div>
+      <div class="cat-sum-bar"><div class="cat-sum-fill" style="width:${pct}%;background:${col}"></div></div>
+    </div>`;
+  }).filter(Boolean);
+  if(!rows.length){el.style.display='none';return;}
+  el.style.display='grid';
+  el.innerHTML=rows.join('');
+}
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
@@ -4154,6 +4224,7 @@ const WIDGET_DEFS=[
   {key:'w_mood',     name:'😊 今日の気分',           id:'mood-box'},
   {key:'w_mood_stats',name:'📊 気分×達成率の相関',   id:'mood-stats-box'},
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
+  {key:'w_cat_summary',name:'📊 カテゴリー別達成バー', id:'cat-summary-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
