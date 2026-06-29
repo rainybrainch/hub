@@ -1056,6 +1056,14 @@
     @keyframes nightRisk{0%,100%{box-shadow:0 0 0 0 rgba(232,53,74,0)}50%{box-shadow:0 0 0 3px rgba(232,53,74,.35)}}
     body.night-mode .habit.night-risk:not(.done):not(.paused):not(.skipped-today){animation:nightRisk 2s ease-in-out infinite}
 
+    /* Cycle 61: daily score badge */
+    .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
+    body.light .score-badge{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(255,123,92,.15));border-color:rgba(245,200,66,.4)}
+    .score-badge.hi{box-shadow:0 0 10px rgba(245,200,66,.3);border-color:rgba(245,200,66,.55)}
+    /* Cycle 61: drag-and-drop reorder visual */
+    .habit-wrap.drag-over-top{border-top:2px solid var(--sky);padding-top:6px}
+    .habit.dragging{opacity:.4;transform:scale(.98)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1193,6 +1201,7 @@
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
+    <span class="score-badge" id="score-badge" style="display:none"></span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -1986,6 +1995,8 @@ function renderStats(){
     const pw=document.querySelector('.progress-ring-wrap');
     if(pw)pw.classList.toggle('ring-complete',rate===100);
   }
+  // Cycle 61: daily score badge
+  renderScoreBadge();
 }
 
 let chartView='week';
@@ -2179,7 +2190,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 60: night-risk pulse for habits with streak ≥ 3 after 22:00
   const _hr=new Date().getHours();
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 61: drag-and-drop attrs for reorder mode
+  const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2564,6 +2577,80 @@ function showNextHabitSuggestion(completedId){
 // ── Cycle 60: Night mode class for pulse animation ──
 function updateNightMode(){
   document.body.classList.toggle('night-mode',new Date().getHours()>=22);
+}
+
+// ── Cycle 61: Daily score system ──
+function calcDailyScore(){
+  const td=today();
+  const dc=completions[td]||{};
+  let score=0;
+  habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id)).forEach(h=>{
+    if(!dc[h.id])return;
+    score+=10;
+    const hs=habitStreak(h.id);
+    score+=Math.min(hs,20);
+    if(h.tough)score+=5;
+    if(typeof dc[h.id]==='string'){
+      const hr=new Date(dc[h.id]).getHours();
+      if(hr<12)score+=3;
+    }
+  });
+  return score;
+}
+let _lastScore=-1;
+function renderScoreBadge(){
+  const el=document.getElementById('score-badge');
+  if(!el)return;
+  const score=calcDailyScore();
+  if(score<=0){el.style.display='none';_lastScore=score;return;}
+  el.style.display='';
+  el.textContent=`🏅 ${score}pt`;
+  const hiScore=parseInt(localStorage.getItem('rh_hi_score')||'0');
+  const isHi=score>=hiScore&&score>0;
+  if(isHi){localStorage.setItem('rh_hi_score',String(score));el.classList.add('hi');el.title=`今日のスコア: ${score}pt（自己ベスト！）`;}
+  else{el.classList.remove('hi');el.title=`今日のスコア: ${score}pt（自己ベスト: ${hiScore}pt）`;}
+  if(_lastScore>=0&&score>_lastScore&&score>hiScore){
+    const t=document.getElementById('shield-toast');
+    if(t){t.textContent=`🎉 新記録！${score}pt`;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+  }
+  _lastScore=score;
+}
+
+// ── Cycle 61: Drag-and-drop habit reorder ──
+let _dragId=null;
+function onHabitDragStart(id,e){
+  _dragId=id;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',id);
+  setTimeout(()=>{const el=document.querySelector(`.habit[data-id="${id}"]`);if(el)el.classList.add('dragging');},0);
+}
+function onHabitDragOver(id,e){
+  if(!_dragId||_dragId===id)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.habit-wrap.drag-over-top').forEach(el=>el.classList.remove('drag-over-top'));
+  const el=document.querySelector(`.habit[data-id="${id}"]`);
+  if(el){const wrap=el.closest('.habit-wrap');if(wrap)wrap.classList.add('drag-over-top');}
+}
+function onHabitDragLeave(id,e){
+  const el=document.querySelector(`.habit[data-id="${id}"]`);
+  if(el){const wrap=el.closest('.habit-wrap');if(wrap)wrap.classList.remove('drag-over-top');}
+}
+function onHabitDrop(id,e){
+  e.preventDefault();
+  if(!_dragId||_dragId===id){_dragId=null;return;}
+  const fromIdx=habits.findIndex(h=>h.id===_dragId);
+  const toIdx=habits.findIndex(h=>h.id===id);
+  if(fromIdx<0||toIdx<0){_dragId=null;return;}
+  if(habits[fromIdx].category!==habits[toIdx].category){_dragId=null;renderList();return;}
+  const [moved]=habits.splice(fromIdx,1);
+  habits.splice(toIdx,0,moved);
+  saveH();_dragId=null;renderList();
+}
+function onHabitDragEnd(e){
+  _dragId=null;
+  document.querySelectorAll('.habit.dragging').forEach(el=>el.classList.remove('dragging'));
+  document.querySelectorAll('.habit-wrap.drag-over-top').forEach(el=>el.classList.remove('drag-over-top'));
 }
 
 // ── Cycle 10: Undo delete snackbar ──

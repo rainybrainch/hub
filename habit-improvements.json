@@ -881,6 +881,30 @@
         "deployedAt": "2026-06-28T08:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 61,
+      "version": "v2.61",
+      "timestamp": "2026-06-29T00:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "デイリースコアシステムを追加",
+          "description": "習慣達成ごとに獲得できるデイリーポイントスコアを計算・表示する機能。基本10pt/習慣＋ストリークボーナス（最大20pt）＋難習慣ボーナス5pt＋午前中達成ボーナス3ptの加算式。streak-rowに「🏅 〇〇pt」バッジ（#score-badge）を追加し、当日スコアが0の場合は非表示。LocalStorageキー「rh_hi_score」で自己ベストスコアを管理し、新記録達成時はバッジにゴールドグロー（.hi）を付与してシールドトーストで「🎉 新記録！〇〇pt」を通知。renderStats()からrenderScoreBadge()を呼び出すことで達成操作のたびにリアルタイム更新。ライト/ダーク両テーマ対応のグラデーションボーダーデザイン。"
+        },
+        {
+          "type": "enhancement",
+          "title": "HTML5ドラッグ&ドロップ並び替えを追加",
+          "description": "既存の↑↓ボタンによる並び替えモード（reorderMode）をHTML5 Drag and Drop APIで拡張。reorderModeがtrueのとき_hCard()内でhabit-wrapにdraggable属性とイベントハンドラ（ondragstart/ondragover/ondragleave/ondrop/ondragend）を付与。onHabitDragStart()でdataTransferに習慣IDをセットしドラッグ中の習慣を半透明化（.dragging）。onHabitDragOver()でドロップ先habit-wrapに青いボーダー（.drag-over-top）をリアルタイムで表示。onHabitDrop()で同一カテゴリ内の習慣配列を並び替えsaveH()で保存。異なるカテゴリ間のドロップは無視し習慣の分類を保護。onHabitDragEnd()でドラッグ状態を完全クリーンアップ。既存の↑↓ボタンとの完全な共存設計。"
+        }
+      ],
+      "notes": "Cycle 61は「スコアゲーミフィケーション」と「操作UX改善」の2軸改善。デイリースコアはCycle 27（週間ランキング）やCycle 32（成績グレード）とは異なり、今日一日のリアルタイム積み上げポイントとして機能し達成モチベーションを持続させる設計。ドラッグ&ドロップはCycle 56（↑↓ボタン並び替え）の直接強化であり、PCブラウザでの直感的な操作を実現しつつモバイルの既存UIを維持。どちらもLocalStorage構造変更なし（rh_hi_score新規追加のみ）・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T00:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
