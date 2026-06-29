@@ -1486,6 +1486,7 @@
     <button class="tab" data-cat="運動" onclick="setFilter('運動')">💪 運動</button>
     <button class="tab" data-cat="創作" onclick="setFilter('創作')">🎨 創作</button>
     <button class="tab" data-cat="自己改善" onclick="setFilter('自己改善')">✨ 自己改善</button>
+    <button class="tab" data-cat="important" onclick="setFilter('important')">⭐ 重要</button>
   </div>
 
   <div class="sort-row">
@@ -2104,10 +2105,14 @@ function toggleTough(val){
   document.getElementById('tough-btn-on').classList.toggle('sel',val);
 }
 
-// cycle 5+25: JSON/CSV export
+// cycle 5+25+75: JSON/CSV/Markdown export
 function exportData(){
-  const isJson=confirm('エクスポート形式を選択\n\n[OK] JSON — 完全バックアップ（インポート可能）\n[キャンセル] CSV — スプレッドシート用（Excelなど）');
-  if(isJson)_exportJSON();else _exportCSV();
+  const f=prompt('エクスポート形式を選択:\n\n1 = JSON（完全バックアップ、インポート可能）\n2 = CSV（スプレッドシート・Excel用）\n3 = Markdown（過去30日ジャーナル）\n\n番号を入力:','1');
+  if(!f)return;
+  const v=f.trim();
+  if(v==='1')_exportJSON();
+  else if(v==='2')_exportCSV();
+  else if(v==='3')_exportJournal();
 }
 function _exportJSON(){
   const data={version:'2.25',exportedAt:new Date().toISOString(),habits,completions};
@@ -2128,6 +2133,44 @@ function _exportCSV(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download=`habit-data-${today()}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// cycle 75: Markdown journal export (past 30 days)
+function _exportJournal(){
+  const MOOD_EM={1:'😩',2:'😔',3:'😐',4:'😊',5:'💪'};
+  const from=dateAgo(29);
+  const lines=[`# 習慣ジャーナル（${from} 〜 ${today()}）`,``];
+  for(let i=29;i>=0;i--){
+    const ds=dateAgo(i);
+    const dc=completions[ds]||{};
+    const d=daysAgo(i);
+    const dow=['日','月','火','水','木','金','土'][d.getDay()];
+    lines.push(`## ${ds}（${dow}）`);
+    const moodVal=parseInt(localStorage.getItem('rh_mood_'+ds)||'0');
+    if(moodVal)lines.push(`**気分**: ${MOOD_EM[moodVal]||''}`);
+    const intent=localStorage.getItem('rh_intent_'+ds);
+    if(intent)lines.push(`**今日の意図**: ${intent}`);
+    const active=habits.filter(h=>!h.archived&&isScheduled(h,ds));
+    if(active.length){
+      lines.push('');
+      active.forEach(h=>{
+        const done=!!dc[h.id];
+        const em=h.emoji?h.emoji+' ':'';
+        const qn=dc[h.id+'_note']?` _(${dc[h.id+'_note']})_`:'';
+        lines.push(`- ${done?'✅':'❌'} ${em}${h.name}${qn}`);
+      });
+      lines.push('');
+    }
+    const hl=localStorage.getItem('rh_hl_'+ds);
+    if(hl)lines.push(`**ハイライト**: ${hl}`);
+    lines.push('---','');
+  }
+  const md=lines.join('\n');
+  const blob=new Blob([md],{type:'text/markdown;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`habit-journal-${from}-to-${today()}.md`;a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -2468,7 +2511,7 @@ function renderList(){
   const el=document.getElementById('list');
   const td=today(),dc=completions[td]||{};
   const focusIds=getFocusIds();
-  let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
+  let list=filter==='all'?habits:filter==='important'?habits.filter(h=>h.important):habits.filter(h=>h.category===filter);
   if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
   list=list.filter(h=>!h.archived);
   if(_hideDone){list=list.filter(h=>!dc[h.id]);}
@@ -2501,7 +2544,7 @@ function renderList(){
     html+='</div>';
   }
 
-  const cats=filter==='all'?['学習','運動','創作','自己改善']:[filter];
+  const cats=filter==='all'||filter==='important'?['学習','運動','創作','自己改善']:[filter];
   const catCol=getCatCollapsed();
   for(const cat of cats){
     const rawCh=list.filter(h=>h.category===cat);
@@ -3934,7 +3977,7 @@ initWeekly();
 initReminder();
 initModalSwipe();
 // Cycle 44: restore last selected category filter
-(()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
+(()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善','important'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
 toggleTough(false); // Cycle 47: init tough buttons
 toggleImportant(false); // Cycle 70: init important buttons
 render();

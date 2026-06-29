@@ -1227,5 +1227,30 @@
         "status": "success"
       }
     }
+    ,{
+      "cycle": 75,
+      "version": "v2.75",
+      "timestamp": "2026-06-29T19:00:00Z",
+      "theme": "Markdownジャーナルエクスポート & ⭐重要習慣フィルタータブ",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "Markdownジャーナルエクスポート",
+          "description": "exportData()をconfirm()2択からprompt()3択（1=JSON/2=CSV/3=Markdown）に変更。新たに_exportJournal()関数を追加し、過去30日間の習慣実績をMarkdown形式でエクスポート可能に。各日付ごとに気分（rh_mood_*）・今日の意図（rh_intent_*）・習慣チェックリスト（✅/❌絵文字付き、クォートノート付き）・ハイライト（rh_hl_*）を含む日記形式MDファイルを生成。ファイル名はhabit-journal-{from}-to-{today}.mdで自動ダウンロード。LocalSotrageの既存キーを活用し追加コストゼロで実装。"
+        },
+        {
+          "type": "feature",
+          "title": "⭐重要習慣フィルタータブ追加",
+          "description": "カテゴリータブ列の末尾に「⭐ 重要」タブボタンを追加（data-cat='important'）。setFilter('important')呼び出し時、renderList()でh.importantフラグがtrueの習慣のみをlist対象に絞り込む。cats変数の判定をfilter==='all'||filter==='important'に拡張し重要習慣をカテゴリー別グループ表示を維持。localStorage('rh_filter')の復元許可リストに'important'を追加し、ページリロード後もタブ選択が保持される。Cycle 70で実装済みのimportantフラグ・imp-badgeと完全連携し、⭐重要と設定した習慣だけに絞ったフォーカスビューを実現。"
+        }
+      ],
+      "notes": "Cycle 75はエクスポート拡張と重要習慣フィルタリングの2軸改善。Markdownジャーナルは習慣データをテキスト形式で記録・共有したいユーザーのニーズに応え、気分・意図・ハイライト等既存Cycle機能のデータを最大活用。⭐重要フィルタータブはCycle 70で実装した重要フラグの価値を高め、重要習慣だけを素早く確認するビューを提供。両機能ともLocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T19:00:00Z",
+        "status": "success"
+      }
+    }
   ]
 }
