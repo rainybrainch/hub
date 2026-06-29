@@ -1235,6 +1235,17 @@
     /* Cycle 76: storage usage info in widget settings */
     .storage-info{font-size:11px;color:var(--muted);text-align:center;padding:4px 0 10px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.06)}
     body.light .storage-info{border-bottom-color:rgba(0,0,0,.06)}
+    /* Cycle 65: habit "why" (motivation) field in modal and detail panel */
+    .why-inp{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:11px 14px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;margin-bottom:14px;resize:none;line-height:1.5}
+    .why-inp:focus{border-color:rgba(245,200,66,.4)}
+    .why-inp::placeholder{color:var(--muted)}
+    body.light .why-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .why-inp::placeholder{color:rgba(0,0,0,.35)}
+    .hd-why{font-size:11px;color:var(--muted);font-style:italic;line-height:1.6;padding-top:8px;margin-top:6px;border-top:1px solid rgba(255,255,255,.05)}
+    body.light .hd-why{border-top-color:rgba(0,0,0,.06)}
+    /* Cycle 65: halfway achievement toast (50% / 75%) */
+    .halfway-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(155,109,214,.28),rgba(91,200,232,.18));border:1px solid rgba(155,109,214,.5);color:var(--purple);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 6px 20px rgba(155,109,214,.25);z-index:445;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;text-align:center;max-width:calc(100vw - 40px)}
+    .halfway-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1525,6 +1536,7 @@
     <input class="modal-inp" id="habit-inp" type="text" placeholder="習慣の名前..." maxlength="30"
       oninput="onHabitInput()" onkeydown="if(event.key==='Enter')saveHabit()">
     <input class="modal-inp" id="note-inp" type="text" placeholder="メモ（任意）..." maxlength="60" style="margin-bottom:14px">
+    <textarea class="why-inp" id="why-inp" placeholder="💭 この習慣を始めた理由（任意・60文字）..." maxlength="60" rows="2"></textarea>
     <div class="modal-emoji-row">
       <input class="modal-emoji-inp" id="emoji-inp" type="text" placeholder="🎯" maxlength="4" oninput="onEmojiInput(this.value)" title="絵文字アイコン（任意）">
       <div class="emoji-presets" id="emoji-presets"></div>
@@ -1584,6 +1596,7 @@
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 <div class="milestone-toast" id="milestone-toast"></div>
 <div class="shield-toast" id="shield-toast"></div>
+<div class="halfway-toast" id="halfway-toast"></div>
 <div class="comeback-toast" id="comeback-toast"></div>
 <div class="anniversary-toast" id="anniversary-toast"></div>
 
@@ -2902,6 +2915,7 @@ function toggle(id,evt){
       if(_t){_t.textContent=`⬆ ${_hh.name} Lv.${_lvUp}「${LV_NAMES[_lvUp]}」へ昇格！`;_t.classList.add('show');setTimeout(()=>_t.classList.remove('show'),3500);}
     }
     if(_hh)checkCategoryComplete(_hh.category); // Cycle 64: category completion flash
+    checkHalfway(); // Cycle 65: halfway achievement toast
   }
   saveC();
   render();
@@ -2914,6 +2928,23 @@ function toggle(id,evt){
   }else if(todayRate()<100){
     celebrated=false;
   }
+}
+
+// ── Cycle 65: halfway achievement toast (50% / 75%) ──
+function checkHalfway(){
+  const rate=todayRate();const td=today();
+  if(rate>=75&&!localStorage.getItem('rh_hw_'+td+'_75')){
+    localStorage.setItem('rh_hw_'+td+'_75','1');
+    _showHalfwayToast('💫 もうすぐ全達成！残りあと少し！');
+  }else if(rate>=50&&!localStorage.getItem('rh_hw_'+td+'_50')){
+    localStorage.setItem('rh_hw_'+td+'_50','1');
+    _showHalfwayToast('🎯 折り返し！残り半分！');
+  }
+}
+function _showHalfwayToast(msg){
+  const t=document.getElementById('halfway-toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 // ── Cycle 60: Next habit suggestion toast ──
@@ -3105,11 +3136,13 @@ function openModal(id=null){
   const ok=document.getElementById('modal-ok');
   const ttl=document.getElementById('modal-ttl');
   const noteEl=document.getElementById('note-inp');
+  const whyEl=document.getElementById('why-inp');
   const emojiEl=document.getElementById('emoji-inp');
   if(id){
     const h=habits.find(h=>h.id===id);
     inp.value=h?h.name:'';
     if(noteEl)noteEl.value=h&&h.note?h.note:'';
+    if(whyEl)whyEl.value=h&&h.why?h.why:'';
     if(emojiEl){emojiEl.value=h&&h.emoji?h.emoji:'';onEmojiInput(emojiEl.value);}
     selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
@@ -3124,7 +3157,7 @@ function openModal(id=null){
     // Cycle 28: hide template picker in edit mode
     const ts=document.getElementById('tmpl-section');if(ts)ts.style.display='none';
   }else{
-    inp.value='';if(noteEl)noteEl.value='';
+    inp.value='';if(noteEl)noteEl.value='';if(whyEl)whyEl.value='';
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
     selCatVal='';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
@@ -3159,17 +3192,19 @@ function validateModal(){
 function saveHabit(){
   const name=document.getElementById('habit-inp').value.trim();
   const note=((document.getElementById('note-inp')||{}).value||'').trim();
+  const why=((document.getElementById('why-inp')||{}).value||'').trim();
   const emoji=((document.getElementById('emoji-inp')||{}).value||'').trim();
   if(!name||!selCatVal)return;
   const durSave=parseInt((document.getElementById('dur-inp')||{}).value||'0');
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
+    if(why)nh.why=why;
     if(emoji)nh.emoji=emoji;
     if(selFreqVal!=='daily')nh.frequency=selFreqVal;
     if(selColorVal)nh.color=selColorVal;
@@ -3856,7 +3891,9 @@ function _habitDetailHtml(id){
   const _MS=[10,30,100,300,500,1000];
   const _nxtMs=_MS.find(m=>m>total);
   const msHtml=_nxtMs!==undefined?`<div class="hd-next-ms">🎯 次の目標 <strong>${_nxtMs}日</strong>まで あと<strong>${_nxtMs-total}日</strong></div>`:`<div class="hd-next-ms">🏆 全マイルストーン達成！</div>`;
-  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${dowHtml}${msHtml}${noteSec}</div>`;
+  const _hObj=habits.find(x=>x.id===id);
+  const whySec=_hObj&&_hObj.why?`<div class="hd-why">💭 ${esc(_hObj.why)}</div>`:'';
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();

@@ -1276,6 +1276,31 @@
           "habit-improvements.json"
         ]
       }
+    },
+    {
+      "cycle": 77,
+      "version": "v2.77",
+      "timestamp": "2026-06-29T21:00:00Z",
+      "theme": "💭 習慣の動機（Why）フィールド + 🎯 中間達成トースト",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "💭 習慣の「動機（Why）」フィールド追加",
+          "description": "習慣追加・編集モーダルにtextarea（.why-inp）を追加し、「この習慣を始めた理由」を最大60文字で記録できるようにした。habit.whyプロパティとしてLocalStorageに永続化（存在しない場合はフィールドを省略して後方完全互換を維持）。openModal()でedit時はh.whyをロード、新規作成時はクリア。saveHabit()でedit/newの両分岐でwhy保存・削除を処理。_habitDetailHtml()の戻り値末尾に.hd-whyブロック（💭 アイコン付きイタリック体）を追加し、詳細パネルを展開すると動機が確認できる。CSS: .why-inp（textarea用スタイル・ダーク/ライト両対応）・.hd-why（詳細パネル内表示用・区切り線付き）を追加。"
+        },
+        {
+          "type": "ux",
+          "title": "🎯 中間達成トースト（50% / 75%）実装",
+          "description": "toggle()でチェック完了した際に今日の達成率が50%・75%を初めて超えたタイミングでトースト通知を表示。checkHalfway()がtodayRate()を参照し、rh_hw_YYYY-MM-DD_50・rh_hw_YYYY-MM-DD_75のLocalStorageキーで当日内の重複表示を防ぐ。50%到達時は「🎯 折り返し！残り半分！」、75%到達時は「💫 もうすぐ全達成！残りあと少し！」を表示。_showHalfwayToast()は.halfway-toastのCSS transition（translateY(-16px)→0 + opacity 0→1）でスライドイン、3秒後にclassを外してスライドアウト。既存の全達成バナー・ネクストトースト・コンボトーストとz-index競合しない位置（top:76px / z-index:445）に配置。"
+        }
+      ],
+      "deploy": {
+        "branch": "main",
+        "files": [
+          "habit.html",
+          "habit-improvements.json"
+        ]
+      }
     }
   ]
 }
