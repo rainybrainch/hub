@@ -426,6 +426,9 @@
     /* Cycle 24: swipe-to-complete gesture visual feedback */
     .habit.swipe-right{background:rgba(76,175,125,.1)!important;border-color:rgba(76,175,125,.3)!important}
     body.light .habit.swipe-right{background:rgba(76,175,125,.14)!important;border-color:rgba(76,175,125,.38)!important}
+    /* Cycle 62: left swipe to skip visual feedback */
+    .habit.swipe-left{background:rgba(91,200,232,.09)!important;border-color:rgba(91,200,232,.3)!important}
+    body.light .habit.swipe-left{background:rgba(91,200,232,.1)!important;border-color:rgba(91,200,232,.38)!important}
 
     /* Cycle 25: streak visual glow motivator */
     .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.3)!important}
@@ -1154,7 +1157,7 @@
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
-  <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
+  <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="音量切替（🔇/🔈/🔊/📢）"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
@@ -1523,23 +1526,25 @@ const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラ�
 
 let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false;
 
-// ── Cycle 12: sound effects ──
-let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
+// ── Cycle 12: sound effects / Cycle 62: 4-level volume ──
+const SOUND_LEVELS=[0,0.1,0.25,0.5];
+const SOUND_ICONS=['🔇','🔈','🔊','📢'];
+let soundVol=(()=>{const v=localStorage.getItem('rh_sound');if(v==='false'||v==='0')return 0;if(v==='true')return 2;const n=parseInt(v);return Number.isFinite(n)&&n>=0&&n<=3?n:2;})();
 function _audioCtx(){return new (window.AudioContext||window.webkitAudioContext)()}
 function playTick(){
-  if(!soundEnabled)return;
+  if(!soundVol)return;
   try{
     const ctx=_audioCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
     osc.connect(g);g.connect(ctx.destination);
     osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(660,ctx.currentTime+0.08);
-    g.gain.setValueAtTime(0.25,ctx.currentTime);
+    g.gain.setValueAtTime(0.25*SOUND_LEVELS[soundVol],ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
     osc.start();osc.stop(ctx.currentTime+0.22);
   }catch(e){}
 }
 function playCelebration(){
-  if(!soundEnabled)return;
+  if(!soundVol)return;
   try{
     const ctx=_audioCtx();
     [523,659,784,1047].forEach((f,i)=>{
@@ -1547,19 +1552,19 @@ function playCelebration(){
       osc.connect(g);g.connect(ctx.destination);
       osc.frequency.value=f;
       const t=ctx.currentTime+i*0.12;
-      g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+      g.gain.setValueAtTime(0.18*SOUND_LEVELS[soundVol],t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
       osc.start(t);osc.stop(t+0.35);
     });
   }catch(e){}
 }
 function toggleSound(){
-  soundEnabled=!soundEnabled;
-  localStorage.setItem('rh_sound',soundEnabled?'true':'false');
+  soundVol=(soundVol+1)%4;
+  localStorage.setItem('rh_sound',String(soundVol));
   updateSoundBtn();
 }
 function updateSoundBtn(){
   const btn=document.getElementById('sound-btn');
-  if(btn)btn.textContent=soundEnabled?'🔊':'🔇';
+  if(btn)btn.textContent=SOUND_ICONS[soundVol];
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -3631,7 +3636,7 @@ function initModalSwipe(){
   });
 }
 
-// ── Cycle 24: swipe-to-complete gesture for habit cards ──
+// ── Cycle 24: swipe-to-complete / Cycle 62: left-swipe-to-skip ──
 function initSwipeGestures(){
   document.querySelectorAll('#list .habit[data-id]').forEach(el=>{
     if(el._swipeInited)return;
@@ -3645,20 +3650,27 @@ function initSwipeGestures(){
     el.addEventListener('touchmove',e=>{
       const fx=e.touches[0].clientX-sx,fy=e.touches[0].clientY-sy;
       if(!moving&&Math.abs(fy)>Math.abs(fx)+8)return;
-      if(fx<0)return;
       moving=true;dx=fx;
-      el.style.transform=`translateX(${Math.min(90,dx)}px)`;
+      const clamp=dx>0?Math.min(90,dx):Math.max(-90,dx);
+      el.style.transform=`translateX(${clamp}px)`;
       el.style.transition='none';
       el.classList.toggle('swipe-right',dx>=THRESH);
+      el.classList.toggle('swipe-left',dx<=-THRESH);
     },{passive:true});
     el.addEventListener('touchend',e=>{
       el.style.transition='transform .25s ease';
       el.style.transform='';
       el.classList.remove('swipe-right');
+      el.classList.remove('swipe-left');
       if(moving&&dx>=THRESH){
         e.preventDefault();
         const h=habits.find(x=>x.id===id);
         if(h&&!h.paused)toggle(id,{currentTarget:el,target:el});
+      } else if(moving&&dx<=-THRESH){
+        e.preventDefault();
+        const h=habits.find(x=>x.id===id);
+        const done=completions[today()]?.[id];
+        if(h&&!h.paused&&!h.archived&&!done)toggleSkip(id);
       }
       dx=0;moving=false;
     },{passive:false});

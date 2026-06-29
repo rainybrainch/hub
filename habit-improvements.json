@@ -977,6 +977,30 @@
         "deployedAt": "2026-06-29T08:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 65,
+      "version": "v2.65",
+      "timestamp": "2026-06-29T09:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "左スワイプでスキップジェスチャー",
+          "description": "Cycle 24の右スワイプ（完了）に続いて、左スワイプで「今日スキップ（⊘）」を実行するタッチジェスチャーを追加。initSwipeGestures()を拡張し、touchmoveで負方向（左）のdxも追跡可能に。スワイプ中は.swipe-leftクラスが付与されて水色ボーダー＋薄い背景色でビジュアルフィードバック。閾値-64px超過でtouchend時にtoggleSkip(id)を呼び出す。既に完了済み・一時停止中・アーカイブ済みの習慣には適用しない。右スワイプ（完了）との競合なし（dx>=THRESHと<=−THRESHで独立判定）。"
+        },
+        {
+          "type": "enhancement",
+          "title": "サウンド音量4段階切替",
+          "description": "soundEnabledボーリアン（ON/OFF）をsoundVol（0〜3の4段階）に置き換え。ボタン1タップで🔇(無音)→🔈(低:10%)→🔊(中:25%)→📢(高:50%)→🔇のサイクル。playTick()とplayCelebration()のgain値にSOUND_LEVELS[soundVol]を乗じて音量を動的制御。LocalStorage（rh_sound）に0〜3の整数で保存し、既存の'true'/'false'値も後方互換で読み取り（'true'→2=標準、'false'→0=無音）。ヘッダーのサウンドボタンのtitle属性も更新。"
+        }
+      ],
+      "notes": "Cycle 65はモバイルUXとサウンドUXの2軸改善。左スワイプスキップはCycle 24の右スワイプ完了（チェック）と対になる操作で、習慣リストを素早く左右スワイプでチェック＆スキップを振り分けられるモバイル特化のジェスチャーUI。出張日・体調不良など特定の習慣だけ今日スキップしたい場合に、カードを左にスワイプするだけで完結する。音量4段階はON/OFFの2択だった設定を細分化し、就寝前や静かな環境では低音量（🔈）、作業集中時は標準（🔊）、モチベーション高揚時は高音量（📢）と状況に合わせた設定が可能。SOUND_LEVELS配列と乗算実装で全音声関数（playTick/playCelebration）を一括対応。後方互換性完全維持。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T09:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
