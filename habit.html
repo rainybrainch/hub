@@ -1131,6 +1131,16 @@
     body.compact .habit-level{display:none}
     body.light .habit-level.lv1{color:rgba(0,0,0,.35);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
 
+    /* Cycle 66: all-done summary card */
+    .all-done-card{background:linear-gradient(135deg,rgba(76,175,125,.1),rgba(245,200,66,.06));border:1px solid rgba(76,175,125,.25);border-radius:14px;padding:14px 16px;margin-bottom:12px;text-align:center;animation:fadeInUp .4s both}
+    .adc-title{font-family:"Dela Gothic One",sans-serif;font-size:14px;color:var(--green);margin-bottom:8px}
+    .adc-stats{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+    .adc-stat{padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1px solid transparent}
+    .adc-stat.score{color:var(--gold);background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.25)}
+    .adc-stat.streak{color:#ff9557;background:rgba(255,149,87,.1);border-color:rgba(255,149,87,.22)}
+    .adc-stat.time{color:var(--sky);background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.22)}
+    .adc-stat.grade{color:var(--green);background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.22)}
+    body.light .all-done-card{background:linear-gradient(135deg,rgba(76,175,125,.08),rgba(245,200,66,.05));border-color:rgba(76,175,125,.3)}
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -2274,7 +2284,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 66: left category color border strip
+  const _catBorder=`border-left:3px solid ${hcol||col}`;
+  const _inlineStyle=hcol?`style="--hcol:${hcol};${_catBorder}"`:` style="${_catBorder}"`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2293,6 +2306,18 @@ function renderList(){
   }
 
   let html='';
+  // Cycle 66: all-done summary card
+  if(!searchQuery&&!isDayOff(td)){
+    const _actv=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+    if(_actv.length&&_actv.every(h=>!!dc[h.id])){
+      const _sc=calcDailyScore();
+      const _str=calcStreak();
+      const _mins=_actv.filter(h=>h.duration&&dc[h.id]).reduce((s,h)=>s+h.duration,0);
+      const _time=_mins>=60?`${Math.floor(_mins/60)}h${_mins%60?' '+(_mins%60)+'m':''}`:`${_mins>0?_mins+'m':''}`;
+      const _wg=getWeekGrade();
+      html+=`<div class="all-done-card"><div class="adc-title">🎊 今日の習慣 全達成！</div><div class="adc-stats">${_sc>0?`<span class="adc-stat score">🏅 ${_sc}pt</span>`:''} ${_str>=2?`<span class="adc-stat streak">🔥 ${_str}日連続</span>`:''} ${_time?`<span class="adc-stat time">⏱ ${_time}</span>`:''}<span class="adc-stat grade">週間 ${_wg.label}ランク</span></div></div>`;
+    }
+  }
   // Cycle 19: focus section at top (paused habits excluded)
   const focused=list.filter(h=>focusIds.includes(h.id)&&!h.paused);
   if(focused.length){
