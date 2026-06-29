@@ -1073,6 +1073,34 @@
         "deployedAt": "2026-06-29T12:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 69,
+      "timestamp": "2026-06-29T13:00:00Z",
+      "version": "v2.69",
+      "changes": [
+        "今週パーフェクトウィーク予報バッジ追加（streak-row内・flex-wrap対応）",
+        "統計モーダル（全習慣一覧）へのLv.列追加"
+      ],
+      "details": [
+        {
+          "type": "feature",
+          "title": "今週パーフェクトウィーク予報バッジ（.perfect-week-badge）追加",
+          "description": "streak-rowに新しい.perfect-week-badgeバッジを追加。月曜日からの直近日まで毎日全習慣達成している場合にのみ表示され、「✨ 2日完璧継続中」「✨ 完璧4日・あと2日」のように進捗を表示。日曜日まで全完璧なら「🏆 完璧な週！」に変わりゴールドカラーの.fullスタイルを適用。dayRate()とdateAgo()を使い、月曜=dow===0?6:dow-1でオフセットを計算。パーフェクトでない日が一日でもあれば非表示。streak-rowにflex-wrap:wrapを追加しバッジ多数時に折り返し対応。renderStats()→renderPerfectWeekBadge()として呼び出し。"
+        },
+        {
+          "type": "enhancement",
+          "title": "統計モーダルの全習慣テーブルにLv.列を追加",
+          "description": "_renderStatsOvl()のSMTテーブルに5列目「Lv.」を追加。habitLevel(total)を利用しLv.1〜5を算出。Lv.1=muted、Lv.2=sky、Lv.3=green、Lv.4=gold、Lv.5=#c084fc（紫）の色分けでデラゴシックONEフォント12pxで表示。tableのtheadにも<th style=\"text-align:center\">Lv.</th>を追加しカラム揃え。Cycle 63のhabitLevel()/LV_NAMES[]と同一ロジックを再利用。habitTotalCount()が0の新規習慣はLv.1（muted）として表示。LocalStorage変更なし・完全後方互換。"
+        }
+      ],
+      "notes": "Cycle 69は2つのモチベーション強化。パーフェクトウィーク予報バッジは週間ペルフェクト達成が見えてきたタイミングでユーザーに「あと何日」と意識させ、完璧な週を完走する動機付けになる。Lv.列は統計モーダルを開いたときに各習慣の成熟度が一目でわかり、次にどの習慣を伸ばすべきか判断しやすくなる。どちらもLocalStorage非破壊・新しいDOMキー追加のみで後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T13:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

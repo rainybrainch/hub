@@ -1063,6 +1063,11 @@
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
     body.light .score-badge{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(255,123,92,.15));border-color:rgba(245,200,66,.4)}
     .score-badge.hi{box-shadow:0 0 10px rgba(245,200,66,.3);border-color:rgba(245,200,66,.55)}
+    /* Cycle 69: perfect week forecast badge */
+    .streak-row{flex-wrap:wrap}
+    .perfect-week-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(76,175,125,.12),rgba(91,200,232,.08));border:1px solid rgba(76,175,125,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;transition:all .25s}
+    body.light .perfect-week-badge{background:linear-gradient(135deg,rgba(76,175,125,.18),rgba(91,200,232,.12));border-color:rgba(76,175,125,.4)}
+    .perfect-week-badge.full{background:linear-gradient(135deg,rgba(245,200,66,.15),rgba(76,175,125,.12));border-color:rgba(245,200,66,.45);color:var(--gold)}
     /* Cycle 64: score flyout animation */
     .score-flyout{position:fixed;z-index:900;font-family:'Dela Gothic One',sans-serif;font-size:14px;font-weight:700;color:var(--gold);pointer-events:none;white-space:nowrap;opacity:1;text-shadow:0 0 8px rgba(245,200,66,.6);transition:transform .9s cubic-bezier(.25,.46,.45,.94),opacity .9s ease-out}
     .score-flyout.fly{transform:translateY(-54px) scale(0.8);opacity:0}
@@ -1317,6 +1322,7 @@
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
     <span class="score-badge" id="score-badge" style="display:none"></span>
+    <span class="perfect-week-badge" id="perfect-week-badge" style="display:none"></span>
   </div>
 
   <!-- Cycle 63: 7-day score history chart -->
@@ -2138,6 +2144,8 @@ function renderStats(){
   renderScoreBadge();
   // Cycle 63: score history chart (depends on renderScoreBadge saving today's score)
   renderScoreHistory();
+  // Cycle 69: perfect week forecast badge
+  renderPerfectWeekBadge();
 }
 
 let chartView='week';
@@ -3189,6 +3197,38 @@ function renderWeekGrade(){
   const g=getWeekGrade();
   el.textContent='今週 '+g.label;
   el.className='grade-badge '+g.cls;
+  el.style.display='';
+}
+
+// ── Cycle 69: perfect week forecast badge ──
+function renderPerfectWeekBadge(){
+  const el=document.getElementById('perfect-week-badge');
+  if(!el)return;
+  const active=habits.filter(h=>!h.archived&&!h.paused);
+  if(!active.length){el.style.display='none';return;}
+  const now=new Date();
+  const dow=now.getDay();
+  const mondayOff=dow===0?6:dow-1;
+  let allPriorPerfect=true;
+  for(let d=mondayOff;d>0;d--){
+    if(dayRate(dateAgo(d))<1){allPriorPerfect=false;break;}
+  }
+  if(!allPriorPerfect){el.style.display='none';return;}
+  const todayPerfect=dayRate(today())>=1;
+  const perfectDays=mondayOff+(todayPerfect?1:0);
+  if(perfectDays===0){el.style.display='none';return;}
+  const remainingDays=6-mondayOff-(todayPerfect?0:1);
+  const isFull=mondayOff>=6&&todayPerfect;
+  el.classList.toggle('full',isFull);
+  if(isFull){
+    el.textContent='🏆 完璧な週！';
+  }else if(todayPerfect&&remainingDays<=0){
+    el.textContent=`✨ 完璧${perfectDays}日！`;
+  }else if(todayPerfect){
+    el.textContent=`✨ 完璧${perfectDays}日・あと${remainingDays}日`;
+  }else if(mondayOff>0){
+    el.textContent=`✨ ${mondayOff}日完璧継続中`;
+  }else{el.style.display='none';return;}
   el.style.display='';
 }
 
@@ -4275,6 +4315,8 @@ function _renderStatsOvl(){
     const pct30=Math.round(habitFix30(h.id)/30*100);
     const strk=habitStreak(h.id);
     const total=habitTotalCount(h.id);
+    const lv=habitLevel(total);
+    const lvColors=['','var(--muted)','var(--sky)','var(--green)','var(--gold)','#c084fc'];
     const cc=h.color||(CAT_COLORS[h.category]||'#888');
     const cls=pct30>=80?'hi':pct30>=50?'md':'lo';
     const bc=pct30>=80?'var(--green)':pct30>=50?'var(--gold)':'var(--red)';
@@ -4285,9 +4327,10 @@ function _renderStatsOvl(){
       <td style="text-align:right"><span class="smt-bar"><span class="smt-bar-f" style="width:${pct30}%;background:${bc}"></span></span><span class="smt-pct ${cls}">${pct30}%</span></td>
       <td style="text-align:center;font-family:'Dela Gothic One',sans-serif;font-size:12px;color:${strk>0?'var(--gold)':'var(--muted)'}">${strk>0?'🔥'+strk:'-'}</td>
       <td style="text-align:center;color:var(--muted);font-family:'Dela Gothic One',sans-serif;font-size:12px">${total}</td>
+      <td style="text-align:center;font-family:'Dela Gothic One',sans-serif;font-size:12px;color:${lvColors[lv]}">Lv.${lv}</td>
     </tr>`;
   }).join('');
-  wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th></tr></thead><tbody>${rows}</tbody></table>`;
+  wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th><th style="text-align:center">Lv.</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 // ── Cycle 63: 7-day score history chart ──
