@@ -1106,6 +1106,44 @@
     .habit.kfocus{outline:2px solid var(--sky);outline-offset:2px;box-shadow:0 0 0 4px rgba(91,200,232,.15)!important}
     body.light .habit.kfocus{box-shadow:0 0 0 4px rgba(91,200,232,.18)!important}
 
+    /* Cycle 64: streak calendar popup */
+    .streak-badge{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .streak-cal-wrap{position:relative;display:inline-flex;align-items:center}
+    .streak-cal-pop{position:absolute;top:calc(100% + 8px);left:0;background:var(--dark2);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 16px;z-index:600;width:252px;box-shadow:0 14px 44px rgba(0,0,0,.55);opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;transition:opacity .2s,transform .25s cubic-bezier(.34,1.56,.64,1)}
+    .streak-cal-pop.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .scp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .scp-ttl{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+    .scp-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;line-height:1;border-radius:6px;transition:all .15s}
+    .scp-close:hover{color:var(--white);background:rgba(255,255,255,.08)}
+    .scp-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:10px}
+    .scp-day{aspect-ratio:1;border-radius:3px;transition:transform .1s;cursor:default;position:relative;display:flex;align-items:center;justify-content:center}
+    .scp-day:hover{transform:scale(1.35);z-index:1}
+    .scp-day .scp-d{font-size:7px;color:rgba(255,255,255,.55);line-height:1}
+    .scp-day.done{background:var(--green)}
+    .scp-day.part{background:var(--gold)}
+    .scp-day.miss{background:rgba(255,255,255,.09)}
+    .scp-day.off{background:rgba(255,255,255,.04);opacity:.5}
+    .scp-legend{display:flex;gap:8px;align-items:center;font-size:9px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
+    .scp-lsq{width:10px;height:10px;border-radius:2px;display:inline-block;vertical-align:middle;margin-right:2px}
+    body.light .scp-day .scp-d{color:rgba(0,0,0,.4)}
+    body.light .scp-day.miss{background:rgba(0,0,0,.08)}
+    body.light .scp-day.off{background:rgba(0,0,0,.03)}
+    body.light .streak-cal-pop{background:#fff;border-color:rgba(0,0,0,.1);box-shadow:0 12px 40px rgba(0,0,0,.15)}
+    body.light .scp-close:hover{color:#1a1a2e;background:rgba(0,0,0,.06)}
+    body.light .scp-stats{border-top-color:rgba(0,0,0,.07)}
+    body.light .scp-stat-val{color:var(--gold-d)}
+    /* Cycle 64: enhanced onboarding empty state */
+    .empty-onboard{text-align:center;padding:40px 16px 20px}
+    .empty-onboard-ico{font-size:48px;margin-bottom:12px}
+    .empty-onboard-ttl{font-family:"Dela Gothic One",sans-serif;font-size:20px;margin-bottom:6px}
+    .empty-onboard-sub{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7}
+    .empty-onboard-cats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:280px;margin:0 auto}
+    .empty-cat-btn{padding:12px 8px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent}
+    .empty-cat-btn:hover{transform:scale(1.05)}
+    .empty-cat-btn:active{transform:scale(.97)}
+    .empty-cat-ico{font-size:24px;line-height:1}
+    body.light .empty-cat-btn{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1242,7 +1280,7 @@
   </div>
 
   <div class="streak-row">
-    <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
+    <span class="streak-cal-wrap"><span class="streak-badge" id="streak-badge" onclick="toggleStreakCal()" title="過去30日のカレンダーを表示">🔥 0日連続達成中</span><div class="streak-cal-pop" id="streak-cal-pop"></div></span>
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
     <span class="score-badge" id="score-badge" style="display:none"></span>
@@ -2268,9 +2306,14 @@ function renderList(){
   list=list.filter(h=>!h.archived);
 
   if(!list.length){
-    const msg=searchQuery?`「${esc(searchQuery)}」に一致する習慣はありません`:'＋ボタンで習慣を追加しよう！';
-    const ico=searchQuery?'🔍':'🌱';
-    el.innerHTML=`<div class="empty"><div class="empty-ico">${ico}</div><div class="empty-txt">${msg}</div></div>`;
+    if(searchQuery){
+      el.innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">「${esc(searchQuery)}」に一致する習慣はありません</div></div>`;
+    } else if(habits.filter(h=>!h.archived).length===0){
+      // Cycle 64: first-time onboarding empty state
+      el.innerHTML=`<div class="empty-onboard"><div class="empty-onboard-ico">🌱</div><div class="empty-onboard-ttl">習慣を始めよう！</div><div class="empty-onboard-sub">カテゴリを選んで最初の習慣を追加してみましょう</div><div class="empty-onboard-cats"><button class="empty-cat-btn" onclick="openModalWithCat('学習')" style="--cc:#4aa3e8"><span class="empty-cat-ico">📚</span>学習</button><button class="empty-cat-btn" onclick="openModalWithCat('運動')" style="--cc:#4ade80"><span class="empty-cat-ico">🏃</span>運動</button><button class="empty-cat-btn" onclick="openModalWithCat('創作')" style="--cc:#c084fc"><span class="empty-cat-ico">🎨</span>創作</button><button class="empty-cat-btn" onclick="openModalWithCat('自己改善')" style="--cc:#fb923c"><span class="empty-cat-ico">✨</span>自己改善</button></div></div>`;
+    } else {
+      el.innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">このカテゴリに習慣はありません</div></div>`;
+    }
     return;
   }
 
@@ -4136,6 +4179,39 @@ function openStatsModal(){
   _renderStatsOvl();el.classList.add('open');
 }
 function closeStatsModal(){document.getElementById('stats-ovl')?.classList.remove('open');}
+// Cycle 64: open modal pre-selecting a category (for onboarding empty state buttons)
+function openModalWithCat(cat){openModal();setTimeout(()=>{selCat(cat,true);},20);}
+// Cycle 64: toggle 30-day streak calendar popup
+function toggleStreakCal(){
+  const pop=document.getElementById('streak-cal-pop');if(!pop)return;
+  const open=pop.classList.toggle('open');
+  if(open){_renderStreakCal(pop);document.addEventListener('click',_scpOutside,{once:true,capture:true});}
+}
+function _scpOutside(e){
+  const pop=document.getElementById('streak-cal-pop');
+  if(!pop)return;
+  const wrap=pop.closest('.streak-cal-wrap');
+  if(wrap&&wrap.contains(e.target))return;
+  pop.classList.remove('open');
+}
+function _renderStreakCal(pop){
+  const td=today();
+  const days=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date(td+'T00:00:00');d.setDate(d.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    days.push(ds);
+  }
+  const cells=days.map(ds=>{
+    const r=dayRate(ds);
+    const isDo=isDayOff(ds);
+    const cls=isDo?'scp-day off':r>=1?'scp-day done':r>0?'scp-day part':'scp-day miss';
+    const weekday=['日','月','火','水','木','金','土'][new Date(ds+'T00:00:00').getDay()];
+    const dayNum=ds.slice(8);
+    return `<div class="${cls}" title="${ds}（${weekday}）${isDo?'休日':Math.round(r*100)+'%'}"><span class="scp-d">${dayNum}</span></div>`;
+  }).join('');
+  pop.innerHTML=`<div class="scp-hdr"><span>📅 過去30日の達成状況</span><button class="scp-close" onclick="document.getElementById('streak-cal-pop').classList.remove('open')">×</button></div><div class="scp-legend"><span class="scp-day done scp-lsq"></span>達成 <span class="scp-day part scp-lsq"></span>一部 <span class="scp-day miss scp-lsq"></span>未達成 <span class="scp-day off scp-lsq"></span>休日</div><div class="scp-grid">${cells}</div>`;
+}
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
   const all=habits.filter(h=>!h.archived);

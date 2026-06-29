@@ -952,6 +952,29 @@
         "deployedAt": "2026-06-29T17:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 64,
+      "version": "v2.64",
+      "timestamp": "2026-06-29T18:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "ストリークバッジクリックで30日カレンダーポップアップ",
+          "description": "ホーム画面のストリークバッジ（🔥 N日連続達成中）をクリック可能にし、過去30日間の達成状況をグリッド表示するポップアップカレンダーを実装。各日付マスは達成（緑）・一部達成（金）・未達成（グレー）・休日（薄グレー）の4色で色分けし、日付数字も表示。凡例付き。popupはCSSアニメーションでスケール＋フェードイン表示。外側クリックで自動クローズ（_scpOutside関数）。toggleStreakCal()/  _renderStreakCal()/_scpOutside()の3関数を追加。HTML側はstreak-badgeをstreak-cal-wrap内にラップしstreak-cal-popを追加。既存のdayRate()・isDayOff()関数を再利用。"
+        },
+        {
+          "type": "ux",
+          "title": "初回ユーザー向けオンボーディング空状態改善",
+          "description": "習慣が1件もない初回ユーザー向けに特別なオンボーディング画面を表示するよう renderList()の空状態ハンドリングを3段階に分岐。①検索クエリあり→「一致なし」メッセージ ②全体が空（初回）→4カテゴリボタン付きオンボーディング画面 ③カテゴリフィルター中で当該カテゴリが空→「このカテゴリに習慣はありません」。オンボーディング画面は学習📚・運動🏃・創作🎨・自己改善✨の4ボタンをグリッド表示し、クリックするとそのカテゴリが選択済みの状態でモーダルを開くopenModalWithCat()関数を追加。ボタンはカテゴリカラーで色分け（--ccカスタムプロパティ）。CSS追加クラス: .empty-onboard, .empty-onboard-ico, .empty-onboard-ttl, .empty-onboard-sub, .empty-onboard-cats, .empty-cat-btn, .empty-cat-ico。"
+        }
+      ],
+      "notes": "Cycle 64は「既存UIの深堀り強化」と「ファーストランエクスペリエンス向上」の2軸改善。ストリークカレンダーポップアップはCycle 23（年間ヒートマップ）・Cycle 10（28日進捗ドット）に続く時系列可視化の第3形態で、ストリークバッジに直結したインライン表示が特徴。初回ユーザー向けオンボーディングはCycle 1の空状態メッセージを63サイクル目にして初めて実用的なCTA付きUIに昇格。LocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-29T18:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
