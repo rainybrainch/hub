@@ -1100,6 +1100,28 @@
     .comeback-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     body.light .comeback-toast{background:linear-gradient(135deg,#d4f0e0,#c8eccc);border-color:rgba(76,175,125,.4);color:#2d7a50}
 
+    /* Cycle 63: 7-day score history chart */
+    .score-hist-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:none;transition:background .25s,border-color .25s}
+    .score-hist-hdr{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+    .score-hist-avg{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:0}
+    .score-hist-bars{display:flex;gap:4px;align-items:flex-end;height:40px}
+    .sh-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .sh-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:3px 3px 0 0;position:relative;overflow:hidden;min-height:28px}
+    .sh-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px 3px 0 0;transition:height .6s cubic-bezier(.34,1.56,.64,1)}
+    .sh-lbl{font-size:8px;color:var(--muted);font-weight:700;line-height:1}
+    .sh-lbl.today{color:var(--gold)}
+    body.light .score-hist-box{border-color:rgba(0,0,0,.08)}
+    body.light .sh-bar-wrap{background:rgba(0,0,0,.06)}
+    /* Cycle 63: habit level badge */
+    .habit-level{font-size:9px;font-weight:700;flex-shrink:0;padding:2px 5px;border-radius:6px;line-height:1.5;cursor:default}
+    .habit-level.lv1{color:rgba(255,255,255,.4);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+    .habit-level.lv2{color:var(--sky);background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2)}
+    .habit-level.lv3{color:var(--green);background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.2)}
+    .habit-level.lv4{color:var(--gold);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.25)}
+    .habit-level.lv5{color:#fff;background:linear-gradient(135deg,rgba(155,109,214,.25),rgba(245,200,66,.15));border:1px solid rgba(245,200,66,.4)}
+    body.compact .habit-level{display:none}
+    body.light .habit-level.lv1{color:rgba(0,0,0,.35);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1239,6 +1261,12 @@
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
     <span class="score-badge" id="score-badge" style="display:none"></span>
+  </div>
+
+  <!-- Cycle 63: 7-day score history chart -->
+  <div class="score-hist-box" id="score-hist-box">
+    <div class="score-hist-hdr"><span>📈 スコア推移（7日間）</span><span class="score-hist-avg" id="score-hist-avg"></span></div>
+    <div class="score-hist-bars" id="score-hist-bars"></div>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -2035,6 +2063,8 @@ function renderStats(){
   }
   // Cycle 61: daily score badge
   renderScoreBadge();
+  // Cycle 63: score history chart (depends on renderScoreBadge saving today's score)
+  renderScoreHistory();
 }
 
 let chartView='week';
@@ -2171,6 +2201,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const isPaused=!!h.paused;
   const cnt=habitTotalCount(h.id);
   const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
+  // Cycle 63: habit level badge
+  const lv=habitLevel(cnt);
+  const lvBadge=`<span class="habit-level lv${lv}" title="${LV_NAMES[lv]}（累計${cnt}日）">Lv.${lv}</span>`;
   const hs=habitStreak(h.id);
   const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
   const hbs=habitBestStreak(h.id);
@@ -2230,7 +2263,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2587,6 +2620,13 @@ function toggle(id,evt){
     // Cycle 62: comeback toast for 3+ day gap
     const _gap=daysSinceLastCompletion(id);
     if(_gap!==null&&_gap>=3)showComebackToast(_hh,_gap);
+    // Cycle 63: detect level-up and show toast
+    const _newTot=habitTotalCount(id);
+    if(habitLevel(_newTot)>habitLevel(_newTot-1)){
+      const _lvUp=habitLevel(_newTot);
+      const _t=document.getElementById('milestone-toast');
+      if(_t){_t.textContent=`⬆ ${_hh.name} Lv.${_lvUp}「${LV_NAMES[_lvUp]}」へ昇格！`;_t.classList.add('show');setTimeout(()=>_t.classList.remove('show'),3500);}
+    }
   }
   saveC();
   render();
@@ -2643,6 +2683,8 @@ function renderScoreBadge(){
   const el=document.getElementById('score-badge');
   if(!el)return;
   const score=calcDailyScore();
+  // Cycle 63: persist daily score for history chart
+  if(score>0)localStorage.setItem('rh_score_'+today(),String(score));
   if(score<=0){el.style.display='none';_lastScore=score;return;}
   el.style.display='';
   el.textContent=`🏅 ${score}pt`;
@@ -4019,6 +4061,45 @@ function _renderStatsOvl(){
     </tr>`;
   }).join('');
   wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── Cycle 63: 7-day score history chart ──
+function renderScoreHistory(){
+  const box=document.getElementById('score-hist-box');
+  if(!box)return;
+  const DAYS=['日','月','火','水','木','金','土'];
+  const scores=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().split('T')[0];
+    const s=parseInt(localStorage.getItem('rh_score_'+key)||'0');
+    scores.push({s,isToday:i===0,lbl:DAYS[d.getDay()]});
+  }
+  const hasPast=scores.slice(0,6).some(x=>x.s>0);
+  if(!hasPast){box.style.display='none';return;}
+  box.style.display='';
+  const withScore=scores.filter(x=>x.s>0);
+  const avg=withScore.length?Math.round(withScore.reduce((a,b)=>a+b.s,0)/withScore.length):0;
+  const avgEl=document.getElementById('score-hist-avg');
+  if(avgEl)avgEl.textContent=avg?`平均 ${avg}pt`:'';
+  const barsEl=document.getElementById('score-hist-bars');
+  if(!barsEl)return;
+  const max=Math.max(...scores.map(x=>x.s),1);
+  barsEl.innerHTML=scores.map(x=>{
+    const h=x.s>0?Math.max(Math.round((x.s/max)*100),10):0;
+    const fill=x.isToday?'linear-gradient(180deg,var(--gold),var(--gold-d))':'rgba(245,200,66,.3)';
+    return `<div class="sh-col"><div class="sh-bar-wrap"><div class="sh-bar-fill" style="height:${h}%;background:${fill}"></div></div><div class="sh-lbl${x.isToday?' today':''}">${x.lbl}</div></div>`;
+  }).join('');
+}
+
+// ── Cycle 63: habit level system ──
+const LV_NAMES=['','初心者','成長中','定着済','エキスパート','マスター'];
+function habitLevel(total){
+  if(total>=300)return 5;
+  if(total>=100)return 4;
+  if(total>=30)return 3;
+  if(total>=10)return 2;
+  return 1;
 }
 
 // ── Cycle 62: Monthly Calendar Modal ──
