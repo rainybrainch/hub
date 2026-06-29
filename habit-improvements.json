@@ -1201,6 +1201,31 @@
         "deployedAt": "2026-06-29T17:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 74,
+      "version": "v2.74",
+      "timestamp": "2026-06-29T18:00:00Z",
+      "theme": "完了習慣フィルタリング & ネイティブシェア対応",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "完了済み習慣を非表示トグル追加",
+          "description": "ソート行に「✓ 非表示」ボタンを追加し、本日完了済みの習慣を一覧から非表示にできるトグル機能を実装。_hideDone変数でUI状態を管理し、localStorage('rh_hide_done')で設定を永続化。アクティブ時はボタンに.hide-done CSSクラスを付与しグリーン強調表示。renderList()内でfilter後・archived除外後にdc[h.id]チェックを追加し完了済みを除外。残タスクだけに集中できるフォーカスモードとして機能。ページリロード後も状態を復元するinitialize時の classList.toggle呼び出しを追加。LocalStorage構造変更なし（新キー'rh_hide_done'追加のみ）・後方完全互換。"
+        },
+        {
+          "type": "enhancement",
+          "title": "Web Share API ネイティブシェア対応",
+          "description": "shareDailyCard()をWeb Share API（navigator.share）対応に強化。navigator.shareが利用可能な環境（モバイルChromeやiOS Safari等）ではOS標準のシェアシートを表示し、LINEやTwitter等のアプリに直接シェアできるようになった。navigator.shareが未サポートの環境（デスクトップブラウザ等）では従来のclipboard.writeText()にフォールバック。バナー表示ロジックを_showBanner()ヘルパー関数に整理しコードの重複を除去。share成功時は「📱 シェアしました！」、clipboard時は「📱 今日の達成をコピーしました！」のメッセージでフィードバック。シェアキャンセル時はsilently ignoreして体験を損なわない。"
+        }
+      ],
+      "notes": "Cycle 74は「集中力向上」と「シェア体験向上」の2軸改善。完了済み非表示機能は習慣数が多いユーザーが残タスクに集中したい場合に特に有効。ソート行に自然に溶け込むボタン配置により既存UIを破壊せずに追加。Web Share APIは現代のモバイルOSが提供するネイティブ機能を活用することでアプリの外への情報拡散が容易になり、継続のモチベーション向上にも寄与。両機能ともLocalStorage変更は最小限（'rh_hide_done'の1キーのみ追加）で後方互換性を完全維持。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T18:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
