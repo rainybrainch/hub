@@ -1129,6 +1129,30 @@
         "deployedAt": "2026-06-29T14:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 71,
+      "timestamp": "2026-06-29T15:00:00Z",
+      "version": "v2.71",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "PWAアプリバッジAPI（未完了習慣数をアイコンに表示）",
+          "description": "updateFabBadge()にnavigator.setAppBadge(remaining)/clearAppBadge()を追加。Chrome/Edge デスクトップ・Android ChromeでPWAとしてホーム画面に追加した際、アプリアイコンに今日の未完了習慣数がバッジ表示される。全完了時はclearAppBadge()でバッジクリア。非対応ブラウザは.catch(()=>{})でサイレントフォールバック。navigator.setAppBadgeのfeatureチェック付き。"
+        },
+        {
+          "type": "feature",
+          "title": "習慣登録記念日トースト（30/60/90/180/365日）",
+          "description": "習慣を登録してから30/60/90/180/365日目にパープル系グラデーションアニメーショントーストを表示する記念日機能。checkHabitAnniversaries()関数がrender()後に1セッション1回のみ実行（_annCheckedフラグ）し、全習慣のcreatedAtと今日の日付を比較。記念日到達時にLocalStorage（rh_ann_YYYY-MM-DD）で表示済みIDを管理し重複防止。絵文字は節目に応じて変化（30日=🎂・60日=🎉・90日=💫・180日=🌸・365日=🎊）。Cycle 13のストリークマイルストーントースト（ゴールド）とは色・意味が異なる独立トースト（z-index 452）。4.5秒後自動消去・印刷時非表示・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 71は「PWA統合強化」と「長期ユーザー報酬」の2軸改善。Badging APIはCycle 24のPWAメタタグ対応以来の初のOS統合機能で、ネイティブアプリと同等のホーム画面バッジUXを実現。記念日トーストはストリーク（連続達成）ではなく「トラッカーに登録して使い続けた期間」を祝うことでユーザーの長期継続意欲を高める。データが蓄積するほど有意義になる設計。どちらもLocalStorage構造の本質的変更なし（rh_ann_*は表示制御のみ）・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "commit": "",
+        "deployedAt": "2026-06-29T15:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
