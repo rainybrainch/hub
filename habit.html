@@ -1169,6 +1169,14 @@
     .weekly-auto-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:5px 12px;border-radius:8px;background:rgba(91,200,232,.12);border:1px solid rgba(91,200,232,.25);color:var(--sky);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s}
     .weekly-auto-btn:hover{background:rgba(91,200,232,.22)}
     body.light .weekly-auto-btn{background:rgba(91,200,232,.1);color:#1a72a8}
+    /* Cycle 68: DOW heatmap + next milestone in habit detail */
+    .habit-detail.open{max-height:380px}
+    .hd-dow-row{display:flex;gap:3px;margin:10px 2px 0}
+    .hd-dow-cell{flex:1;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:rgba(255,255,255,.8);transition:background .2s}
+    body.light .hd-dow-cell{color:rgba(0,0,0,.6)}
+    .hd-next-ms{font-size:10px;color:var(--muted);margin-top:8px;text-align:center;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.04)}
+    body.light .hd-next-ms{background:rgba(0,0,0,.04)}
+    .hd-next-ms strong{color:var(--gold);font-weight:900}
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -3600,7 +3608,22 @@ function _habitDetailHtml(id){
   for(let i=0;i<60;i++){const ds=dateAgo(i);const v=(completions[ds]||{})[id];if(v&&typeof v==='string'&&v.length>4){const t=new Date(v);if(!isNaN(t.getTime()))tsMins.push(t.getHours()*60+t.getMinutes());}}
   let avgTimeStat='';
   if(tsMins.length>=5){const avg=Math.round(tsMins.reduce((a,b)=>a+b,0)/tsMins.length);const hh=String(Math.floor(avg/60)).padStart(2,'0');const mm=String(avg%60).padStart(2,'0');avgTimeStat=`<div class="hd-stat"><div class="hd-stat-val hd-stat-time">${hh}:${mm}</div><div class="hd-stat-lbl">平均完了時刻</div></div>`;}
-  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${noteSec}</div>`;
+  // Cycle 68: DOW completion heatmap (past 8 weeks)
+  const _hdh=habits.find(x=>x.id===id);
+  const _baseCol=CAT_COLORS[_hdh?.category||'学習']||'#5BC8E8';
+  const _rgb=(function(hex){return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];}(_baseCol));
+  const _dd=[0,0,0,0,0,0,0],_dt=[0,0,0,0,0,0,0];
+  for(let i=0;i<56;i++){const ds=dateAgo(i);const dobj=daysAgo(i);const dow=dobj.getDay();if(_hdh&&!isScheduled(_hdh,ds))continue;_dt[dow]++;if((completions[ds]||{})[id])_dd[dow]++;}
+  const DOW_LBL=['日','月','火','水','木','金','土'];
+  const DOW_ORD=[1,2,3,4,5,6,0];
+  let dowHtml='<div class="hd-dow-row">';
+  DOW_ORD.forEach(dow=>{const rt=_dt[dow]>0?_dd[dow]/_dt[dow]:null;const al=rt!==null?(0.1+rt*0.9).toFixed(2):null;const bg=al?`rgba(${_rgb[0]},${_rgb[1]},${_rgb[2]},${al})`:(isLight?'rgba(0,0,0,.07)':'rgba(255,255,255,.07)');dowHtml+=`<div class="hd-dow-cell" style="background:${bg}" title="${DOW_LBL[dow]}: ${rt!==null?Math.round(rt*100)+'%':'データなし'}">${DOW_LBL[dow]}</div>`;});
+  dowHtml+='</div>';
+  // Cycle 68: next milestone countdown
+  const _MS=[10,30,100,300,500,1000];
+  const _nxtMs=_MS.find(m=>m>total);
+  const msHtml=_nxtMs!==undefined?`<div class="hd-next-ms">🎯 次の目標 <strong>${_nxtMs}日</strong>まで あと<strong>${_nxtMs-total}日</strong></div>`:`<div class="hd-next-ms">🏆 全マイルストーン達成！</div>`;
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${dowHtml}${msHtml}${noteSec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
