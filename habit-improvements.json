@@ -998,6 +998,29 @@
         "deployedAt": "2026-06-30T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 66,
+      "timestamp": "2026-06-30T01:00:00Z",
+      "version": "v2.66",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "完了時刻の相対表示",
+          "description": "完了バッジが「たった今」「3分前」「2時間前」などの相対時刻を表示。タップで全バッジを絶対時刻（HH:MM）に一括切替。60秒ごとに自動更新。"
+        },
+        {
+          "type": "feature",
+          "title": "カテゴリー別達成率ピル",
+          "description": "全表示モード時にリスト上部にカテゴリー別進捗ピルを表示（📚 2/3 💪 1/2 など）。カテゴリーカラーで色分けし、全完了時はフェードアウト。"
+        }
+      ],
+      "notes": "relTime()関数で相対時刻計算、_doneTimeAbsグローバルで絶対/相対切替、renderCatPills()でカテゴリーピル描画",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
