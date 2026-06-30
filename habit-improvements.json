@@ -1400,6 +1400,32 @@
         "deployedAt": "2026-06-30T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 81,
+      "timestamp": "2026-06-30T03:00:00Z",
+      "version": "v2.81",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "今月のパーフェクト日バッジ（Perfect Days This Month Badge）",
+          "description": "ストリーク行にグリーンバッジ「🌟 N月N日」を追加。今月中で全習慣を100%達成した日数をカウント表示。countPerfectDaysThisMonth()がrawDayRate()（シールド補正なし）でday 1〜today分をループしrate>=1の日を集計。updatePerfectMonthBadge()をrenderStats()末尾から呼び出し。カウントが前回より増えたときpopアニメーション（scale 1→1.28→1）でフィードバック。習慣なしor0日は非表示。light/darkテーマ対応。"
+        },
+        {
+          "type": "feature",
+          "title": "SVGラインチャートの7日移動平均ライン（7-Day Moving Average on Line Chart）",
+          "description": "30日ラインチャートにゴールド色の7日移動平均ポリライン（クラスlc-mavg、stroke:var(--gold)、opacity:.7）を重畳。インデックス6〜29の24点でrates.slice(i-6,i+1)の平均を計算し座標変換してSVG polylineに変換。チャート下部にlc-legendで「空=日次達成率 / 金=7日移動平均」の凡例を追加。短期の揺れを滑らかに可視化し長期トレンドを把握しやすくした。"
+        }
+      ],
+      "notes": "Cycle 81: 今月の全達成日数バッジで月次目標の進捗を可視化。7日移動平均ラインで日々のブレを平滑化しトレンドを把握しやすく。",
+      "deploy": {
+        "command": "git push -u origin main",
+        "branch": "main",
+        "files": [
+          "habit.html",
+          "habit-improvements.json"
+        ]
+      }
     }
   ]
 }

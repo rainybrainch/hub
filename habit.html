@@ -1035,6 +1035,17 @@
     body.light .lc-lbl{fill:rgba(0,0,0,.35)}
     .lc-pct{fill:rgba(255,255,255,.28);font-size:7px;font-family:"Dela Gothic One",sans-serif;text-anchor:end}
     body.light .lc-pct{fill:rgba(0,0,0,.28)}
+    /* Cycle 81: perfect days badge */
+    .perfect-month-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.3);border-radius:14px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--green);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
+    body.light .perfect-month-badge{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.35)}
+    @keyframes perfectPop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+    .perfect-month-badge.pop{animation:perfectPop .35s cubic-bezier(.34,1.56,.64,1)}
+    /* Cycle 81: 7-day moving average line on SVG chart */
+    .lc-mavg{fill:none;stroke:var(--gold);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+    .lc-legend{display:flex;align-items:center;gap:14px;justify-content:center;margin-top:6px}
+    .lc-leg-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)}
+    .lc-leg-line{width:14px;height:2px;border-radius:1px;flex-shrink:0}
+    body.light .lc-legend .lc-leg-item{color:rgba(0,0,0,.35)}
     /* Cycle 57: weekly time invested badge */
     .week-time-badge{font-size:10px;color:var(--sky);font-weight:700;padding:2px 7px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:8px;flex-shrink:0;white-space:nowrap;letter-spacing:.04em}
     body.light .week-time-badge{background:rgba(91,200,232,.08);border-color:rgba(91,200,232,.22)}
@@ -1431,6 +1442,7 @@
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
     <span class="score-badge" id="score-badge" style="display:none"></span>
     <span class="perfect-week-badge" id="perfect-week-badge" style="display:none"></span>
+    <span class="perfect-month-badge" id="perfect-month-badge" style="display:none"></span>
   </div>
 
   <!-- Cycle 63: 7-day score history chart -->
@@ -2336,6 +2348,43 @@ function renderStats(){
   renderScoreHistory();
   // Cycle 69: perfect week forecast badge
   renderPerfectWeekBadge();
+  // Cycle 81: perfect month days badge
+  updatePerfectMonthBadge();
+}
+
+// Cycle 81: count days this month where all habits were completed
+let _prevPerfect=0;
+function countPerfectDaysThisMonth(){
+  const today=todayStr();
+  const p=today.split('-');
+  const y=parseInt(p[0]),mo=parseInt(p[1]),day=parseInt(p[2]);
+  const habits=getHabits().filter(h=>!h.archived);
+  if(!habits.length)return 0;
+  let cnt=0;
+  for(let d=1;d<=day;d++){
+    const ds=`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(rawDayRate(ds)>=1)cnt++;
+  }
+  return cnt;
+}
+function updatePerfectMonthBadge(){
+  const el=document.getElementById('perfect-month-badge');
+  if(!el)return;
+  const habits=getHabits().filter(h=>!h.archived);
+  if(!habits.length){el.style.display='none';return;}
+  const cnt=countPerfectDaysThisMonth();
+  if(cnt===0){el.style.display='none';_prevPerfect=0;return;}
+  el.style.display='';
+  const mo=parseInt(todayStr().split('-')[1]);
+  el.textContent=`🌟 ${mo}月${cnt}日`;
+  el.title=`今月の全達成日数: ${cnt}日`;
+  if(cnt>_prevPerfect&&_prevPerfect>0){
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+    setTimeout(()=>el.classList.remove('pop'),400);
+  }
+  _prevPerfect=cnt;
 }
 
 let chartView='week';
@@ -2423,6 +2472,21 @@ function renderLineChart(c){
   pl.setAttribute('class','lc-line');
   pl.setAttribute('points',pts.join(' '));
   ns.appendChild(pl);
+  // Cycle 81: 7-day moving average line
+  const mavgPts=[];
+  for(let i=6;i<N;i++){
+    const avg=rates.slice(i-6,i+1).reduce((a,b)=>a+b,0)/7;
+    const mx=PAD_L+i/(N-1)*iW;
+    const my=PAD_T+iH*(1-avg);
+    mavgPts.push(`${mx.toFixed(1)},${my.toFixed(1)}`);
+  }
+  if(mavgPts.length>1){
+    const mavg=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    mavg.setAttribute('class','lc-mavg');
+    mavg.setAttribute('points',mavgPts.join(' '));
+    mavg.setAttribute('title','7日移動平均');
+    ns.appendChild(mavg);
+  }
   // dots + day labels every 5 days
   rates.forEach((r,i)=>{
     const x=PAD_L+i/(N-1)*iW;
