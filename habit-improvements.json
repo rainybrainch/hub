@@ -1631,6 +1631,29 @@
         "deployedAt": "2026-06-30T12:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 91,
+      "timestamp": "2026-06-30T13:00:00Z",
+      "version": "v2.91",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "統計カード数値カウントアップアニメーション",
+          "description": "習慣をチェック/解除するたびに「連続記録」「累計完了」の数値が前の値から新しい値へ滑らかにカウントアニメーション。animateStatNum(elId, toVal)関数がrequestAnimationFrameとイーズアウト3次曲線（1-Math.pow(1-p,3)）で滑らかな数値変化を実現。同時に@keyframes numPop（1.18倍スケールパルス .35s cubic-bezier）が発火しカード内の数字が「跳ねる」視覚フィードバックを追加。_sValsオブジェクトで前回値を記憶し同値の場合はアニメーションをスキップして不要な処理を回避。duration=Math.min(400, |diff|×40+100)msで変化量に比例した自然な速度感。LocalStorage変更なし・後方完全互換。"
+        },
+        {
+          "type": "feature",
+          "title": "矢印キーで習慣リストをナビゲート（↑↓+Enter）",
+          "description": "↑/↓矢印キーで習慣カードを上下に移動してフォーカスし、Enterキーでチェック/解除。フォーカス中の習慣カードは水色アウトライン（.kfocusクラス、outline:2px solid var(--sky)）でハイライト表示。ESCキーでフォーカスを解除。_kfocusId変数でフォーカス対象をID管理。_visibleHabitIds()が現在の表示順（フォーカスセクション→カテゴリー順）でIDリストを生成し、循環ナビゲーション（先頭で↑押下→末尾へ）を実現。_reapplyKfocus()がrenderList()後にフォーカス状態を再描画後も維持。入力欄フォーカス中・モーダル表示中はショートカット無効化で誤操作防止。キーボードショートカットヘルプ（?キー）に↑↓/Enterの説明行を追加。ESCの説明を「フォーカス解除」も含む形に更新。"
+        }
+      ],
+      "notes": "Cycle 91は「インタラクション品質向上」と「キーボードアクセシビリティ」の2軸改善。数値アニメーションはCycle 4のプログレスリング（stroke-dashoffset CSS transition）・Cycle 27のスティッキーボトムバー（width transition）に続く達成率可視化の動的強化で、数値自体が動くことで習慣チェック時の達成感を増幅する。矢印キーナビゲーションは既存のN/T/F/C/S/Z/Y/H/R/D/1-9ショートカット群に加わる新たなナビゲーション手段で、PC環境でのキーボードのみでの習慣管理を完成させる。_visibleHabitIds()はsearchQuery・filter・カテゴリー順・フォーカスセクション優先のロジックをrenderList()と一致させることで正確なナビゲーション順を保証。どちらもLocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T13:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

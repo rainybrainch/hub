@@ -1359,6 +1359,11 @@
     .habit-hint.show{display:block}
     body.light .habit-hint{background:rgba(91,200,232,.07);border-color:rgba(91,200,232,.2);color:rgb(0,100,155)}
 
+    /* Cycle 91: stat count-up animation + arrow-key navigation */
+    @keyframes numPop{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+    .habit.kfocus{outline:2px solid var(--sky)!important;outline-offset:2px}
+    body.light .habit.kfocus{outline-color:rgba(0,120,160,.7)!important}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1823,7 +1828,8 @@
       <tr><td><kbd class="kbdkey">H</kbd></td><td class="kbd-desc">過去日付の習慣履歴を閲覧</td></tr>
       <tr><td><kbd class="kbdkey">R</kbd></td><td class="kbd-desc">ランダムに未完了習慣を選んでハイライト</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
-      <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア</td></tr>
+      <tr><td><kbd class="kbdkey">↑</kbd> <kbd class="kbdkey">↓</kbd></td><td class="kbd-desc">習慣リストを上下に移動（Enterでトグル）</td></tr>
+      <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア / フォーカス解除</td></tr>
     </table>
     <button class="kbd-close" onclick="closeKbdHelp()">閉じる（ESCでも）</button>
   </div>
@@ -2505,11 +2511,32 @@ function renderHeader(){
   document.getElementById('hdr-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${DAYS[now.getDay()]}）`;
 }
 
+// ── Cycle 91: stat count-up animation ──
+const _sVals={};
+function animateStatNum(elId,toVal){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  const from=_sVals[elId]!=null?_sVals[elId]:parseInt(el.textContent)||0;
+  _sVals[elId]=toVal;
+  const diff=toVal-from;
+  if(!diff){el.textContent=toVal;return;}
+  const dur=Math.min(400,Math.abs(diff)*40+100);
+  const t0=performance.now();
+  el.style.animation='none';el.offsetHeight;
+  el.style.animation='numPop .35s cubic-bezier(.34,1.56,.64,1)';
+  (function tick(ts){
+    const p=Math.min((ts-t0)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+diff*e);
+    if(p<1)requestAnimationFrame(tick);else el.textContent=toVal;
+  })(performance.now());
+}
+
 function renderStats(){
   const rate=todayRate(),streak=calcStreak(),best=updateBestStreak(streak);
   document.getElementById('s-today').textContent=rate+'%';
-  document.getElementById('s-streak').textContent=streak;
-  document.getElementById('s-total').textContent=totalDone();
+  // Cycle 91: animate streak and total on change
+  animateStatNum('s-streak',streak);
+  animateStatNum('s-total',totalDone());
   // Cycle 86: cumulative invested time across all timed habits
   const timeEl=document.getElementById('s-time');
   if(timeEl){
@@ -2823,6 +2850,25 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
+// ── Cycle 91: arrow-key habit navigation ──
+let _kfocusId=null;
+function _visibleHabitIds(){
+  const fIds=getFocusIds();
+  let vl=filter==='all'?habits.filter(h=>!h.archived):habits.filter(h=>h.category===filter&&!h.archived);
+  if(searchQuery)vl=vl.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery))||(h.tags&&h.tags.some(t=>t.replace('#','').toLowerCase().includes(searchQuery.replace('#','')))));
+  const seen=new Set(),ordered=[];
+  vl.filter(h=>fIds.includes(h.id)&&!h.paused).forEach(h=>{if(!seen.has(h.id)){seen.add(h.id);ordered.push(h);}});
+  CATEGORIES.forEach(cat=>{vl.filter(h=>h.category===cat).forEach(h=>{if(!seen.has(h.id)){seen.add(h.id);ordered.push(h);}});});
+  return ordered.map(h=>h.id);
+}
+function _reapplyKfocus(){
+  document.querySelectorAll('.habit.kfocus').forEach(el=>el.classList.remove('kfocus'));
+  if(!_kfocusId)return;
+  const el=document.querySelector(`.habit[data-id="${_kfocusId}"]`);
+  if(el)el.classList.add('kfocus');
+  else _kfocusId=null;
+}
+
 function renderList(){
   const el=document.getElementById('list');
   const td=today(),dc=completions[td]||{};
@@ -2898,6 +2944,7 @@ function renderList(){
   updateCollapseAllBtn();
   initSwipeGestures();
   initLongPress();
+  _reapplyKfocus(); // Cycle 91
 }
 
 // ── Cycle 26: long-press to open edit modal ──
@@ -4745,6 +4792,7 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('wreport-ovl')?.classList.contains('open')){closeWReport();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
+    else if(_kfocusId){_kfocusId=null;_reapplyKfocus();} // Cycle 91: clear arrow-key focus
     return;
   }
   // Cycle 20+29: keyboard shortcuts
@@ -4761,6 +4809,17 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='y'||e.key==='Y')openYFix();
   else if(e.key==='h'||e.key==='H')openHistoryBrowser();
   else if(e.key==='r'||e.key==='R')pickRandomHabit();
+  // Cycle 91: arrow-key navigation through habit list
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    e.preventDefault();
+    const ids=_visibleHabitIds();
+    if(!ids.length)return;
+    const cur=ids.indexOf(_kfocusId);
+    _kfocusId=e.key==='ArrowDown'?ids[(cur+1)%ids.length]:ids[(cur-1+ids.length)%ids.length];
+    _reapplyKfocus();
+    document.querySelector(`.habit[data-id="${_kfocusId}"]`)?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  else if(e.key==='Enter'&&_kfocusId){e.preventDefault();toggle(_kfocusId,null);}
   else if(e.key==='d'||e.key==='D'){
     const td=today(),dc=completions[td]||{};
     const active=habits.filter(h=>!h.paused);
