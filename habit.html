@@ -353,6 +353,34 @@
     body.light .month-box{border-color:rgba(0,0,0,.08)}
     body.light .month-best{border-top-color:rgba(0,0,0,.06)}
     body.light .month-pace{background:rgba(0,0,0,.03);border-left-color:rgba(0,0,0,.1)}
+    /* Cycle 88: monthly goal row */
+    .month-goal-row{display:flex;align-items:center;gap:6px;margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.05)}
+    .month-goal-lbl{font-size:10px;color:var(--muted);flex-shrink:0;white-space:nowrap}
+    .month-goal-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:relative}
+    .month-goal-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+    .month-goal-pct{font-size:10px;font-weight:700;font-family:"Dela Gothic One",sans-serif;min-width:36px;text-align:right;flex-shrink:0}
+    .month-goal-set{background:none;border:1px solid rgba(255,255,255,.12);cursor:pointer;font-size:9px;color:var(--muted);padding:2px 6px;border-radius:6px;flex-shrink:0;transition:all .15s;font-family:inherit}
+    .month-goal-set:hover{color:var(--white);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
+    body.light .month-goal-row{border-top-color:rgba(0,0,0,.06)}
+    body.light .month-goal-bar-wrap{background:rgba(0,0,0,.07)}
+    body.light .month-goal-set{border-color:rgba(0,0,0,.12)}
+    body.light .month-goal-set:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3);background:rgba(0,0,0,.04)}
+    /* Cycle 88: tomorrow preview widget */
+    .tmrw-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 14px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .tmrw-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .tmrw-lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex:1}
+    .tmrw-chev{font-size:9px;color:var(--muted);transition:transform .2s;display:inline-block}
+    .tmrw-chev.open{transform:rotate(180deg)}
+    .tmrw-body{display:none;padding-top:10px}
+    .tmrw-body.open{display:block}
+    .tmrw-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .tmrw-item:last-child{border-bottom:none}
+    .tmrw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .tmrw-name{font-size:12px;font-weight:600;flex:1}
+    .tmrw-off{color:var(--muted);font-size:10px;font-style:italic}
+    .tmrw-empty{font-size:11px;color:var(--muted);padding:6px 0;text-align:center;font-style:italic}
+    body.light .tmrw-box{border-color:rgba(0,0,0,.08)}
+    body.light .tmrw-item{border-bottom-color:rgba(0,0,0,.05)}
 
     /* Cycle 20: monthly trend chart */
     .trend-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
@@ -1222,7 +1250,7 @@
     body.oled .challenge-box,body.oled .pace-box,body.oled .streak-row,body.oled .motto-box,
     body.oled .intention-box,body.oled .weekly-box,body.oled .ach-box,body.oled .mood-box,
     body.oled .mood-stats-box,body.oled .highlight-box,body.oled .wm-box,body.oled .dow-box,
-    body.oled .donut-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+    body.oled .donut-box,body.oled .tmrw-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
     body.oled .modal-inner{background:#000;border-color:rgba(255,255,255,.08)}
     body.oled .overlay{background:rgba(0,0,0,.9)}
     body.oled .progress-footer{background:rgba(255,255,255,.04)}
@@ -1323,7 +1351,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
@@ -1656,6 +1684,14 @@
     <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="検索をクリア">✕</button>
   </div>
   <div id="list"></div>
+  <!-- Cycle 88: tomorrow schedule preview -->
+  <div class="tmrw-box" id="tmrw-box" style="display:none">
+    <div class="tmrw-hdr" onclick="toggleTmrwBox()">
+      <span class="tmrw-lbl" id="tmrw-lbl">📅 明日のスケジュール</span>
+      <span class="tmrw-chev" id="tmrw-chev">▼</span>
+    </div>
+    <div class="tmrw-body" id="tmrw-body"></div>
+  </div>
 </div>
 
 <button class="scroll-top" id="scroll-top" onclick="scrollToTop()" aria-label="ページ上部へ">↑</button>
@@ -3099,6 +3135,7 @@ function render(){
   renderCatSummary(); // Cycle 73: category summary bars
   renderRadarChart(); // Cycle 85: category balance radar chart
   renderWeekDots(); // Cycle 87: weekly completion dots
+  renderTmrwBox(); // Cycle 88: tomorrow preview
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   checkHabitAnniversaries(); // Cycle 71: anniversary toast
@@ -4066,8 +4103,18 @@ function renderMonthStats(){
     const needStr=(rate<80&&needed80>0&&perDay<=habits.length)?` / 80%へ残り${remaining}日で毎日${perDay}件`:'';
     paceHtml=`<div class="month-pace">📈 今のペースなら月末 <strong style="color:${pColor}">${rate}%</strong> 見込み${needStr}</div>`;
   }
+  // Cycle 88: monthly goal progress
+  const _mg=getMonthlyGoal();
+  let goalHtml='';
+  if(_mg>0){
+    const prog=Math.min(100,Math.round(rate/_mg*100));
+    const gColor=rate>=_mg?'var(--green)':rate*2>=_mg?'var(--gold)':'var(--red)';
+    goalHtml=`<div class="month-goal-row"><span class="month-goal-lbl">🎯 目標 ${_mg}%</span><div class="month-goal-bar-wrap"><div class="month-goal-fill" style="width:${prog}%;background:${gColor}"></div></div><span class="month-goal-pct" style="color:${gColor}">${rate}%</span><button class="month-goal-set" onclick="event.stopPropagation();setMonthlyGoalPrompt()" title="目標を変更">変更</button></div>`;
+  }else{
+    goalHtml=`<div class="month-goal-row"><span class="month-goal-lbl" style="flex:1">🎯 月次目標</span><button class="month-goal-set" onclick="event.stopPropagation();setMonthlyGoalPrompt()" title="今月の達成率目標を設定">設定する</button></div>`;
+  }
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}${paceHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}${paceHtml}${goalHtml}</div>`;
 }
 
 function copyMonthSummary(y,m,day,total,rate){
@@ -4083,6 +4130,57 @@ function copyMonthSummary(y,m,day,total,rate){
   }
   const text=lines.join('\n');
   navigator.clipboard.writeText(text).then(()=>showSnack('月間サマリーをコピーしました')).catch(()=>showSnack('コピーに失敗しました'));
+}
+
+// ── Cycle 88: monthly goal ──
+function getMonthlyGoal(){
+  const k='rh_mg_'+today().slice(0,7);
+  return parseInt(localStorage.getItem(k)||'0')||0;
+}
+function setMonthlyGoalPrompt(){
+  const cur=getMonthlyGoal();
+  const inp=prompt('今月の達成率目標を入力してください（1〜100 %、0で解除）',cur||80);
+  if(inp===null)return;
+  const n=Math.max(0,Math.min(100,parseInt(inp)||0));
+  const k='rh_mg_'+today().slice(0,7);
+  if(n>0)localStorage.setItem(k,n.toString());
+  else localStorage.removeItem(k);
+  renderMonthStats();
+}
+
+// ── Cycle 88: tomorrow preview widget ──
+let _tmrwOpen=false;
+function toggleTmrwBox(){
+  _tmrwOpen=!_tmrwOpen;
+  const body=document.getElementById('tmrw-body');
+  const chev=document.getElementById('tmrw-chev');
+  if(body)body.classList.toggle('open',_tmrwOpen);
+  if(chev)chev.classList.toggle('open',_tmrwOpen);
+}
+function renderTmrwBox(){
+  const box=document.getElementById('tmrw-box');
+  if(!box)return;
+  const active=habits.filter(h=>!h.archived&&!h.paused);
+  if(!active.length){box.style.display='none';return;}
+  box.style.display='';
+  const tmrw=dateAgo(-1);
+  const d=new Date(tmrw+'T00:00:00');
+  const dayName=['日','月','火','水','木','金','土'][d.getDay()];
+  const lbl=document.getElementById('tmrw-lbl');
+  if(lbl)lbl.textContent=`📅 明日（${d.getMonth()+1}/${d.getDate()}・${dayName}）のスケジュール`;
+  const scheduled=active.filter(h=>isScheduled(h,tmrw));
+  const offCnt=active.filter(h=>!isScheduled(h,tmrw)).length;
+  const body=document.getElementById('tmrw-body');
+  if(!body)return;
+  let html='';
+  if(scheduled.length){
+    html=scheduled.map(h=>`<div class="tmrw-item"><div class="tmrw-dot" style="background:${h.color||CAT_COLORS[h.category]||'#888'}"></div><span class="tmrw-name">${h.emoji?h.emoji+' ':''}${esc(h.name)}</span></div>`).join('');
+  }
+  if(offCnt>0){
+    html+=`<div class="tmrw-item"><span class="tmrw-off">📵 ${offCnt}件はお休み</span></div>`;
+  }
+  if(!scheduled.length&&!offCnt)html='<div class="tmrw-empty">スケジュールなし</div>';
+  body.innerHTML=html;
 }
 
 // ── Cycle 22: Achievement badges ──

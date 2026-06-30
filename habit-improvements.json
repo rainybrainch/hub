@@ -1566,6 +1566,29 @@
         "deployedAt": "2026-06-30T09:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 88,
+      "version": "v2.88",
+      "timestamp": "2026-06-30T10:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "月次目標設定バー（Monthly Goal Tracker）",
+          "description": "月次まとめウィジェット（month-box）の展開エリア下部に「🎯 月次目標」行を追加。getMonthlyGoal()関数が'rh_mg_YYYY-MM'キーで当月の目標達成率（1〜100%）をlocalStorageから取得。setMonthlyGoalPrompt()でpromptダイアログにより目標%を入力（0で解除）。目標未設定時は「🎯 月次目標 [設定する]」ボタンを表示。設定済み時は現在達成率と目標の比率をプログレスバーで可視化し、達成≥目標で緑・達成率≥目標/2で金・未達で赤にカラーリング。「変更」ボタンで再設定可能。Cycle 57の週次目標ライン（バーチャート上の水平線）と異なり月単位でユーザー自身が目標を設定・追跡できる新機能。Cycle 86の月末ペース予測（自動計算の予測値）とも独立した「自己設定型」の目標管理。CSS: .month-goal-row, .month-goal-lbl, .month-goal-bar-wrap, .month-goal-fill, .month-goal-pct, .month-goal-set。light/dark/OLEDモード全対応。"
+        },
+        {
+          "type": "feature",
+          "title": "明日のスケジュールプレビューウィジェット（Tomorrow's Habits Preview）",
+          "description": "習慣リスト下部に「📅 明日（M/D・曜）のスケジュール」という折りたたみウィジェット（tmrw-box）を追加。renderTmrwBox()がdateAgo(-1)で翌日の日付文字列を取得し、isScheduled(h, tmrw)で翌日のスケジュール対象習慣を絞り込み。スケジュール習慣は各習慣のカテゴリーカラードット付きリストで表示（絵文字・習慣名）。平日のみ習慣が翌日週末オフの場合は「📵 N件はお休み」でサマリー表示。ウィジェット本体はデフォルト折りたたみ（_tmrwOpen=false）で、タップするとtoggleTmrwBox()が▼/▲シェブロンをアニメーションさせ展開。習慣がない場合は非表示（display:none）。render()から毎回renderTmrwBox()を呼び出し。月〜日の曜日名は既存のDAYS[]配列を再利用。CSS: .tmrw-box, .tmrw-hdr, .tmrw-lbl, .tmrw-chev, .tmrw-body, .tmrw-item, .tmrw-dot, .tmrw-name, .tmrw-off, .tmrw-empty。light/dark/OLEDモード・印刷時非表示に対応。"
+        }
+      ],
+      "notes": "Cycle 88は「自己設定型の月次目標管理」と「翌日スケジュール可視化」の2軸改善。月次目標バーはCycle 57の週次目標ライン（バーチャート、固定値）・Cycle 86の自動ペース予測（実績ベースの外挿）とは異なるユーザー定義型の月次KPI設定・追跡機能。翌日プレビューは特に日曜夜に月曜の習慣を確認する用途や、平日のみ習慣が週末明けに何があるかを事前把握する用途に有効（既存機能に翌日表示はなし）。どちらもLocalStorage後方互換完全維持（月次目標はrh_mg_YYYY-MMキー追加のみ）。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T10:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
