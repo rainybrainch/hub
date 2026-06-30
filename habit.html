@@ -1370,6 +1370,34 @@
     .accent-swatch:hover{transform:scale(1.18)}
     .accent-swatch.active{border-color:#fff;transform:scale(1.18)}
     body.light .accent-swatch.active{border-color:#333}
+
+    /* Cycle 87: weekly completion dots */
+    .week-dots{display:flex;gap:6px;justify-content:center;padding:8px 0 4px;flex-wrap:nowrap}
+    .wd-item{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:36px}
+    .wd-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;transition:transform .15s}
+    .wd-dot.done{background:var(--green);color:#fff}
+    .wd-dot.partial{background:#f0a500;color:#fff}
+    .wd-dot.miss{background:var(--dark3);color:var(--muted)}
+    .wd-dot.future{border:2px dashed var(--dark3);background:transparent;color:var(--muted)}
+    .wd-dot.today{box-shadow:0 0 0 3px var(--sky)}
+    .wd-lbl{font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.4px}
+    body.light .wd-dot.miss{background:#e0e0e0}
+    body.light .wd-dot.future{border-color:#ccc}
+
+    /* Cycle 87: habit health score in detail panel */
+    .hd-health{margin:10px 0 2px;padding:10px 12px;background:var(--dark3);border-radius:8px}
+    .hd-health-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .hd-health-lbl{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.4px}
+    .hd-health-score{font-size:20px;font-weight:900;line-height:1}
+    .hd-health-score.good{color:var(--green)}
+    .hd-health-score.ok{color:#f0a500}
+    .hd-health-score.poor{color:#e05c6a}
+    .hd-health-bar{height:6px;border-radius:3px;background:var(--dark2);overflow:hidden}
+    .hd-health-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .hd-health-bar-fill.good{background:var(--green)}
+    .hd-health-bar-fill.ok{background:#f0a500}
+    .hd-health-bar-fill.poor{background:#e05c6a}
+    body.light .hd-health{background:#e8eaed}
   </style>
 </head>
 <body>
@@ -1515,6 +1543,9 @@
     <span class="perfect-week-badge" id="perfect-week-badge" style="display:none"></span>
     <span class="perfect-month-badge" id="perfect-month-badge" style="display:none"></span>
   </div>
+
+  <!-- Cycle 87: weekly completion dots -->
+  <div class="week-dots" id="week-dots" style="display:none"></div>
 
   <!-- Cycle 63: 7-day score history chart -->
   <div class="score-hist-box" id="score-hist-box">
@@ -3067,6 +3098,7 @@ function render(){
   updateDayOffBtn();
   renderCatSummary(); // Cycle 73: category summary bars
   renderRadarChart(); // Cycle 85: category balance radar chart
+  renderWeekDots(); // Cycle 87: weekly completion dots
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   checkHabitAnniversaries(); // Cycle 71: anniversary toast
@@ -3709,6 +3741,61 @@ function renderPerfectWeekBadge(){
   el.style.display='';
 }
 
+// ── Cycle 87: weekly completion dots ──
+function renderWeekDots(){
+  const el=document.getElementById('week-dots');
+  if(!el)return;
+  if(!isWidgetOn('w_wdots')){el.style.display='none';return;}
+  const now=new Date();
+  const dow=(now.getDay()+6)%7; // 0=Mon…6=Sun
+  const DLBL=['月','火','水','木','金','土','日'];
+  const td=today();
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(now);
+    d.setDate(d.getDate()-(dow-i));
+    const ds=toStr(d);
+    const isToday=ds===td;
+    const isFuture=ds>td;
+    let cls,inner='';
+    if(isFuture){cls='future';}
+    else{
+      const r=rawDayRate(ds);
+      if(r>=1){cls='done';inner='✓';}
+      else if(r>0){cls='partial';inner=Math.round(r*100)+'%';}
+      else{cls='miss';inner='–';}
+    }
+    if(isToday)cls+=' today';
+    html+=`<div class="wd-item"><div class="wd-dot ${cls}">${inner}</div><div class="wd-lbl">${DLBL[i]}</div></div>`;
+  }
+  el.innerHTML=html;
+  el.style.display='flex';
+}
+
+// ── Cycle 87: habit continuity / health score ──
+function habitHealthScore(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h)return{score:0,cls:'poor'};
+  // 30-day scheduled achievement rate → 40 pts
+  const sched30=[];
+  for(let i=0;i<30;i++){const ds=dateAgo(i);if(isScheduled(h,ds))sched30.push(ds);}
+  const rate30=sched30.length?sched30.filter(ds=>(completions[ds]||{})[id]).length/sched30.length:0;
+  const rateScore=Math.round(rate30*40);
+  // current streak → 25 pts (full at 21+ days)
+  const streak=habitStreak(id);
+  const streakScore=Math.min(25,Math.round(streak/21*25));
+  // trend → 20 pts
+  const trend=habitTrend(id);
+  const trendScore=trend==='up'?20:trend==='none'?10:0;
+  // weekly consistency: # of last 4 weeks with ≥1 completion → 15 pts
+  let weeksOn=0;
+  for(let w=0;w<4;w++){for(let d=0;d<7;d++){if((completions[dateAgo(w*7+d)]||{})[id]){weeksOn++;break;}}}
+  const conScore=Math.round(weeksOn/4*15);
+  const score=Math.min(100,rateScore+streakScore+trendScore+conScore);
+  const cls=score>=75?'good':score>=50?'ok':'poor';
+  return{score,cls};
+}
+
 // ── celebration (cycle 2 新機能) ──
 function showBanner(){
   const b=document.getElementById('banner');
@@ -4206,7 +4293,10 @@ function _habitDetailHtml(id){
   const msHtml=_nxtMs!==undefined?`<div class="hd-next-ms">🎯 次の目標 <strong>${_nxtMs}日</strong>まで あと<strong>${_nxtMs-total}日</strong></div>`:`<div class="hd-next-ms">🏆 全マイルストーン達成！</div>`;
   const _hObj=habits.find(x=>x.id===id);
   const whySec=_hObj&&_hObj.why?`<div class="hd-why">💭 ${esc(_hObj.why)}</div>`:'';
-  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
+  // Cycle 87: habit health score
+  const _hs=habitHealthScore(id);
+  const healthSec=`<div class="hd-health"><div class="hd-health-row"><span class="hd-health-lbl">📊 継続スコア</span><span class="hd-health-score ${_hs.cls}">${_hs.score}<span style="font-size:11px;font-weight:600;opacity:.65">/100</span></span></div><div class="hd-health-bar"><div class="hd-health-bar-fill ${_hs.cls}" style="width:${_hs.score}%"></div></div></div>`;
+  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${healthSec}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
@@ -4701,6 +4791,7 @@ const WIDGET_DEFS=[
   {key:'w_trend',  name:'📉 月別達成率トレンド',      id:'trend-box'},
   {key:'w_year',   name:'📆 年間達成カレンダー',      id:'year-box'},
   {key:'w_streak', name:'🔥 ストリークバッジ',        id:'streak-row'},
+  {key:'w_wdots',  name:'📅 今週の達成ドット',        id:'week-dots'},
   {key:'w_month',  name:'📅 月次サマリー',            id:'month-box'},
   {key:'w_ranking',name:'🏅 週間ランキング',          id:'ranking-box'},
   {key:'w_challenge',name:'🎯 今日のチャレンジ',      id:'challenge-box'},

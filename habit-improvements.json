@@ -1541,6 +1541,31 @@
         "deployedAt": "2026-06-30T08:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 87,
+      "version": "v2.87",
+      "timestamp": "2026-06-30T09:00:00Z",
+      "title": "今週の達成ドット・習慣継続スコア",
+      "category": "UI/UX・分析",
+      "improvements": [
+        {
+          "type": "feature",
+          "title": "今週の達成ドット（週間7日ビジュアライザー）",
+          "description": "ストリークバッジの下に今週（月〜日）の各日の達成状況を7つのドットで常時表示。緑=100%達成（✓）、ゴールド=部分達成（達成率%）、グレー=未達成（–）、破線円=未来の日。今日はスカイブルーのリングでハイライト。Cycle 69のパーフェクトウィーク予報バッジ（全日完璧な時のみ表示するテキストバッジ）とは異なり、部分達成含む全日の状態を常時7ドットで可視化。rawDayRate()で計算。ウィジェット設定（w_wdots）でON/OFF可能。renderWeekDots()関数追加、render()から呼び出し。CSS: .week-dots, .wd-item, .wd-dot（done/partial/miss/future/today状態）, .wd-lbl。"
+        },
+        {
+          "type": "feature",
+          "title": "習慣継続スコア（詳細パネル）",
+          "description": "📊ボタンで開く習慣詳細パネルに0〜100の継続スコアを追加（habitHealthScore(id)関数）。計算式: 30日スケジュール達成率(40pt) + 現在ストリーク(25pt、21日以上で満点) + 週間トレンド(20pt、up=20/none=10/down=0) + 週次継続性(15pt、過去4週間で達成のあった週の割合)。スコアに応じて緑(≥75)/金(≥50)/赤(<50)でカラーリング。進捗バーで視覚化。habitTrend()・isScheduled()・habitStreak()を再利用。CSS: .hd-health, .hd-health-row, .hd-health-lbl, .hd-health-score, .hd-health-bar, .hd-health-bar-fill（good/ok/poor状態）。LocalStorage変更なし・完全後方互換。"
+        }
+      ],
+      "notes": "Cycle 87は「週間パフォーマンスの常時可視化」と「習慣ごとの健康度定量化」の2軸改善。週間ドットはCycle 69（全日完璧時のみバッジ表示）・Cycle 81（月次パーフェクト日カウント）とは異なる常時表示の7日間状態マップで、部分達成も含め今週の流れを一目把握。継続スコアはstreak・trend・rate・weeklyConsistencyの4要素合成でストリーク途切れ後も週次継続性が評価されるためプレッシャー緩和設計。habitTrend()・isScheduled()・completionsデータを再利用しロジック追加最小化。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T09:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
