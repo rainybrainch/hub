@@ -1346,6 +1346,19 @@
     .radar-pct{font-size:8px;font-family:"Dela Gothic One",sans-serif;fill:var(--sky);text-anchor:middle}
     body.light .radar-pct{fill:#1e8aab}
 
+    /* Cycle 89: tag quick-filter bar */
+    .tag-qbar{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:6px;margin-bottom:4px}
+    .tag-qbar::-webkit-scrollbar{display:none}
+    .tqb-item{flex-shrink:0;padding:3px 9px;border-radius:12px;border:1px solid rgba(91,200,232,.3);background:rgba(91,200,232,.06);color:var(--sky);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;font-family:"Zen Maru Gothic",sans-serif;line-height:1.5}
+    .tqb-item:hover{background:rgba(91,200,232,.18);border-color:rgba(91,200,232,.5)}
+    .tqb-item.active{background:var(--sky);color:var(--dark);border-color:transparent}
+    body.light .tqb-item{border-color:rgba(91,200,232,.3);background:rgba(91,200,232,.07);color:rgb(0,110,160)}
+    body.light .tqb-item.active{background:var(--sky);color:#fff;border-color:transparent}
+    /* Cycle 89: habit add context hint */
+    .habit-hint{font-size:11px;color:var(--sky);background:rgba(91,200,232,.07);border:1px solid rgba(91,200,232,.15);border-radius:10px;padding:8px 12px;margin-bottom:12px;line-height:1.5;display:none}
+    .habit-hint.show{display:block}
+    body.light .habit-hint{background:rgba(91,200,232,.07);border-color:rgba(91,200,232,.2);color:rgb(0,100,155)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1683,6 +1696,8 @@
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
     <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="検索をクリア">✕</button>
   </div>
+  <!-- Cycle 89: tag quick-filter bar -->
+  <div id="tag-bar-wrap"></div>
   <div id="list"></div>
   <!-- Cycle 88: tomorrow schedule preview -->
   <div class="tmrw-box" id="tmrw-box" style="display:none">
@@ -1761,6 +1776,7 @@
       <button class="imp-toggle-btn" id="imp-btn-off" type="button" onclick="toggleImportant(false)">通常</button>
       <button class="imp-toggle-btn" id="imp-btn-on" type="button" onclick="toggleImportant(true)">⭐ 重要</button>
     </div>
+    <div class="habit-hint" id="habit-hint"></div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
@@ -3136,6 +3152,7 @@ function render(){
   renderRadarChart(); // Cycle 85: category balance radar chart
   renderWeekDots(); // Cycle 87: weekly completion dots
   renderTmrwBox(); // Cycle 88: tomorrow preview
+  renderTagBar(); // Cycle 89: tag quick-filter bar
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   checkHabitAnniversaries(); // Cycle 71: anniversary toast
@@ -3492,13 +3509,14 @@ function openModal(id=null){
   }
   setTimeout(()=>inp.focus(),300);
 }
-function closeModal(){editingId=null;document.getElementById('overlay').classList.remove('open')}
+function closeModal(){editingId=null;document.getElementById('overlay').classList.remove('open');const hb=document.getElementById('habit-hint');if(hb)hb.className='habit-hint';}
 function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal()}
 
 function selCat(cat,auto=false){
   selCatVal=cat;catAutoSel=auto;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===cat));
   validateModal();
+  updateHabitHint(); // Cycle 89: show context hint for selected category
 }
 function validateModal(){
   const name=document.getElementById('habit-inp').value.trim();
@@ -3701,6 +3719,7 @@ function onSearch(val){
   const clr=document.getElementById('search-clear');
   if(clr)clr.style.display=searchQuery?'block':'none';
   renderList();
+  renderTagBar(); // Cycle 89: sync active state of tag filter bar
 }
 function clearSearch(){
   const inp=document.getElementById('search-inp');
@@ -5499,6 +5518,39 @@ function openDiaryView(){
   document.getElementById('diary-ovl').classList.add('open');
 }
 function closeDiaryView(){document.getElementById('diary-ovl').classList.remove('open');}
+
+// ── Cycle 89: tag quick-filter bar ──
+function renderTagBar(){
+  const wrap=document.getElementById('tag-bar-wrap');if(!wrap)return;
+  const allTags=[...new Set(habits.filter(h=>!h.archived).flatMap(h=>h.tags||[]))].sort();
+  if(!allTags.length){wrap.innerHTML='';return;}
+  const sq=searchQuery;
+  wrap.innerHTML='<div class="tag-qbar">'+allTags.map(t=>`<button class="tqb-item${sq===t||sq===t.replace('#','')?' active':''}" type="button" onclick="filterByTag('${esc(t)}')">${esc(t)}</button>`).join('')+'</div>';
+}
+function filterByTag(tag){
+  const inp=document.getElementById('search-inp');
+  const cur=searchQuery;
+  const newQ=(cur===tag||cur===tag.replace('#',''))?'':tag;
+  if(inp)inp.value=newQ;
+  onSearch(newQ);
+}
+
+// ── Cycle 89: habit context hint ──
+const HABIT_HINTS={
+  '学習':['📖 まず5分から始めよう。継続が大切！','💡 毎日同じ時間に学ぶと定着しやすい！','🧠 就寝前の学習は記憶の定着に効果的！'],
+  '運動':['🏃 無理せず「2分だけ」から始めよう！','💪 同じ時間帯に運動すると習慣化しやすい！','🎯 小さな目標の積み重ねが継続の秘訣！'],
+  '創作':['✨ 完璧を目指さず、まず続けることを楽しもう！','🎨 毎日少しずつ続けることで実力が伸びる！','🌱 インプットとアウトプットをバランスよく！'],
+  '自己改善':['🌅 朝の習慣が一日のリズムを作る！','💆 自分への投資が一番のリターンになる！','🌟 小さな改善の積み重ねが大きな変化を生む！'],
+};
+function updateHabitHint(){
+  const box=document.getElementById('habit-hint');if(!box)return;
+  if(!selCatVal){box.className='habit-hint';return;}
+  const hints=HABIT_HINTS[selCatVal];
+  if(!hints){box.className='habit-hint';return;}
+  const d=new Date();
+  box.textContent='💡 '+hints[(d.getDate()+d.getHours())%hints.length];
+  box.className='habit-hint show';
+}
 </script>
 
 <!-- Cycle 62: monthly calendar modal -->
