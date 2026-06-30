@@ -2153,8 +2153,20 @@ function updateDayOffBtn(){
   document.body.classList.toggle('dayoff-today',isOff);
 }
 
+// ── Cycle 90: in-memory cache for per-day JSON reads (skip/counter), avoids
+// re-parsing localStorage for every habit in render()'s filter/map passes.
+// Keyed by full storage key (date-scoped), so a new day is a natural cache miss.
+// Returned objects/arrays are cached by reference, so in-place mutation followed
+// by localStorage.setItem keeps the cache consistent without extra invalidation.
+const _dayJsonCache={};
+function _readDayJSON(key,fallback){
+  if(key in _dayJsonCache)return _dayJsonCache[key];
+  let v;try{v=JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch{v=fallback;}
+  return _dayJsonCache[key]=v;
+}
+
 // ── Cycle 43: skip-today feature ──
-function getSkipIds(){try{return JSON.parse(localStorage.getItem(SKK+today())||'[]');}catch{return [];}}
+function getSkipIds(){return _readDayJSON(SKK+today(),[]);}
 function isSkippedToday(id){return getSkipIds().includes(id);}
 function toggleSkip(id){
   const h=habits.find(x=>x.id===id);
@@ -2167,7 +2179,7 @@ function toggleSkip(id){
 }
 
 // ── Cycle 46: counter habit helpers ──
-function _ctrs(ds){try{return JSON.parse(localStorage.getItem(CTK+(ds||today()))||'{}');}catch{return {};}}
+function _ctrs(ds){return _readDayJSON(CTK+(ds||today()),{});}
 function getHabitCount(id){return _ctrs()[id]||0;}
 function _setCtr(id,n){const td=today();const c=_ctrs(td);if(n<=0)delete c[id];else c[id]=n;localStorage.setItem(CTK+td,JSON.stringify(c));}
 function incrCtr(id,evt){
