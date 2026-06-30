@@ -1426,6 +1426,29 @@
           "habit-improvements.json"
         ]
       }
+    },
+    {
+      "cycle": 82,
+      "timestamp": "2026-06-30T04:00:00Z",
+      "version": "v2.82",
+      "changes": [
+        {
+          "type": "ui",
+          "title": "前回チェックからの経過日数バッジ（N日前）",
+          "description": "未完了・非停止・非週末オフの習慣カードに「N日前」バッジを表示。habitLastDone(id)関数が過去365日のcompletionsを遡り最初に発見した完了日からの経過日数を返す（一度も完了していない場合はnull→バッジ非表示）。.last-done-badgeクラス（9px、muted色、半透明背景・ボーダー）で実装。コンパクトモードでは非表示。Cycle 31の「要注意」ラベル（7日間0完了のフラグ）とは異なる連続値表示で、どの習慣がどれくらい間隔が空いているか一目で把握できる。"
+        },
+        {
+          "type": "ui",
+          "title": "検索テキストハイライト（Search Match Highlighting）",
+          "description": "検索中（searchQuery非空）に、マッチした習慣名の部分を.search-hl（rgba(245,200,66,.32)の黄色背景、border-radius:3px）でハイライト表示。_hlText(str,q)ヘルパー関数がesc()でXSSを防ぎつつcase-insensitiveで一致箇所をindexOf()で特定し<mark class=\"search-hl\">で囲む。一致しない場合はesc()のみ。_hCard()内のnameRowHtml生成時にesc(h.name)の代わりにsearchQueryが非空の場合は_hlText()を使用。視覚的に検索結果を確認しやすくなる。"
+        }
+      ],
+      "notes": "Cycle 82は「情報の可視化向上」と「検索UX改善」の2軸。経過日数バッジは習慣の実行間隔をリアルタイムで可視化しサボり気づき促進。検索ハイライトはどの文字列がマッチしたか即座に視認でき検索体験を向上。両機能ともLocalStorageへの変更なし・完全後方互換。XSS対策（esc()使用）済み。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T04:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

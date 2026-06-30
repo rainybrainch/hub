@@ -1305,6 +1305,12 @@
     .imp-row-lbl{font-size:12px;color:var(--muted);min-width:36px}
     .imp-toggle-btn{padding:5px 14px;border:1.5px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s;font-family:inherit}
     .imp-toggle-btn.on{background:rgba(245,200,66,.15);border-color:#F5C842;color:#F5C842;font-weight:700}
+    /* Cycle 82: last-done elapsed days badge */
+    .last-done-badge{font-size:9px;color:var(--muted);padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.03em}
+    body.light .last-done-badge{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.compact .last-done-badge{display:none}
+    /* Cycle 82: search text highlight */
+    .search-hl{background:rgba(245,200,66,.32);border-radius:3px;color:inherit;padding:0 1px}
   </style>
 </head>
 <body>
@@ -2567,7 +2573,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
   const toughBadge=h.tough?`<span class="tough-badge">⚡難</span>`:'';
   const durBadge=h.duration?`<span class="dur-badge">⏱${h.duration}m</span>`:'';
-  const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span>${toughBadge}</div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+  const _hlName=searchQuery?_hlText(h.name,searchQuery):esc(h.name);
+  const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${_hlName}</span>${toughBadge}</div>`:`<span class="habit-name">${_hlName}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
   // Cycle 80: show auto-resume date in paused label
@@ -2623,7 +2630,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const goldenBadge=_gh!==null?`<span class="golden-badge" title="${_GLBL[_gh]}">${_GICO[_gh]}</span>`:'';
   const _curBand=_hr<5?0:_hr<12?1:_hr<18?2:3;
   const goldenNow=_gh!==null&&_gh===_curBand&&!isDone&&!isPaused?' golden-now':'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 82: days-since-last-done badge for uncompleted habits
+  const lastDoneAgo=!isDone&&!isPaused&&!isWeekendOff?habitLastDone(h.id):null;
+  const lastDoneBadge=lastDoneAgo!==null?`<span class="last-done-badge">${lastDoneAgo}日前</span>`:'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3137,6 +3147,18 @@ function checkCategoryComplete(cat){
       }
     });
   },80);
+}
+
+// ── Cycle 82: last-done helper & search highlight ──
+function habitLastDone(id){
+  for(let i=1;i<=365;i++){const d=completions[dateAgo(i)]||{};if(d[id])return i;}
+  return null;
+}
+function _hlText(str,q){
+  if(!q)return esc(str);
+  const i=str.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0)return esc(str);
+  return esc(str.slice(0,i))+'<mark class="search-hl">'+esc(str.slice(i,i+q.length))+'</mark>'+esc(str.slice(i+q.length));
 }
 
 // ── Cycle 78: Golden time badge ──
