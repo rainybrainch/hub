@@ -1472,6 +1472,29 @@
         "deployedAt": "2026-06-30T05:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 84,
+      "version": "v2.84",
+      "timestamp": "2026-06-30T06:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "過去7日間ダイアリービューモーダル（📖ボタン）",
+          "description": "ヘッダーに📖ボタンを追加し、openDiaryView()でモーダルを表示。過去7日間の各日について達成率（dayRate）・気分（getMood）・完了習慣一覧を時系列で表示。達成率は80%以上が緑・50%以上が金色でハイライト。気分絵文字（😞😕😐😊🤩）表示対応。お休みデー（isDayOff）は「🌴 お休み」バッジで識別。完了した習慣は緑のピル（diary-habit-pill.done）で表示。ESCキー・オーバーレイクリックで閉じる。Cycle 67のhist-ovl（任意日付・個別日閲覧）と補完関係：ダイアリービューは直近7日を一画面で俯瞰できる。新規CSS: .diary-ovl, .diary-modal, .diary-day, .diary-day-hdr, .diary-day-date, .diary-day-rate, .diary-day-mood, .diary-day-off, .diary-habits, .diary-habit-pill, .diary-empty。LocalStorageへの変更なし・完全後方互換。"
+        },
+        {
+          "type": "feature",
+          "title": "習慣タグ機能（#タグバッジ）",
+          "description": "習慣追加・編集モーダルに「🏷 タグ（任意）」入力欄を追加（tag-inp）。スペース区切りで最大3タグを入力可（自動で#プレフィックス付与）。タグはh.tagsとしてLocalStorageに配列保存。習慣カードにタグバッジ（.habit-tag、スカイブルー色）を常時表示。タグをクリックするとそのタグでフィルタ検索が実行される（onSearch連携）。検索機能をタグ対応に拡張（#なし・#ありのどちらでもマッチ）。コンパクトモードでは非表示（body.compact .habit-tags）。CSS: .tag-row, .tag-row-lbl, .tag-inp, .habit-tags, .habit-tag。既存習慣への後方互換完全維持（tagsフィールドなしでも動作）。"
+        }
+      ],
+      "notes": "Cycle 84は「振り返り体験の強化」と「タグによる整理・検索改善」の2軸改善。ダイアリービューは7日間を一覧できる俯瞰型ビューで、日々の積み重ねをまとめて把握しメタ認知を促す。Cycle 67のhistory browserが任意の日付を個別に確認するのに対し、直近7日の流れを素早く振り返る用途に特化。タグ機能はカテゴリーを横断する軸（#朝活 #5分 #健康など）で習慣を整理・フィルタリングでき、多習慣ユーザーの検索体験を大幅改善。両機能ともLocalStorage後方互換を完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T06:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
