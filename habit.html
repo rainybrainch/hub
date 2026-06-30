@@ -1168,6 +1168,16 @@
     .cat-pill.all-done{opacity:.5}
     body.light .cat-pill{filter:brightness(0.82) saturate(1.2)}
 
+    /* Cycle 67: weekly habit progress badge */
+    .week-prog{font-size:10px;font-weight:700;flex-shrink:0;padding:2px 5px;border-radius:6px;line-height:1.5;border:1px solid;letter-spacing:.02em;white-space:nowrap}
+    .week-prog.wk-good{color:var(--green);background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.2)}
+    .week-prog.wk-ok{color:var(--gold);background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.2)}
+    .week-prog.wk-low{color:rgba(232,53,74,.85);background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.15)}
+    body.compact .week-prog{display:none}
+    body.light .week-prog.wk-ok{color:var(--gold-d);background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.35)}
+    body.light .week-prog.wk-good{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
+    body.light .week-prog.wk-low{background:rgba(232,53,74,.07);border-color:rgba(232,53,74,.18)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1477,7 +1487,7 @@
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
-  <button class="snackbar-undo" onclick="undoDelete()">元に戻す</button>
+  <button class="snackbar-undo" onclick="_handleSnackbarUndo()">元に戻す</button>
 </div>
 
 <!-- Cycle 29: completion quick note modal -->
@@ -2257,6 +2267,22 @@ function renderWeekTimeBadge(){
 }
 
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
+// ── Cycle 67: weekly habit progress badge ──
+function habitWeekProgress(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h)return null;
+  const dow=new Date().getDay();
+  const daysSinceMon=dow===0?6:dow-1;
+  let done=0,total=0;
+  for(let i=daysSinceMon;i>=0;i--){
+    const ds=dateAgo(i);
+    if(!isScheduled(h,ds))continue;
+    total++;
+    if((completions[ds]||{})[h.id])done++;
+  }
+  return total>1?{done,total}:null;
+}
+
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const tc=h.targetCount||1;const isCounter=tc>1;
   const ctrCount=isCounter?getHabitCount(h.id):0;
@@ -2273,6 +2299,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const fixBadge=fix30>=24?`<span class="habit-fixed" title="過去30日で${fix30}日達成（定着済み）">🌟 定着</span>`:'';
   const trend=habitTrend(h.id);
   const trendBadge=trend!=='none'?`<span class="trend-badge ${trend}" title="${trend==='up'?'先週より好調↑':'先週より低調↓'}">${trend==='up'?'↑好調':'↓低調'}</span>`:'';
+  const wp=habitWeekProgress(h.id);
+  const wpBadge=wp?`<span class="week-prog ${wp.done===wp.total?'wk-good':wp.done*2>=wp.total?'wk-ok':'wk-low'}" title="今週（月〜今日）の達成状況">今週 ${wp.done}/${wp.total}</span>`:'';
   const streakGlow=!isDone&&!isPaused?(hs>=7?' streak-hot':hs>=3?' streak-warm':''):'';
   let timeBadge='';
   if(isDone&&typeof completedVal==='string'){const d=new Date(completedVal);const absT=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;timeBadge=`<span class="done-time" data-ts="${completedVal}" title="タップで絶対時刻表示: ${absT}" onclick="event.stopPropagation();_toggleDoneTimeMode(this)">${relTime(completedVal)}</span>`;}
@@ -2325,7 +2353,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2721,6 +2749,7 @@ function toggle(id,evt){
   const td=today();
   if(!completions[td])completions[td]={};
   const wasCompleted=!!completions[td][id];
+  const prevTs=completions[td][id]; // Cycle 67: save timestamp for undo-check
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
@@ -2728,7 +2757,7 @@ function toggle(id,evt){
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
-  }
+  }else{_showUncheckSnackbar(id,prevTs);} // Cycle 67: undo-check snackbar
   saveC();
   render();
   // cycle 2: celebration check
@@ -2895,12 +2924,33 @@ function updateGoalBtn(){
 
 // ── Cycle 10: Undo delete snackbar ──
 let _delHabit=null,_delIdx=null,_delTimer=null;
+// ── Cycle 67: undo check state ──
+let _undoCheckId=null,_undoCheckTs=null,_ckTimer=null,_sbMode='delete';
+function _handleSnackbarUndo(){_sbMode==='check'?undoCheck():undoDelete();}
+function _showUncheckSnackbar(id,ts){
+  if(_delTimer){clearTimeout(_delTimer);_delTimer=null;saveH();}
+  if(_ckTimer){clearTimeout(_ckTimer);_ckTimer=null;}
+  _sbMode='check';_undoCheckId=id;_undoCheckTs=ts;
+  document.getElementById('sb-msg').textContent='チェックを取り消しました';
+  const sb=document.getElementById('snackbar');sb.classList.add('show');
+  _ckTimer=setTimeout(()=>{_undoCheckId=null;_undoCheckTs=null;_ckTimer=null;_sbMode='delete';_hideSb();},3000);
+}
+function undoCheck(){
+  if(!_undoCheckId||!_undoCheckTs)return;
+  clearTimeout(_ckTimer);
+  const td=today();
+  if(!completions[td])completions[td]={};
+  completions[td][_undoCheckId]=_undoCheckTs;
+  saveC();_hideSb();render();
+}
 function del(id){
+  if(_ckTimer){clearTimeout(_ckTimer);_ckTimer=null;_undoCheckId=null;_undoCheckTs=null;}
   if(_delTimer){clearTimeout(_delTimer);saveH();}  // commit any pending delete
   const idx=habits.findIndex(h=>h.id===id);
   if(idx===-1)return;
   _delHabit=habits[idx];_delIdx=idx;
   habits.splice(idx,1);
+  _sbMode='delete';
   vib(25);celebrated=false;render();
   document.getElementById('sb-msg').textContent=`「${_delHabit.name}」を削除しました`;
   const sb=document.getElementById('snackbar');
@@ -2910,6 +2960,7 @@ function del(id){
 function _hideSb(){
   document.getElementById('snackbar').classList.remove('show');
   _delHabit=null;_delIdx=null;_delTimer=null;
+  _undoCheckId=null;_undoCheckTs=null;_ckTimer=null;_sbMode='delete';
 }
 function undoDelete(){
   if(!_delHabit)return;

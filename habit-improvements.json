@@ -1021,6 +1021,29 @@
         "deployedAt": "2026-06-30T01:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 67,
+      "timestamp": "2026-06-30T02:00:00Z",
+      "version": "v2.67",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣週次進捗バッジ（今週N/M）",
+          "description": "各習慣カードに今週（月曜〜今日）の達成状況を「今週 N/M」形式のバッジで表示。habitWeekProgress(id)関数で月曜日からの経過日数を計算し、スケジュール対象日のみカウント。達成率100%は緑（.wk-good）、50%以上は金（.wk-ok）、50%未満は赤（.wk-low）で色分け。今日のみ対象の場合は非表示。コンパクトモードでは非表示。"
+        },
+        {
+          "type": "ux",
+          "title": "チェック取り消しUndoスナックバー",
+          "description": "チェック済み習慣を誤ってタップした際に3秒間Undoできるスナックバーを表示。_showUncheckSnackbar(id,prevTs)で「チェックを取り消しました」メッセージを表示し、undoCheck()で完了タイムスタンプを復元。既存の削除Undoスナックバーと共存する設計で、_sbModeフラグ('check'/'delete')で動作を切替。_handleSnackbarUndo()がどちらのUndoかを判定して実行。削除Undo中にチェック取り消し操作が発生した場合は削除Undoをコミットしてチェック取り消しUndoに移行。"
+        }
+      ],
+      "notes": "habitWeekProgress()はisScheduled()を使ってweekday-only習慣にも正しく対応。toggle()でprevTsを保存しwasCompleted時に_showUncheckSnackbar()を呼び出す。_sbMode変数でスナックバーの種別を管理し、_hideSb()でリセット。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T02:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
