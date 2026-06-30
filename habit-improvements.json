@@ -1449,6 +1449,29 @@
         "deployedAt": "2026-06-30T04:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 83,
+      "version": "v2.83",
+      "timestamp": "2026-06-30T05:00:00Z",
+      "changes": [
+        {
+          "type": "animation",
+          "title": "チェックマーク描画アニメーション（Checkmark Spin-In Animation）",
+          "description": ".chk-icoのdisplay:none/blockトグルをopacity+transformトランジションに置き換え。未完了状態はopacity:0/scale(0)/rotate(-60deg)、完了状態はopacity:1/scale(1)/rotate(0deg)。transition: opacity .18s ease-out, transform .22s cubic-bezier(.34,1.56,.64,1)でチェックマークが回転しながらフェードインするスピンインアニメーションを実装。display:noneは使用しないためpointer-events:noneで入力を無効化。習慣チェック時の完了フィードバックが視覚的に強化され、.chk の既存のscale(1.1)トランジション（Cycle 1から継続）とも連携して豊かなタップ体験を提供。"
+        },
+        {
+          "type": "feature",
+          "title": "アクセントカラーテーマ6色プリセット（Accent Color Theme Picker）",
+          "description": "ヘッダーに🎨ボタンを追加し、6色のアクセントカラープリセット（ゴールド/スカイ/グリーン/パープル/オレンジ/ピンク）から選択できるカラーピッカードロップダウンを実装。ACCENT_PERSETSに各プリセットのprimary/dark値を定義し、setAccent()がdocumentElement.style.setPropertyで--goldと--gold-dのCSS変数を動的更新。選択値はlocalStorage（rh_accent）に0〜5の整数で保存し次回起動時に復元。ピッカーはopacity+transformトランジションでアニメーション表示。外部クリックで自動クローズ。アクティブな選択項目はwhiteのボーダーリングで強調表示。"
+        }
+      ],
+      "notes": "Cycle 83はアニメーション強化とカスタマイズ性の2軸改善。チェックマークスピンインはCycle 1のチェックボックス拡大（scale 1.1）・Cycle 26の紙吹雪アニメーションに続く完了フィードバックの強化で、display切り替えの瞬間的な変化から滑らかな描画アニメーションへ。アクセントカラーは--gold/--gold-dのCSS変数を差し替えることで、ヘッダー・FAB・進捗バー・ストリーク炎・バッジなど全ゴールド要素が一括切替。ゴールドをデフォルトとして既存ユーザーへの影響ゼロ。LocalStorageキー1つ（rh_accent）追加のみで後方互換完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T05:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

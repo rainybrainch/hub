@@ -79,8 +79,8 @@
     .habit.done{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.2)}
     .chk{width:24px;height:24px;border-radius:8px;border:2px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
     .habit.done .chk{background:var(--green);border-color:var(--green);transform:scale(1.1)}
-    .chk-ico{display:none;font-size:13px;color:var(--dark);font-weight:900}
-    .habit.done .chk-ico{display:block}
+    .chk-ico{font-size:13px;color:var(--dark);font-weight:900;opacity:0;transform:scale(0) rotate(-60deg);transition:opacity .18s ease-out,transform .22s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+    .habit.done .chk-ico{opacity:1;transform:scale(1) rotate(0deg)}
     .habit-info{flex:1;min-width:0}
     .habit-name{font-size:14px;font-weight:700;transition:color .15s;display:block}
     .habit-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:1px}
@@ -1311,6 +1311,15 @@
     body.compact .last-done-badge{display:none}
     /* Cycle 82: search text highlight */
     .search-hl{background:rgba(245,200,66,.32);border-radius:3px;color:inherit;padding:0 1px}
+    /* Cycle 83: accent color picker */
+    .accent-wrap{position:relative;display:inline-flex}
+    .accent-picker{position:absolute;top:calc(100% + 6px);right:0;background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;display:flex;gap:8px;z-index:500;opacity:0;pointer-events:none;transform:translateY(-6px) scale(.95);transition:opacity .18s,transform .18s cubic-bezier(.34,1.56,.64,1)}
+    .accent-picker.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+    body.light .accent-picker{background:#fff;border-color:rgba(0,0,0,.12)}
+    .accent-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0}
+    .accent-swatch:hover{transform:scale(1.18)}
+    .accent-swatch.active{border-color:#fff;transform:scale(1.18)}
+    body.light .accent-swatch.active{border-color:#333}
   </style>
 </head>
 <body>
@@ -1336,6 +1345,10 @@
   <button class="hdr-btn" onclick="openYFix()" title="昨日の習慣記録を修正（Yキー）">昨</button>
   <button class="hdr-btn" id="cal-btn" onclick="openCalModal()" title="月間カレンダーで振り返り">🗓</button>
   <button class="hdr-btn" onclick="openWReport()" title="週次パフォーマンスレポートを表示">📈</button>
+  <div class="accent-wrap">
+    <button class="hdr-btn" onclick="toggleAccentPicker()" title="アクセントカラーを変更" id="accent-btn">🎨</button>
+    <div class="accent-picker" id="accent-picker"></div>
+  </div>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -4190,6 +4203,51 @@ function updateCompleteAllBtn(){
   btn.style.opacity=rem===0?'.4':'';
 }
 
+// ── Cycle 83: Accent color theme ──
+const ACCENT_PRESETS=[
+  {name:'Gold',    primary:'#F5C842',dark:'#C49A0E'},
+  {name:'Sky',     primary:'#5BC8E8',dark:'#2A9FC0'},
+  {name:'Green',   primary:'#4CAF7D',dark:'#2E7D52'},
+  {name:'Purple',  primary:'#A78BFA',dark:'#7C3AED'},
+  {name:'Orange',  primary:'#FB923C',dark:'#C2551A'},
+  {name:'Pink',    primary:'#F472B6',dark:'#BE185D'},
+];
+function _applyAccent(idx){
+  const p=ACCENT_PRESETS[idx]||ACCENT_PRESETS[0];
+  document.documentElement.style.setProperty('--gold',p.primary);
+  document.documentElement.style.setProperty('--gold-d',p.dark);
+}
+function _renderAccentSwatches(){
+  const el=document.getElementById('accent-picker');
+  if(!el)return;
+  const cur=parseInt(localStorage.getItem('rh_accent')||'0',10);
+  el.innerHTML=ACCENT_PRESETS.map((p,i)=>
+    `<div class="accent-swatch${i===cur?' active':''}" style="background:${p.primary}" title="${p.name}" onclick="setAccent(${i})"></div>`
+  ).join('');
+}
+function initAccent(){
+  const idx=parseInt(localStorage.getItem('rh_accent')||'0',10);
+  _applyAccent(idx);
+  _renderAccentSwatches();
+  document.addEventListener('click',_accentClose);
+}
+function setAccent(idx){
+  localStorage.setItem('rh_accent',idx);
+  _applyAccent(idx);
+  _renderAccentSwatches();
+}
+function toggleAccentPicker(){
+  const el=document.getElementById('accent-picker');
+  if(!el)return;
+  _renderAccentSwatches();
+  el.classList.toggle('open');
+}
+function _accentClose(e){
+  const wrap=document.querySelector('.accent-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    document.getElementById('accent-picker')?.classList.remove('open');
+  }
+}
 // ── init ──
 load();
 initTheme();
@@ -4202,6 +4260,7 @@ initIntention();
 initWeekly();
 initReminder();
 initModalSwipe();
+initAccent();
 // Cycle 44: restore last selected category filter
 (()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善','important'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
 toggleTough(false); // Cycle 47: init tough buttons
