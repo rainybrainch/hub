@@ -1246,6 +1246,12 @@
     /* Cycle 65: halfway achievement toast (50% / 75%) */
     .halfway-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(155,109,214,.28),rgba(91,200,232,.18));border:1px solid rgba(155,109,214,.5);color:var(--purple);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 6px 20px rgba(155,109,214,.25);z-index:445;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;text-align:center;max-width:calc(100vw - 40px)}
     .halfway-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 78: golden time badge & current-time highlight */
+    .golden-badge{font-size:10px;padding:2px 5px;background:rgba(255,200,60,.1);border:1px solid rgba(255,200,60,.25);border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.04em;cursor:default}
+    body.compact .golden-badge{display:none}
+    body.light .golden-badge{background:rgba(255,200,60,.15);border-color:rgba(255,200,60,.35)}
+    @keyframes goldenNowPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,200,60,0)}50%{box-shadow:0 0 0 4px rgba(255,200,60,.22)}}
+    .habit.golden-now:not(.done):not(.paused):not(.skipped-today){animation:goldenNowPulse 2.5s ease-in-out infinite}
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1254,7 +1260,7 @@
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
-      .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn{display:none!important}
+      .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
       .habit-sec{break-inside:avoid}
     }
     /* ── Cycle 70: weekly report modal ── */
@@ -2526,7 +2532,14 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 70: important flag
   const impClass=h.important?' important':'';
   const impBadge=h.important?'<span class="imp-badge">⭐重要</span>':'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 78: golden time badge + current-time highlight
+  const _gh=habitGoldenHour(h.id);
+  const _GICO=['🌃','🌅','☀️','🌙'];
+  const _GLBL=['深夜型','朝型','昼型','夜型'];
+  const goldenBadge=_gh!==null?`<span class="golden-badge" title="${_GLBL[_gh]}">${_GICO[_gh]}</span>`:'';
+  const _curBand=_hr<5?0:_hr<12?1:_hr<18?2:3;
+  const goldenNow=_gh!==null&&_gh===_curBand&&!isDone&&!isPaused?' golden-now':'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3038,6 +3051,27 @@ function checkCategoryComplete(cat){
       }
     });
   },80);
+}
+
+// ── Cycle 78: Golden time badge ──
+function habitGoldenHour(id){
+  const bands=[0,0,0,0];
+  let total=0;
+  const cutoff=new Date(Date.now()-60*86400000).toISOString().slice(0,10);
+  for(const ds of Object.keys(completions)){
+    if(ds<cutoff)continue;
+    const v=(completions[ds]||{})[id];
+    if(typeof v==='string'){
+      const h=new Date(v).getHours();
+      if(h>=5&&h<12)bands[1]++;
+      else if(h>=12&&h<18)bands[2]++;
+      else if(h>=18)bands[3]++;
+      else bands[0]++;
+      total++;
+    }
+  }
+  if(total<5)return null;
+  return bands.indexOf(Math.max(...bands));
 }
 
 // ── Cycle 61: Drag-and-drop habit reorder ──

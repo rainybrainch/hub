@@ -1301,6 +1301,44 @@
           "habit-improvements.json"
         ]
       }
+    },
+    {
+      "cycle": 78,
+      "version": "v2.78",
+      "timestamp": "2026-06-30T00:00:00Z",
+      "title": "黄金時間帯バッジ・今がチャンスハイライト",
+      "category": "UI/UX・分析",
+      "improvements": [
+        {
+          "type": "feature",
+          "name": "黄金時間帯バッジ",
+          "description": "過去60日間の完了時刻から習慣ごとの「得意な時間帯」（深夜型🌃・朝型🌅・昼型☀️・夜型🌙）を算出し、カードにバッジ表示。5回以上のデータがある場合のみ表示。"
+        },
+        {
+          "type": "feature",
+          "name": "今がチャンスハイライト",
+          "description": "現在の時間帯が習慣の黄金時間帯と一致する場合、未完了カードに黄金色のパルスアニメーション（goldenNowPulse）を表示して「今がベストタイム」を通知。"
+        }
+      ],
+      "changes": [
+        {
+          "file": "habit.html",
+          "type": "css",
+          "description": ".golden-badge スタイル・goldenNowPulse アニメーション追加"
+        },
+        {
+          "file": "habit.html",
+          "type": "javascript",
+          "description": "habitGoldenHour(id) 関数追加、_hCard() に goldenBadge・goldenNow 組み込み"
+        }
+      ],
+      "deploy": {
+        "branch": "main",
+        "files": [
+          "habit.html",
+          "habit-improvements.json"
+        ]
+      }
     }
   ]
 }
