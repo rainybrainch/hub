@@ -1178,6 +1178,23 @@
     body.light .week-prog.wk-good{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
     body.light .week-prog.wk-low{background:rgba(232,53,74,.07);border-color:rgba(232,53,74,.18)}
 
+    /* Cycle 68: recommended execution time badge */
+    .rec-time-badge{font-size:9px;color:var(--muted);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;line-height:1.5}
+    .rec-time-badge.soon{color:var(--gold);background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.3);animation:rtPulse 2.2s ease-in-out infinite}
+    @keyframes rtPulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 7px rgba(245,200,66,.35)}}
+    body.light .rec-time-badge{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.light .rec-time-badge.soon{color:var(--gold-d);background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.35)}
+    body.compact .rec-time-badge{display:none}
+    /* Cycle 68: rec-time modal input row */
+    .rec-time-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .rec-time-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;flex-shrink:0}
+    .rec-time-inp{background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:120px}
+    .rec-time-inp:focus{border-color:rgba(245,200,66,.4)}
+    body.light .rec-time-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    .rec-time-clr{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 6px;border-radius:6px;transition:color .15s;line-height:1;flex-shrink:0}
+    .rec-time-clr:hover{color:var(--red)}
+    body.light .rec-time-clr{color:rgba(0,0,0,.35)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1401,6 +1418,7 @@
     <button class="sort-btn" id="sort-undone-btn" onclick="toggleSortUndone()">⬆ 未完了を上に</button>
     <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
     <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px" title="全カテゴリーを折りたたむ/展開（Zキー）">≡ 全折</button>
+    <button class="sort-btn" id="random-pick-btn" onclick="randomPickHabit()" style="margin-left:8px" title="未完了習慣をランダムにピックアップ（🎲）">🎲</button>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
       <button class="font-size-btn" data-size="sm" onclick="_applyFontSize('sm',true)" title="小さいテキスト">A-</button>
       <button class="font-size-btn" data-size="normal" onclick="_applyFontSize('normal',true)" title="標準テキスト">A</button>
@@ -1476,6 +1494,12 @@
       <span class="tough-row-lbl">難度</span>
       <button class="tough-toggle-btn" id="tough-btn-off" type="button" onclick="toggleTough(false)">普通</button>
       <button class="tough-toggle-btn" id="tough-btn-on" type="button" onclick="toggleTough(true)">⚡ 難しい</button>
+    </div>
+    <div class="rec-time-row">
+      <span class="rec-time-lbl">⏰ 時刻</span>
+      <input class="rec-time-inp" id="rec-time-inp" type="time" title="推奨実行時刻（任意）：設定時刻の前後30分以内の未完了習慣がゴールドでハイライト">
+      <button class="rec-time-clr" type="button" onclick="document.getElementById('rec-time-inp').value=''" title="クリア">✕</button>
+      <span style="font-size:10px;color:var(--muted);flex:1">推奨実行時刻（任意）</span>
     </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
@@ -2315,6 +2339,14 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const emojiSpan=h.emoji?`<span class="habit-emoji">${h.emoji}</span>`:'';
   const toughBadge=h.tough?`<span class="tough-badge">⚡難</span>`:'';
   const durBadge=h.duration?`<span class="dur-badge">⏱${h.duration}m</span>`:'';
+  // Cycle 68: recommended execution time badge
+  const recTimeBadge=(()=>{
+    if(!h.recTime||isDone||isPaused||isWeekendOff)return'';
+    const[rh,rm]=h.recTime.split(':').map(Number);
+    const n=new Date();const diff=(rh*60+rm)-(n.getHours()*60+n.getMinutes());
+    const soon=diff>=-15&&diff<=30;
+    return`<span class="rec-time-badge${soon?' soon':''}" data-rec-id="${h.id}">⏰${h.recTime}</span>`;
+  })();
   const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span>${toughBadge}</div>`:`<span class="habit-name">${esc(h.name)}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
@@ -2353,7 +2385,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3016,6 +3048,7 @@ function openModal(id=null){
     const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
     const durEl=document.getElementById('dur-inp');if(durEl)durEl.value=(h&&h.duration>=1)?h.duration:'';
     const whyEl=document.getElementById('why-inp');if(whyEl)whyEl.value=h&&h.why?h.why:'';
+    const rtEl=document.getElementById('rec-time-inp');if(rtEl)rtEl.value=h&&h.recTime?h.recTime:'';
     toggleTough(!!(h&&h.tough));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
@@ -3031,6 +3064,7 @@ function openModal(id=null){
     const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
     const durElN=document.getElementById('dur-inp');if(durElN)durElN.value='';
     const whyElN=document.getElementById('why-inp');if(whyElN)whyElN.value='';
+    const rtElN=document.getElementById('rec-time-inp');if(rtElN)rtElN.value='';
     toggleTough(false);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -3061,10 +3095,11 @@ function saveHabit(){
   if(!name||!selCatVal)return;
   const durSave=parseInt((document.getElementById('dur-inp')||{}).value||'0');
   const whySave=((document.getElementById('why-inp')||{}).value||'').trim().substring(0,80);
+  const recTimeSave=((document.getElementById('rec-time-inp')||{}).value||'').trim();
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3076,6 +3111,7 @@ function saveHabit(){
     if(selTough)nh.tough=true;
     if(durSave>=1&&durSave<=180)nh.duration=durSave;
     if(whySave)nh.why=whySave;
+    if(recTimeSave)nh.recTime=recTimeSave;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -3771,6 +3807,7 @@ toggleTough(false); // Cycle 47: init tough buttons
 render();
 document.body.classList.add('loaded');
 setInterval(renderPaceBox,60000);
+setInterval(_updateRecTimeBadges,60000); // Cycle 68
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
 // ── Cycle 24: PWA theme-color meta tag sync ──
 function syncThemeColor(){
@@ -4246,6 +4283,38 @@ function renderHighlightBox(){
   const inp=document.getElementById('hl-inp');
   if(prv){prv.textContent=txt||'今日の振り返りを記録...';prv.classList.toggle('has-text',!!txt);}
   if(inp&&inp.value!==txt)inp.value=txt;
+}
+
+// ── Cycle 68: recommended execution time ──
+function _updateRecTimeBadges(){
+  const n=new Date();const nowMin=n.getHours()*60+n.getMinutes();
+  document.querySelectorAll('[data-rec-id]').forEach(el=>{
+    const h=habits.find(x=>x.id===el.dataset.recId);
+    if(!h||!h.recTime)return;
+    const[rh,rm]=h.recTime.split(':').map(Number);
+    const diff=(rh*60+rm)-nowMin;
+    el.classList.toggle('soon',diff>=-15&&diff<=30);
+  });
+}
+
+// ── Cycle 68: random habit picker ──
+function randomPickHabit(){
+  const td=today();const dc=completions[td]||{};
+  const undone=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id)&&!dc[h.id]);
+  if(!undone.length){
+    const b=document.getElementById('banner');
+    b.textContent='🎉 全習慣完了！今日も最高！';
+    b.classList.add('show');
+    setTimeout(()=>{b.classList.remove('show');setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';},400);},2500);
+    return;
+  }
+  const pick=undone[Math.floor(Math.random()*undone.length)];
+  const st=getCatCollapsed();
+  if(st[pick.category]){st[pick.category]=false;localStorage.setItem(_colKey(),JSON.stringify(st));renderList();}
+  setTimeout(()=>{
+    const el=document.querySelector(`#list .habit[data-id="${pick.id}"]`);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{el.classList.add('highlight-pulse');setTimeout(()=>el.classList.remove('highlight-pulse'),2100);},300);}
+  },150);
 }
 
 // ── Cycle 34: reset today's completions ──
