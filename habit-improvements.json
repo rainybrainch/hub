@@ -1654,6 +1654,30 @@
         "deployedAt": "2026-06-30T13:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 92,
+      "version": "v2.92",
+      "timestamp": "2026-06-30T14:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "前月比達成率バッジ",
+          "description": "月間サマリーヘッダーに前月比達成率バッジ（.mom-badge）を追加。renderMonthStats()内で前月の全日×全習慣の完了数を集計しlmRateを算出。当月rate(%)との差momDiffを計算し、+3%超で緑↑バッジ、-3%未満で赤↓バッジ、±3%以内で灰→同率バッジを表示。バッジタイトルに前月達成率を表示してホバー時に詳細を確認可能。CSS: .mom-badge(.up/.down/.same)でダーク/ライトテーマ両対応。月間サマリーの月ヘッダー行（タイトルとコピーボタンの間）にインライン配置。"
+        },
+        {
+          "type": "feature",
+          "title": "30日パフォーマンストレンドラベル",
+          "description": "チャートエリアの下部に過去30日の達成率トレンドを示すラベル（#chart-trend-lbl）を追加。renderChartTrend()が直近15日と前15日の1日平均達成率を比較し、+5%超で「📈 上昇傾向」、-5%以下で「📉 低下傾向」、それ以外で「→ 安定推移」テキストを表示。rawDayRate(dateAgo(i))で実日付ベースの達成率を取得。cls属性（up/down）でCSSカラーを切り替え。render()のrenderMonthStats()直後にrenderChartTrend()を呼び出し。LocalStorage変更なし・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 92は「月間成績の文脈付け」と「パフォーマンストレンドの可視化」の2軸改善。前月比バッジは月ヘッダーを一目見るだけで上昇/低下トレンドを把握できるようにし、月次レビューの質を高める。チャートトレンドラベルは棒グラフを補完する統計的サマリーとして、習慣継続の勢いを定量的に示す。rawDayRate()（Cycle 47で分離済み）を再利用し、安全・効率的に実装。LocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "commit": "12f1919",
+        "deployedAt": "2026-06-30T14:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
