@@ -1364,6 +1364,18 @@
     .habit.kfocus{outline:2px solid var(--sky)!important;outline-offset:2px}
     body.light .habit.kfocus{outline-color:rgba(0,120,160,.7)!important}
 
+    /* Cycle 92: month-over-month comparison badge */
+    .mom-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:7px;letter-spacing:.02em;display:inline-flex;align-items:center;flex-shrink:0}
+    .mom-badge.up{color:var(--green);background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.25)}
+    .mom-badge.down{color:var(--red);background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.15)}
+    .mom-badge.same{color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    body.light .mom-badge.same{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1)}
+    /* Cycle 92: 30-day performance trend label in chart */
+    .chart-trend-lbl{font-size:10px;color:var(--muted);margin-top:10px;text-align:center;letter-spacing:.04em}
+    .chart-trend-lbl.up{color:var(--green)}
+    .chart-trend-lbl.down{color:var(--red)}
+    body.light .chart-trend-lbl{color:rgba(0,0,0,.35)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -1536,6 +1548,7 @@
       </div>
     </div>
     <div id="chart"></div>
+    <div class="chart-trend-lbl" id="chart-trend-lbl" style="display:none"></div>
   </div>
 
   <div class="weekly-box" id="weekly-box">
@@ -3191,6 +3204,7 @@ function render(){
   renderWeekMatrix(); // Cycle 48
   renderYearCalendar();
   renderMonthStats();
+  renderChartTrend(); // Cycle 92
   renderWeeklyRanking();
   renderMotto();
   renderAchievements();
@@ -4169,6 +4183,24 @@ function renderMonthStats(){
   let best=null,bestCnt=0;
   habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
   const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  // Cycle 92: month-over-month comparison badge
+  const lmYear=m===0?y-1:y, lmMonth=m===0?11:m-1;
+  const lmDays=new Date(lmYear,lmMonth+1,0).getDate();
+  let lmTotal=0;
+  for(let d=1;d<=lmDays;d++){
+    const ds=`${lmYear}-${String(lmMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dc=completions[ds]||{};
+    habits.forEach(h=>{if(dc[h.id])lmTotal++;});
+  }
+  const lmPoss=habits.length*lmDays;
+  const lmRate=lmPoss>0?Math.round(lmTotal/lmPoss*100):null;
+  const momDiff=lmRate!==null?rate-lmRate:null;
+  let momBadge='';
+  if(momDiff!==null){
+    const cls=momDiff>2?'up':momDiff<-2?'down':'same';
+    const sign=momDiff>0?`↑+${momDiff}%`:momDiff<0?`↓${momDiff}%`:`→同率`;
+    momBadge=`<span class="mom-badge ${cls}" title="${lmMonth+1}月: ${lmRate}%">${sign}</span>`;
+  }
   // Cycle 86: monthly pace prediction
   const daysInMonth=new Date(y,m+1,0).getDate();
   const remaining=daysInMonth-day;
@@ -4192,7 +4224,28 @@ function renderMonthStats(){
     goalHtml=`<div class="month-goal-row"><span class="month-goal-lbl" style="flex:1">🎯 月次目標</span><button class="month-goal-set" onclick="event.stopPropagation();setMonthlyGoalPrompt()" title="今月の達成率目標を設定">設定する</button></div>`;
   }
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}${paceHtml}${goalHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span>${momBadge}<button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}${paceHtml}${goalHtml}</div>`;
+}
+
+// ── Cycle 92: 30-day performance trend label ──
+function renderChartTrend(){
+  const el=document.getElementById('chart-trend-lbl');
+  if(!el)return;
+  let newSum=0,newCnt=0,oldSum=0,oldCnt=0;
+  for(let i=0;i<30;i++){
+    const r=rawDayRate(dateAgo(i));
+    if(i<15){newSum+=r;newCnt++;}else{oldSum+=r;oldCnt++;}
+  }
+  if(!oldCnt||!newCnt){el.style.display='none';return;}
+  const newAvg=Math.round(newSum/newCnt*100);
+  const oldAvg=Math.round(oldSum/oldCnt*100);
+  const diff=newAvg-oldAvg;
+  const cls=diff>=5?'up':diff<=-5?'down':'';
+  const icon=diff>=5?'📈':diff<=-5?'📉':'→';
+  const txt=diff>=5?`上昇傾向（直近15日 +${diff}%）`:diff<=-5?`低下傾向（直近15日 ${diff}%）`:`安定推移（±${Math.abs(diff)}%）`;
+  el.textContent=`${icon} 過去30日: ${txt}`;
+  el.className=`chart-trend-lbl${cls?' '+cls:''}`;
+  el.style.display='';
 }
 
 function copyMonthSummary(y,m,day,total,rate){
