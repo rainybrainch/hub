@@ -1518,6 +1518,29 @@
         "deployedAt": "2026-06-30T07:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 86,
+      "timestamp": "2026-06-30T08:00:00Z",
+      "version": "v2.86",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "累計達成時間統計（累計完了カードに⏱サブラベル追加）",
+          "description": "「累計完了」スタットカードに⏱サブラベル（#s-time、.stat-subクラス）を追加。Cycle 52で導入したh.durationフィールドを活用し、durationが設定された全習慣について「h.duration × habitTotalCount(h.id)」を合計して累計達成時間を算出。60分以上はXh Ym形式、未満はXm形式で表示（例:「⏱ 12h30m」）。durationなし習慣のみの場合は非表示。renderStats()内で毎回再計算。HTML追加: div#s-time。後方互換完全維持。"
+        },
+        {
+          "type": "feature",
+          "title": "今月ペース予測インサイト（月次まとめに📈予測ライン追加）",
+          "description": "月次まとめウィジェット（month-box）の折りたたみ内容に「📈 今のペースなら月末 X% 見込み」予測ラインを追加。renderMonthStats()内でdaysInMonth（月の日数）とremaining（残り日数）を算出し、現在の達成率をそのまま月末予測値として表示（同ペース維持の外挿）。色分け: 緑≥80%、ゴールド≥50%、赤<50%。達成率が80%未満の場合は「/ 80%へ残りN日で毎日X件」という具体的な行動目標も付記。3日未満のデータや月末当日は非表示。CSS追加: .month-pace（左ボーダー付き控えめなインサイトボックス）、body.lightにも対応。.month-body.openのmax-heightを180px→240pxに拡張。"
+        }
+      ],
+      "notes": "Cycle 86は「習慣投資の可視化」と「月次ゴール達成支援」の2軸改善。累計達成時間はCycle 52のdurationフィールドを活用し習慣にかけた総時間を定量化、「努力の見える化」をサポート。月末ペース予測は現在の達成率から月末着地点を示すことで、残り日数を使って目標にどう近づくかの戦略的思考を促す（80%未満時は必要な1日あたりの件数も表示）。両改善とも既存LocalStorageデータへの後方互換を完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T08:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

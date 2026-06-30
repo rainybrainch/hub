@@ -344,13 +344,15 @@
     .month-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
     .month-chev.open{transform:rotate(180deg)}
     .month-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
-    .month-body.open{max-height:180px}
+    .month-body.open{max-height:240px}
     .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px}
     .month-val{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:var(--gold);line-height:1;margin-bottom:2px;text-align:center}
     .month-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-align:center}
     .month-best{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .month-pace{font-size:11px;color:var(--muted);margin-top:6px;padding:5px 10px;background:rgba(255,255,255,.04);border-radius:6px;border-left:2px solid rgba(255,255,255,.1);line-height:1.5}
     body.light .month-box{border-color:rgba(0,0,0,.08)}
     body.light .month-best{border-top-color:rgba(0,0,0,.06)}
+    body.light .month-pace{background:rgba(0,0,0,.03);border-left-color:rgba(0,0,0,.1)}
 
     /* Cycle 20: monthly trend chart */
     .trend-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px}
@@ -1432,6 +1434,7 @@
     <div class="stat clickable" onclick="openStatsModal()" title="全習慣の統計一覧（Sキー）">
       <div class="stat-val green" id="s-total">0</div>
       <div class="stat-lbl">累計完了 📊</div>
+      <div class="stat-sub" id="s-time"></div>
     </div>
   </div>
 
@@ -2412,6 +2415,14 @@ function renderStats(){
   document.getElementById('s-today').textContent=rate+'%';
   document.getElementById('s-streak').textContent=streak;
   document.getElementById('s-total').textContent=totalDone();
+  // Cycle 86: cumulative invested time across all timed habits
+  const timeEl=document.getElementById('s-time');
+  if(timeEl){
+    const mins=habits.reduce((s,h)=>s+(h.duration>=1?h.duration*habitTotalCount(h.id):0),0);
+    if(mins>=60){const hh=Math.floor(mins/60),mm=mins%60;timeEl.textContent=`⏱ ${hh}h${mm>0?String(mm).padStart(2,'0')+'m':''}`;}
+    else if(mins>0){timeEl.textContent=`⏱ ${mins}m`;}
+    else{timeEl.textContent='';}
+  }
   // cycle 5: best streak display
   const sb=document.getElementById('s-best');
   if(sb)sb.textContent=`最高: ${best}日`;
@@ -3956,8 +3967,20 @@ function renderMonthStats(){
   let best=null,bestCnt=0;
   habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
   const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  // Cycle 86: monthly pace prediction
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const remaining=daysInMonth-day;
+  let paceHtml='';
+  if(day>=3&&remaining>0){
+    const pColor=rate>=80?'var(--green)':rate>=50?'var(--gold)':'var(--red)';
+    const target80=Math.ceil(habits.length*daysInMonth*0.8);
+    const needed80=Math.max(0,target80-total);
+    const perDay=remaining>0?Math.ceil(needed80/remaining):0;
+    const needStr=(rate<80&&needed80>0&&perDay<=habits.length)?` / 80%へ残り${remaining}日で毎日${perDay}件`:'';
+    paceHtml=`<div class="month-pace">📈 今のペースなら月末 <strong style="color:${pColor}">${rate}%</strong> 見込み${needStr}</div>`;
+  }
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}${paceHtml}</div>`;
 }
 
 function copyMonthSummary(y,m,day,total,rate){
