@@ -975,6 +975,29 @@
         "deployedAt": "2026-06-29T18:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 65,
+      "timestamp": "2026-06-30T00:00:00Z",
+      "version": "v2.65",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣「なぜやるか」記録フィールド追加",
+          "description": "習慣追加・編集モーダルに「💡 なぜやるか（任意）」テキストエリアを追加。最大80文字。入力した理由（h.why）はLocalStorageに保存され、習慣カードに淡いゴールド色のイタリック体で表示（💡 prefix付き）。詳細パネル（📊ボタン）展開時はゴールドの背景ボックス内に見やすく表示。コンパクトモードでは非表示。編集モードでも既存のwhyを復元。CSS追加: .why-row, .why-row-lbl, .why-inp, .habit-why, .hd-why, .hd-why-ico, .hd-why-txt。後方完全互換（whyフィールドなしの既存習慣は影響なし）。"
+        },
+        {
+          "type": "feature",
+          "title": "週次スコア合計バッジ表示",
+          "description": "Cycle 61のデイリースコアシステムを拡張。renderScoreBadge()内で今日のスコアをrh_daily_score_YYYY-MM-DD形式でLocalStorageに永続化。スコアバッジ表示時に過去7日分のキーを合計して週次トータルを計算し、バッジに「今週 Xpt」サブテキストを追加表示（.score-weekクラス、9px）。週合計が今日より大きい場合のみサブテキストを表示してノイズを抑制。title属性にも週次合計を追記。"
+        }
+      ],
+      "notes": "Cycle 65は「習慣の動機づけ強化」と「スコアの時系列可視化」の2軸改善。whyフィールドはセルフコンパッション研究に基づく「実装意図（implementation intention）」をサポートし、習慣継続率向上を狙う。週次スコアはCycle 61のデイリースコアを時間軸に拡張した自然な次ステップで、週単位の振り返りモチベーションを提供。両改善とも既存LocalStorageデータへの後方互換を完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T00:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
