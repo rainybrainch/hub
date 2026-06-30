@@ -1298,12 +1298,30 @@
     .habit-tag:hover{background:rgba(91,200,232,.3)}
     body.compact .habit-tags{display:none}
 
+    /* Cycle 85: category balance radar chart */
+    .radar-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px;transition:background .25s,border-color .25s}
+    body.light .radar-box{background:#f7f8fc;border-color:rgba(0,0,0,.06)}
+    body.oled .radar-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+    .radar-svg{width:100%;max-width:240px;display:block;margin:0 auto}
+    .radar-axis{stroke:rgba(255,255,255,.08);stroke-width:1;fill:none}
+    body.light .radar-axis{stroke:rgba(0,0,0,.08)}
+    .radar-ring{stroke:rgba(255,255,255,.06);stroke-width:1;fill:none}
+    body.light .radar-ring{stroke:rgba(0,0,0,.06)}
+    .radar-fill{fill:rgba(91,200,232,.15);stroke:var(--sky);stroke-width:1.5;stroke-linejoin:round;transition:all .6s cubic-bezier(.34,1.56,.64,1)}
+    body.light .radar-fill{fill:rgba(91,200,232,.12)}
+    .radar-dot{fill:var(--sky);stroke:var(--dark2);stroke-width:1.5}
+    body.light .radar-dot{stroke:#f0f2f5}
+    .radar-lbl{font-size:9px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif;fill:var(--muted);text-anchor:middle}
+    body.light .radar-lbl{fill:rgba(0,0,0,.4)}
+    .radar-pct{font-size:8px;font-family:"Dela Gothic One",sans-serif;fill:var(--sky);text-anchor:middle}
+    body.light .radar-pct{fill:#1e8aab}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
@@ -1568,6 +1586,12 @@
     <div class="hl-body" id="hl-body">
       <textarea class="hl-inp" id="hl-inp" placeholder="今日一番印象に残ったこと・達成・気づきを記録（最大100文字）" maxlength="100" rows="2" oninput="onHighlightInput(this.value)"></textarea>
     </div>
+  </div>
+
+  <!-- Cycle 85: category balance radar chart -->
+  <div class="radar-box" id="radar-box" style="display:none">
+    <div class="chart-ttl">🕸️ カテゴリーバランス（過去7日）</div>
+    <svg class="radar-svg" id="radar-svg" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
 
   <div class="tabs">
@@ -3031,6 +3055,7 @@ function render(){
   updateHeaderBadge();
   updateDayOffBtn();
   renderCatSummary(); // Cycle 73: category summary bars
+  renderRadarChart(); // Cycle 85: category balance radar chart
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   checkHabitAnniversaries(); // Cycle 71: anniversary toast
@@ -3065,7 +3090,7 @@ function toggle(id,evt){
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
-    playTick();vib(50);checkHabitMilestone(id);triggerCombo();
+    playTick();vib(50);checkHabitMilestone(id);checkCumulativeMilestone(id);triggerCombo();
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);// Cycle 64: score flyout
     if(_hh){const _sfPts=calcHabitPts(_hh);if(_sfPts>0)showScoreFlyout(r.left+r.width/2,r.top,_sfPts);}}}
@@ -3731,6 +3756,58 @@ function checkHabitMilestone(id){
   el.textContent=`${emoji} ${h.name} ${s}日連続達成！`;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// ── Cycle 85: per-habit cumulative completion milestones ──
+const CUM_MILESTONES=[10,25,50,100,250,365];
+function checkCumulativeMilestone(id){
+  const total=habitTotalCount(id);
+  if(!CUM_MILESTONES.includes(total))return;
+  const h=habits.find(x=>x.id===id);
+  const name=h?(h.emoji?h.emoji+' ':'')+h.name:id;
+  const emojis={10:'🌟',25:'💫',50:'🥈',100:'🥇',250:'💎',365:'👑'};
+  const el=document.getElementById('milestone-toast');
+  if(!el)return;
+  el.textContent=`${emojis[total]||'🏆'} ${name} 累計${total}回達成！`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// ── Cycle 85: category balance radar chart ──
+function renderRadarChart(){
+  const el=document.getElementById('radar-box');if(!el)return;
+  const cats=['学習','運動','創作','自己改善'];
+  const cols={'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
+  const activeCats=cats.filter(c=>habits.some(h=>h.category===c&&!h.archived));
+  if(activeCats.length<2){el.style.display='none';return;}
+  el.style.display='';
+  const rates=cats.map(cat=>{
+    const ch=habits.filter(h=>h.category===cat&&!h.archived&&!h.paused);
+    if(!ch.length)return 0;
+    let total=0,done=0;
+    for(let i=0;i<7;i++){
+      const ds=dateAgo(i);
+      ch.forEach(h=>{if(isScheduled(h,ds)){total++;if((completions[ds]||{})[h.id])done++;}});
+    }
+    return total>0?done/total:0;
+  });
+  const CX=90,CY=90,R=58;
+  const angles=cats.map((_,i)=>-Math.PI/2+i*Math.PI/2);
+  const pts=rates.map((r,i)=>{const a=angles[i];return[CX+Math.cos(a)*r*R,CY+Math.sin(a)*r*R];});
+  const polyPts=pts.map(p=>p.join(',')).join(' ');
+  const rings=[.25,.5,.75,1].map(p=>{
+    const rp=cats.map((_,i)=>{const a=angles[i];return`${(CX+Math.cos(a)*p*R).toFixed(1)},${(CY+Math.sin(a)*p*R).toFixed(1)}`;}).join(' ');
+    return`<polygon class="radar-ring" points="${rp}"/>`;
+  }).join('');
+  const axes=cats.map((_,i)=>{const a=angles[i];return`<line class="radar-axis" x1="${CX}" y1="${CY}" x2="${(CX+Math.cos(a)*R).toFixed(1)}" y2="${(CY+Math.sin(a)*R).toFixed(1)}"/>`;}).join('');
+  const lbls=cats.map((c,i)=>{
+    const a=angles[i],lx=(CX+Math.cos(a)*(R+18)).toFixed(1),ly=(CY+Math.sin(a)*(R+18)+3).toFixed(1);
+    const pct=Math.round(rates[i]*100);
+    return`<text class="radar-lbl" x="${lx}" y="${ly}" style="fill:${cols[c]}">${c}</text><text class="radar-pct" x="${lx}" y="${(parseFloat(ly)+11).toFixed(1)}">${pct}%</text>`;
+  }).join('');
+  const dots=pts.map((p,i)=>`<circle class="radar-dot" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" style="fill:${cols[cats[i]]}"/>`).join('');
+  const svgEl=document.getElementById('radar-svg');
+  if(svgEl)svgEl.innerHTML=rings+axes+`<polygon class="radar-fill" points="${polyPts}"/>`+dots+lbls;
 }
 
 // ── Cycle 17+36: weekly top habit ranking with all-time tab ──
@@ -4614,6 +4691,7 @@ const WIDGET_DEFS=[
   {key:'w_mood_stats',name:'📊 気分×達成率の相関',   id:'mood-stats-box'},
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
   {key:'w_cat_summary',name:'📊 カテゴリー別達成バー', id:'cat-summary-box'},
+  {key:'w_radar',    name:'🕸️ カテゴリーバランス（レーダー）', id:'radar-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
