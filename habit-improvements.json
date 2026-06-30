@@ -1339,6 +1339,44 @@
           "habit-improvements.json"
         ]
       }
+    },
+    {
+      "cycle": 79,
+      "version": "v2.79",
+      "timestamp": "2026-06-30T01:00:00Z",
+      "title": "週間チャートバーツールチップ・getShield()パフォーマンスキャッシュ",
+      "category": "UI/UX・パフォーマンス",
+      "improvements": [
+        {
+          "type": "feature",
+          "name": "週間チャートバーホバーツールチップ",
+          "description": "週間バーチャートの各バーにホバー時表示のリッチツールチップを追加。曜日名・日付(M/D)・達成数/総数・達成率(%)を表示。CSS transition opacity 150msでフェードイン。PC(hover:hover)のみ表示。ライトモード対応。"
+        },
+        {
+          "type": "performance",
+          "name": "getShield() 200msメモ化キャッシュ",
+          "description": "calcStreak()がdayRate()を最大365回呼び出し、各呼び出しでgetShield()がlocalStorage読み取り+JSON.parseを実行していたボトルネックを修正。200ms以内の重複呼び出しをメモリキャッシュで返す。レンダリングサイクルあたりのlocalStorage読み取りが約365回→1回に削減。"
+        }
+      ],
+      "changes": [
+        {
+          "file": "habit.html",
+          "type": "css",
+          "description": ".bar-tooltip スタイル・hover:hover メディアクエリ・ライトモード対応追加"
+        },
+        {
+          "file": "habit.html",
+          "type": "javascript",
+          "description": "getShield()/saveShield() に _shieldCache/_shieldCacheTs キャッシュ変数追加。renderChart() 週間ビューにtooltip HTML組み込み"
+        }
+      ],
+      "deploy": {
+        "branch": "main",
+        "files": [
+          "habit.html",
+          "habit-improvements.json"
+        ]
+      }
     }
   ]
 }

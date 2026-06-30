@@ -1252,6 +1252,11 @@
     body.light .golden-badge{background:rgba(255,200,60,.15);border-color:rgba(255,200,60,.35)}
     @keyframes goldenNowPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,200,60,0)}50%{box-shadow:0 0 0 4px rgba(255,200,60,.22)}}
     .habit.golden-now:not(.done):not(.paused):not(.skipped-today){animation:goldenNowPulse 2.5s ease-in-out infinite}
+    /* Cycle 79: weekly bar chart tooltip */
+    .bar-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--dark3);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:5px 9px;font-size:10px;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;text-align:center;color:var(--white);box-shadow:0 4px 12px rgba(0,0,0,.4);line-height:1.6}
+    @media(hover:hover){.chart-col:hover .bar-tooltip{opacity:1}}
+    body.light .bar-tooltip{background:#fff;border-color:rgba(0,0,0,.12);color:#1a1a2e;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -2080,12 +2085,17 @@ function updateBestStreak(current){
   return best;
 }
 
-// ── Cycle 47: streak shield ──
+// ── Cycle 47: streak shield ── Cycle 79: 200ms memoize cache
+let _shieldCache=null,_shieldCacheTs=0;
 function getShield(){
-  try{return JSON.parse(localStorage.getItem(SHIELDK)||'{"avail":0,"used":[],"lastMile":0}');}
-  catch(e){return {avail:0,used:[],lastMile:0};}
+  const now=Date.now();
+  if(_shieldCache&&now-_shieldCacheTs<200)return _shieldCache;
+  try{_shieldCache=JSON.parse(localStorage.getItem(SHIELDK)||'{"avail":0,"used":[],"lastMile":0}');}
+  catch(e){_shieldCache={avail:0,used:[],lastMile:0};}
+  _shieldCacheTs=now;
+  return _shieldCache;
 }
-function saveShield(sd){localStorage.setItem(SHIELDK,JSON.stringify(sd));}
+function saveShield(sd){_shieldCache=sd;_shieldCacheTs=Date.now();localStorage.setItem(SHIELDK,JSON.stringify(sd));}
 function processShield(){
   const sd=getShield();
   // Award shield at every 7-day streak milestone (up to max 2)
@@ -2349,7 +2359,14 @@ function renderChart(){
       const lbl=isToday?'今日':DAYS[daysAgo(i).getDay()];
       const col=document.createElement('div');
       col.className='chart-col';
-      col.innerHTML=`<div class="bar-wrap"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%" title="${pct}%"></div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
+      const d7=daysAgo(i);
+      const dateStr7=`${d7.getMonth()+1}/${d7.getDate()}`;
+      const activeH=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,ds));
+      const dc7=completions[ds]||{};
+      const doneH=activeH.filter(h=>dc7[h.id]).length;
+      const totalH=activeH.length;
+      const tipHtml=totalH>0?`${lbl}<br><span style="opacity:.6;font-size:9px">${dateStr7}</span><br><span style="color:var(--sky)">${doneH}/${totalH}</span> <span style="opacity:.7">${pct}%</span>`:`${lbl}<br><span style="opacity:.6;font-size:9px">${dateStr7}</span>`;
+      col.innerHTML=`<div class="bar-wrap" style="position:relative"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%"></div><div class="bar-tooltip">${tipHtml}</div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
       c.appendChild(col);
     }
   }else if(chartView==='line'){
