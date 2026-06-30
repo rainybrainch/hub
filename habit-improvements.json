@@ -1377,6 +1377,29 @@
           "habit-improvements.json"
         ]
       }
+    },
+    {
+      "cycle": 80,
+      "version": "v2.80",
+      "timestamp": "2026-06-30T02:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "一時停止の自動再開日設定（Auto-Resume Date for Paused Habits）",
+          "description": "⏸ 一時停止ボタンをクリックすると「何日後に自動再開しますか？」のプロンプトが表示され、日数を入力するとh.resumeDateとしてYYYY-MM-DD形式でhabitオブジェクトに保存。render()の先頭でcheckAutoResume()を呼び出し、resumeDate <= today()のpaused habitを自動的にpaused=false、resumeDate=undefinedに戻す。pausedLblに📅MM/DD再開の表示を追加。手動再開（▶ボタン）やresumeDateなしで一時停止も引き続き動作。プロンプトをキャンセルした場合は一時停止をキャンセル（h.pausedはtrueに変更せず）。"
+        },
+        {
+          "type": "feature",
+          "title": "今日の未完了習慣を一括完了ボタン（Complete All Remaining Today）",
+          "description": "ソート行に「✓ 全完了(N)」ボタンを追加。タップすると今日の未完了・非スキップ・アクティブな全習慣を一括完了。完了後は全達成時のお祝い演出（banner + confetti + playCelebration()）も発動。全完了後はボタンが無効化（disabled + opacity .4）。ボタンのラベルは残り未完了数を動的に表示（「✓ 全完了(3)」など）。updateCompleteAllBtn()をrender()末尾から呼び出して状態同期。既存のカテゴリー単位のbatchComplete()（Cycle 32）とは独立した全体版。"
+        }
+      ],
+      "notes": "Cycle 80は「長期計画サポート」と「バルクアクション効率化」の2軸。自動再開日は多忙期・旅行・資格試験期間などの一時的な中断後の再開忘れ問題を解決（これまでpaused習慣は永続的に止まりがちだった）。全完了ボタンは「ルーティンが完璧な日」や「記録を追いつける日」に、全習慣を素早く完了してお祝いを受け取れるUXを提供。どちらもLocalStorageスキーマ拡張は最小限（resumeDate属性の追加のみ）で後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-06-30T02:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
