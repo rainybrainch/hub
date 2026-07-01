@@ -1385,6 +1385,8 @@
     /* Cycle 74: hide-done toggle */
     .sort-btn.hide-done{background:rgba(76,175,125,.15);border-color:var(--green);color:var(--green)}
     body.light .sort-btn.hide-done{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.4)}
+    /* Cycle 112: smart sort active state */
+    .sort-btn.smart-on{background:rgba(155,109,214,.15);border-color:var(--purple);color:var(--purple)}
     /* Cycle 76: random habit roulette highlight */
     @keyframes rouletteHighlight{0%{box-shadow:none;border-color:rgba(255,255,255,.06)}30%,70%{box-shadow:0 0 0 4px rgba(91,200,232,.4);border-color:rgba(91,200,232,.7)!important}100%{box-shadow:none;border-color:rgba(255,255,255,.06)}}
     .habit.roulette-highlight{animation:rouletteHighlight 1.2s ease 1}
@@ -1968,6 +1970,7 @@
     <button class="sort-btn" id="roulette-btn" onclick="pickRandomHabit()" style="margin-left:8px" title="ランダムに未完了習慣を選ぶ（Rキー）">🎲</button>
     <button class="sort-btn" id="complete-all-btn" onclick="completeAllToday()" style="margin-left:8px" title="今日の未完了習慣を一括完了（Cycle 80）">✓ 全完了</button>
     <button class="sort-btn" id="sort-prio-btn" onclick="toggleSortImportant()" style="margin-left:8px" title="重要フラグ付き習慣を先頭に表示">⭐ 重要優先</button>
+    <button class="sort-btn" id="smart-sort-btn" onclick="toggleSmartSort()" style="margin-left:8px" title="緊急度・ストリーク危険度で自動ソート（Wキー）">⚡ おすすめ</button>
     <span class="rem-mins" id="rem-mins" style="display:none;margin-left:8px"></span>
     <span class="done-mins" id="done-mins" style="display:none;margin-left:8px"></span>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
@@ -2165,6 +2168,7 @@
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
       <tr><td><kbd class="kbdkey">H</kbd></td><td class="kbd-desc">過去日付の習慣履歴を閲覧</td></tr>
       <tr><td><kbd class="kbdkey">R</kbd></td><td class="kbd-desc">ランダムに未完了習慣を選んでハイライト</td></tr>
+      <tr><td><kbd class="kbdkey">W</kbd></td><td class="kbd-desc">スマートソート（緊急度・ストリーク危険度）切替</td></tr>
       <tr><td><kbd class="kbdkey">[</kbd> / <kbd class="kbdkey">]</kbd></td><td class="kbd-desc">カテゴリータブを前後に切り替え</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">↑</kbd> <kbd class="kbdkey">↓</kbd></td><td class="kbd-desc">習慣リストを上下に移動（Enterでトグル）</td></tr>
@@ -2263,7 +2267,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false;
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
 let _selSG=0; // Cycle 104: streak goal selection
@@ -3362,7 +3366,8 @@ function renderList(){
     const rawCh=list.filter(h=>h.category===cat);
     if(!rawCh.length)continue;
     let ch;
-    if(sortUndone===1)ch=[...rawCh].sort((a,b)=>{
+    if(_smartSort)ch=[...rawCh].sort((a,b)=>_smartScore(b,td,dc)-_smartScore(a,td,dc));
+    else if(sortUndone===1)ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       if(aOff!==bOff)return aOff?1:-1;
       // Cycle 107: sortImportant overrides per-mode important sort
@@ -5333,6 +5338,8 @@ initAccent();
 (()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善','important'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
 // Cycle 109: restore sort mode and important sort
 (()=>{const sm=parseInt(localStorage.getItem('rh_sort_mode')||'0');if(sm>0&&sm<3){sortUndone=sm;const b=document.getElementById('sort-undone-btn');if(b){b.classList.add('active');b.textContent=sm===2?'📉 要改善を上に':'⬆ 未完了を上に';}}const si=localStorage.getItem('rh_sort_imp');if(si==='1'){sortImportant=true;const b=document.getElementById('sort-prio-btn');if(b)b.classList.add('active');}})();
+// Cycle 112: restore smart sort state
+(()=>{if(localStorage.getItem('rh_smart_sort')==='1'){_smartSort=true;const b=document.getElementById('smart-sort-btn');if(b)b.classList.add('smart-on');}})();
 toggleTough(false); // Cycle 47: init tough buttons
 toggleImportant(false); // Cycle 70: init important buttons
 render();
@@ -5430,6 +5437,35 @@ function toggleCatCollapse(cat,e){
   localStorage.setItem(_colKey(),JSON.stringify(st));
   renderList();
 }
+// ── Cycle 112: smart sort ──
+function _smartScore(h,td,dc){
+  if(h.paused||h.archived)return -999;
+  if(!isScheduled(h,td))return -500;
+  if(isSkippedToday(h.id))return -500;
+  if(dc[h.id])return -100;
+  let score=0;
+  if(h.recTime){
+    const[hh,mm]=h.recTime.split(':').map(Number);
+    const now=new Date();
+    const recMin=hh*60+mm,nowMin=now.getHours()*60+now.getMinutes();
+    const diff=recMin-nowMin;
+    if(diff>=-30&&diff<=30)score+=60;
+    else if(diff>30&&diff<=90)score+=30;
+  }
+  const strk=habitStreak(h.id);
+  if(strk>=7)score+=50;
+  else if(strk>=3)score+=30;
+  else if(strk>=1)score+=10;
+  return score;
+}
+function toggleSmartSort(){
+  _smartSort=!_smartSort;
+  localStorage.setItem('rh_smart_sort',_smartSort?'1':'');
+  const btn=document.getElementById('smart-sort-btn');
+  if(btn)btn.classList.toggle('smart-on',_smartSort);
+  render();
+}
+
 // ── Cycle 27: sticky bottom progress bar ──
 function updateProgressFooter(){
   const fill=document.getElementById('progress-footer-fill');
@@ -5468,6 +5504,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='y'||e.key==='Y')openYFix();
   else if(e.key==='h'||e.key==='H')openHistoryBrowser();
   else if(e.key==='r'||e.key==='R')pickRandomHabit();
+  else if(e.key==='w'||e.key==='W')toggleSmartSort();
   // Cycle 111: [ / ] to cycle category tabs
   else if(e.key==='['||e.key===']'){
     const _tabOrder=['all','学習','運動','創作','自己改善','important'];
