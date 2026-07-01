@@ -1959,6 +1959,29 @@
       }
     },
     {
+      "cycle": 106,
+      "version": "v2.106",
+      "timestamp": "2026-07-01T12:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "システムテーマ自動同期モード（🌓 Auto）を追加",
+          "description": "テーマサイクルを3段階（ダーク→OLED→ライト→ダーク）から4段階（ダーク→OLED→ライト→🌓 自動→ダーク）に拡張。「自動」モードでは `rh_theme='auto'` をLocalStorageに保存し、OS/ブラウザの `prefers-color-scheme` メディアクエリに連動してダーク/ライトを自動適用。システム設定が変わるとリアルタイムでテーマも追従（`matchMedia.addEventListener('change')`）。ヘッダーのテーマボタンが🌓を表示することで現在のモードが一目でわかる。`initTheme()` は `rh_theme='auto'` をnull（未設定）と同じ「システム追従」として処理し後方互換。`updateThemeBtn()` の優先順位: auto=🌓 > light=🌙 > oled=☀️ > dark=⬛。これまで「ライトモードから戻る」と強制ダークになってしまい、その後にOSがライトに変わっても追従しなかった問題を解決。LocalStorage追加: `rh_theme='auto'`（既存の'dark'/'light'/'oled'/nullと後方互換）。"
+        },
+        {
+          "type": "feature",
+          "title": "習慣詳細パネルに時間帯別達成パターンチャート追加",
+          "description": "習慣詳細パネル（📊ボタン展開時）のDOW別達成ヒートマップの前に、4時間帯別の達成分布を表示するミニバーチャートを追加。Cycle 58で導入したISO形式完了タイムスタンプ（completions[date][id]の文字列値）を再利用し、過去60日分のtsMins配列から時間帯を分類: 🌅 朝（5-11時）、☀️ 午後（12-17時）、🌆 夜（18-22時）、🌙 深夜（23-4時）。各時間帯の件数を集計し最大値を基準とした相対高さのバーで可視化。各バー下部にラベル（絵文字+時間帯名）と件数を表示。4件以上のタイムスタンプデータがある習慣のみ表示（データ不足は非表示でノイズ回避）。`_habitDetailHtml()` 内でtsMinsの平均完了時刻計算（avgTimeStat）の直後に配置。CSS: `.hd-tod-box`, `.hd-tod-ttl`, `.hd-tod-bars`, `.hd-tod-col`, `.hd-tod-bar-wrap`, `.hd-tod-bar-fill`, `.hd-tod-lbl`, `.hd-tod-cnt`（light/darkテーマ両対応）。0.5s cubic-bezierトランジションアニメーション付き。LocalStorage変更なし・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 106は「テーマのスマートUX」と「時間帯データの可視化」の2軸改善。自動テーマモードはCycle 7のシステム検出（初回のみ）・Cycle 73のOLEDモード（3段階）を発展させ、ユーザーが「自動モード」に戻す明示的な手段を提供する。これまで一度手動テーマを設定するとシステム追従が永続的に無効化される問題があり、特にiOS/macOSの自動ダークモード切替を使うユーザーには不便だった。時間帯達成チャートはCycle 58（タイムスタンプ保存）・Cycle 68（DOW別チャート）に続く習慣パターン可視化の強化で、「曜日」に加え「一日の何時頃」その習慣をこなす傾向があるかを個別に確認できる。「朝型の習慣か夜型か」を定量的に把握することで習慣の実行時刻の最適化を支援。両機能ともLocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T12:00:00Z",
+        "status": "success"
+      }
+    },
+    {
       "cycle": 104,
       "version": "v2.104",
       "timestamp": "2026-07-01T10:00:00Z",
