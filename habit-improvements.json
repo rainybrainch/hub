@@ -2021,6 +2021,29 @@
         }
       ],
       "details": "重要習慣の視認性と管理効率を向上する「重要優先ソート」と、昨日だけでなく過去7日間の習慣記録を遡って修正できるようにする「YFix日付ナビ」の2機能を追加。どちらも既存データと完全後方互換。"
+    },
+    {
+      "cycle": 108,
+      "timestamp": "2026-07-01T02:00:00Z",
+      "version": "v2.108",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "月初めウェルカムバナー（Monthly Welcome Banner）",
+          "description": "毎月初回アクセス時にwrapコンテナ最上部（statsより上）に月間目標設定バナーを表示。_mwbYM()でYYYY-MM形式の現在月を取得。initMWB()がlocalStorageの'rh_mwb_YYYY-MM'キーを確認し、未設定の場合のみバナーを表示（月1回限り）。バナーには「🗓 2026年7月のスタート！」タイトルと60/70/80/90/100%の目標達成率クイック選択ボタンを配置。setMWBGoal(pct)でCycle 88の既存月間目標ストレージキー'rh_mg_YYYY-MM'に保存し、renderMonthStats()でmonth-boxに即反映。closeMWB()で'rh_mwb_YYYY-MM'を記録しバナーを非表示。checkMonthlySummary（Cycle 98のtoast: 5秒間の前月サマリー）の後700ms遅延で表示し両者のUXが競合しない設計。水色〜紫グラデーションボーダー。ライト/ダーク両テーマ対応。"
+        },
+        {
+          "type": "feature",
+          "title": "習慣カードに今月の達成進捗バッジ（Monthly Progress Badge）追加",
+          "description": "各習慣カードに「📅N/M」形式の月間達成進捗バッジ（.mth-prog）を追加。習慣カードレンダリング時に今月1日から本日まで（_day日分）を遡り、isScheduled(h,ds)で予定日かを確認してからcompletions[ds][h.id]の達成を集計（_mDone/mSched）。スケジュール予定日が3日以上ある場合のみバッジを表示し、データが少ない新規習慣でのノイズを防ぐ。CSS .mth-prog は水色系の薄いボーダーバッジ（background: rgba(91,200,232,.08); border: rgba(91,200,232,.18)）で既存のwtBadge（今週N/M）と補完関係。コンパクトビュー時は非表示（body.compact .mth-prog { display:none }）。ライト/ダーク両テーマ対応。Cycle 101のweeklyTarget週バッジと並び、より長期スパン（月次）の個別習慣進捗を一目で把握できる。"
+        }
+      ],
+      "notes": "Cycle 108はエンゲージメントと個別習慣の月次トラッキングに焦点。ウェルカムバナーはCycle 98の前月サマリートースト（5秒消去・過去データ）と役割が異なり、今月の目標設定（未来志向）を月初めに促す。Cycle 88で追加した月間目標機能（month-boxのgoalRow）はアコーディオン内で見つけにくいため、バナーが初回アクセスのフックとして機能する。月次バッジはCycle 101の週次ターゲットバッジと対応し、週→月のスパンで習慣の進捗が可視化される。今月1日時点（July 1, 2026）でのデプロイはタイムリーで、ウェルカムバナーがすぐに表示される。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T02:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

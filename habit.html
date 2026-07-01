@@ -1642,6 +1642,24 @@
     body.light .hd-tod-box{background:#e8eaed}
     body.light .hd-tod-bar-wrap{background:rgba(0,0,0,.06)}
     body.light .hd-tod-cnt{color:#1a1a2e}
+    /* Cycle 108: monthly welcome banner */
+    .mwb{background:linear-gradient(135deg,rgba(91,200,232,.11),rgba(155,109,214,.07));border:1px solid rgba(91,200,232,.22);border-radius:14px;padding:13px 16px;margin-bottom:14px;position:relative;animation:fadeInUp .3s ease}
+    .mwb-hd{font-family:"Dela Gothic One",sans-serif;font-size:14px;color:var(--sky);margin-bottom:5px}
+    .mwb-sub{font-size:11.5px;color:var(--muted);margin-bottom:9px;line-height:1.5}
+    .mwb-btns{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+    .mwb-glbl{font-size:11px;color:var(--muted);margin-right:2px}
+    .mwb-gbtn{padding:3px 9px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:"Zen Maru Gothic",sans-serif}
+    .mwb-gbtn.sel{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    .mwb-x{position:absolute;top:9px;right:11px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:6px;line-height:1;transition:color .15s}
+    .mwb-x:hover{color:var(--white)}
+    body.light .mwb{border-color:rgba(91,200,232,.28)}
+    body.light .mwb-gbtn{border-color:rgba(0,0,0,.11);color:rgba(0,0,0,.42)}
+    body.light .mwb-gbtn.sel{color:var(--sky)}
+    body.light .mwb-x:hover{color:#1a1a2e}
+    /* Cycle 108: per-habit monthly progress badge */
+    .mth-prog{display:inline-flex;align-items:center;gap:2px;background:rgba(91,200,232,.08);border:1px solid rgba(91,200,232,.18);border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;color:rgba(91,200,232,.75);margin-left:4px;flex-shrink:0}
+    body.light .mth-prog{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.25)}
+    body.compact .mth-prog{display:none}
   </style>
 </head>
 <body>
@@ -1688,6 +1706,20 @@
 </div>
 
 <div class="wrap">
+  <!-- Cycle 108: monthly welcome banner -->
+  <div class="mwb" id="mwb" style="display:none">
+    <button class="mwb-x" onclick="closeMWB()">✕</button>
+    <div class="mwb-hd" id="mwb-hd">🗓 新しい月のスタート！</div>
+    <div class="mwb-sub">今月の達成率目標を設定しましょう</div>
+    <div class="mwb-btns">
+      <span class="mwb-glbl">目標</span>
+      <button class="mwb-gbtn" data-pct="60" onclick="setMWBGoal(60)">60%</button>
+      <button class="mwb-gbtn" data-pct="70" onclick="setMWBGoal(70)">70%</button>
+      <button class="mwb-gbtn sel" data-pct="80" onclick="setMWBGoal(80)">80%</button>
+      <button class="mwb-gbtn" data-pct="90" onclick="setMWBGoal(90)">90%</button>
+      <button class="mwb-gbtn" data-pct="100" onclick="setMWBGoal(100)">100%</button>
+    </div>
+  </div>
   <div class="stats">
     <div class="stat">
       <div class="progress-ring-wrap">
@@ -3216,7 +3248,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 104: streak goal badge
   let sgBadge='';
   if(h.streakGoal>0){const _sgReached=hs>=h.streakGoal;sgBadge=`<span class="sg-badge${_sgReached?' sg-reached':''}" title="ストリーク目標: ${h.streakGoal}日">${_sgReached?'🏅 達成':'🎯 '+hs+'/'+h.streakGoal}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 108: per-habit monthly progress badge
+  let mthProgBadge='';
+  {const _n=new Date();const _day=_n.getDate();let _mDone=0,_mSched=0;for(let i=0;i<_day;i++){const _d=new Date(_n.getFullYear(),_n.getMonth(),_day-i);const _ds=toStr(_d);if(isScheduled(h,_ds)){_mSched++;if((completions[_ds]||{})[h.id])_mDone++;}}if(_mSched>=3)mthProgBadge=`<span class="mth-prog" title="今月の達成: ${_mDone}/${_mSched}日">📅${_mDone}/${_mSched}</span>`;}
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -5197,6 +5232,36 @@ function _accentClose(e){
     document.getElementById('accent-picker')?.classList.remove('open');
   }
 }
+// ── Cycle 108: monthly welcome banner ──
+function _mwbYM(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
+function initMWB(){
+  const ym=_mwbYM();
+  if(localStorage.getItem('rh_mwb_'+ym))return;
+  const el=document.getElementById('mwb');
+  if(!el)return;
+  const n=new Date();
+  const ttl=document.getElementById('mwb-hd');
+  if(ttl)ttl.textContent='🗓 '+n.getFullYear()+'年'+(n.getMonth()+1)+'月のスタート！';
+  const saved=parseInt(localStorage.getItem('rh_mg_'+ym)||'0',10)||80;
+  _syncMWBBtns(saved);
+  el.style.display='';
+}
+function closeMWB(){
+  const el=document.getElementById('mwb');
+  if(el)el.style.display='none';
+  localStorage.setItem('rh_mwb_'+_mwbYM(),'1');
+}
+function setMWBGoal(pct){
+  const k='rh_mg_'+_mwbYM();
+  localStorage.setItem(k,String(pct));
+  _syncMWBBtns(pct);
+  renderMonthStats();
+}
+function _syncMWBBtns(pct){
+  document.querySelectorAll('.mwb-gbtn').forEach(b=>{
+    b.classList.toggle('sel',parseInt(b.dataset.pct,10)===pct);
+  });
+}
 // ── init ──
 load();
 initTheme();
@@ -5222,6 +5287,7 @@ document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone
 document.body.classList.add('loaded');
 _checkAutoWReport(); // Cycle 70: auto weekly report on Monday
 setTimeout(checkMonthlySummary,1500); // Cycle 98: show last month summary on first visit of new month
+setTimeout(initMWB,2200); // Cycle 108: monthly welcome banner (after monthly toast)
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync (Cycle 73: OLED) ──
 function syncThemeColor(){
