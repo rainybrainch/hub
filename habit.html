@@ -1123,7 +1123,8 @@
     body.focus-mode .challenge-box,body.focus-mode .motto-box,body.focus-mode .ach-box,body.focus-mode .ms-widget,
     body.focus-mode .intention-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,
     body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .pace-box,
-    body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row,body.focus-mode .schedule-box{display:none!important}
+    body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row,body.focus-mode .schedule-box,
+    body.focus-mode .insight-card{display:none!important}
     .hdr-btn.focus-on{color:var(--sky)!important}
     /* Cycle 63: keyboard arrow navigation focus ring */
     .habit.kfocus{outline:2px solid var(--sky);outline-offset:2px;box-shadow:0 0 0 4px rgba(91,200,232,.15)!important}
@@ -1218,12 +1219,34 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box,.insight-card{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn{display:none!important}
       .habit-sec{break-inside:avoid}
     }
+
+    /* Cycle 70: perfect days badge */
+    .perf-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(91,200,232,.12),rgba(91,200,232,.06));border:1px solid rgba(91,200,232,.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--sky)}
+    body.light .perf-badge{background:linear-gradient(135deg,rgba(14,120,160,.1),rgba(14,120,160,.05));border-color:rgba(14,120,160,.3);color:#0e78a0}
+
+    /* Cycle 70: personal insights card */
+    .insight-card{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;margin-bottom:16px;overflow:hidden;transition:background .25s,border-color .25s}
+    .insight-hdr{display:flex;align-items:center;gap:8px;padding:12px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .insight-hdr-ttl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:1}
+    .insight-chev{font-size:10px;color:var(--muted);transition:transform .25s;user-select:none}
+    .insight-chev.open{transform:rotate(180deg)}
+    .insight-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+    .insight-body.open{max-height:300px}
+    .insight-rows{padding:4px 16px 12px}
+    .insight-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;line-height:1.5}
+    .insight-row:last-child{border-bottom:none}
+    .insight-ico{font-size:14px;flex-shrink:0;margin-top:1px}
+    .insight-txt{color:var(--white);flex:1}
+    body.light .insight-card{border-color:rgba(0,0,0,.08)}
+    body.light .insight-txt{color:var(--dark)}
+    body.light .insight-row{border-bottom-color:rgba(0,0,0,.05)}
+    body.compact .insight-card{display:none}
   </style>
 </head>
 <body>
@@ -1311,6 +1334,17 @@
     <div id="chart"></div>
   </div>
 
+  <!-- Cycle 70: personal insights card -->
+  <div class="insight-card" id="insight-card" style="display:none">
+    <div class="insight-hdr" onclick="toggleInsightCard()">
+      <span class="insight-hdr-ttl">💡 あなたの習慣インサイト</span>
+      <span class="insight-chev" id="insight-chev">▼</span>
+    </div>
+    <div class="insight-body" id="insight-body">
+      <div class="insight-rows" id="insight-rows"></div>
+    </div>
+  </div>
+
   <div class="weekly-box" id="weekly-box">
     <div class="weekly-hdr" onclick="toggleWeekly()">
       <span class="weekly-ico">📓</span>
@@ -1358,6 +1392,7 @@
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
     <span class="score-badge" id="score-badge" style="display:none"></span>
+    <span class="perf-badge" id="perf-badge" style="display:none" title="過去90日間の全習慣達成日数">✨ 0日完璧</span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -2184,6 +2219,8 @@ function renderStats(){
   }
   // Cycle 61: daily score badge
   renderScoreBadge();
+  // Cycle 70: perfect days badge
+  renderPerfBadge();
 }
 
 let chartView='week';
@@ -2780,6 +2817,7 @@ function render(){
   processShield(); // Cycle 47: check shield state
   renderPaceBox();
   renderScheduleBox(); // Cycle 69
+  renderInsightCard(); // Cycle 70
   renderChart();
   renderWeekComparison();
   renderWeekTimeBadge();
@@ -4147,6 +4185,7 @@ const WIDGET_DEFS=[
   {key:'w_mood',     name:'😊 今日の気分',           id:'mood-box'},
   {key:'w_mood_stats',name:'📊 気分×達成率の相関',   id:'mood-stats-box'},
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
+  {key:'w_insight', name:'💡 習慣インサイト',         id:'insight-card'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
@@ -4485,6 +4524,93 @@ function _renderStreakCal(pop){
   }).join('');
   pop.innerHTML=`<div class="scp-hdr"><span>📅 過去30日の達成状況</span><button class="scp-close" onclick="document.getElementById('streak-cal-pop').classList.remove('open')">×</button></div><div class="scp-legend"><span class="scp-day done scp-lsq"></span>達成 <span class="scp-day part scp-lsq"></span>一部 <span class="scp-day miss scp-lsq"></span>未達成 <span class="scp-day off scp-lsq"></span>休日</div><div class="scp-grid">${cells}</div>`;
 }
+// ── Cycle 70: perfect days counter ──
+function calcPerfectDays(){
+  let n=0;
+  for(let i=1;i<=90;i++){
+    const d=dateAgo(i);
+    if(dayRate(d)>=1){
+      const dc=completions[d]||{};
+      const hasActivity=Object.values(dc).some(v=>!!v);
+      if(hasActivity||isDayOff(d))n++;
+    }
+  }
+  return n;
+}
+function renderPerfBadge(){
+  const el=document.getElementById('perf-badge');if(!el)return;
+  const n=calcPerfectDays();
+  if(n<1){el.style.display='none';return;}
+  el.style.display='';
+  el.textContent=`✨ ${n}日完璧`;
+  el.title=`過去90日間で${n}回、全ての習慣を達成した日があります`;
+}
+
+// ── Cycle 70: personal insights card ──
+let _insightOpen=false;
+function toggleInsightCard(){
+  _insightOpen=!_insightOpen;
+  document.getElementById('insight-body')?.classList.toggle('open',_insightOpen);
+  document.getElementById('insight-chev')?.classList.toggle('open',_insightOpen);
+}
+function generateInsights(){
+  const DOW=['日','月','火','水','木','金','土'];
+  const insights=[];
+  // Insight 1: best/worst day of week (past 28 days)
+  const dc=Array(7).fill(0),dt=Array(7).fill(0);
+  for(let i=1;i<=28;i++){
+    const d=dateAgo(i);
+    if(!habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,d)).length)continue;
+    const dow=daysAgo(i).getDay();
+    dt[dow]++;dc[dow]+=rawDayRate(d);
+  }
+  const avgs=dt.map((t,i)=>t>=2?dc[i]/t:null);
+  const valid=avgs.map((v,i)=>v!==null?{i,v}:null).filter(Boolean);
+  if(valid.length>=3){
+    const best=valid.reduce((a,b)=>b.v>a.v?b:a);
+    const worst=valid.reduce((a,b)=>b.v<a.v?b:a);
+    if(best.v-worst.v>0.1){
+      insights.push({ico:'📈',txt:`<b>${DOW[best.i]}曜日</b>が最も達成率が高い（${Math.round(best.v*100)}%）`});
+      if(worst.v<0.65)insights.push({ico:'📉',txt:`<b>${DOW[worst.i]}曜日</b>は達成率が下がりがち（${Math.round(worst.v*100)}%）`});
+    }
+  }
+  // Insight 2: most/least consistent habit this week
+  const active=habits.filter(h=>!h.archived&&!h.paused);
+  if(active.length>=2){
+    const rates=active.map(h=>({h,r:habit7Days(h.id).filter(x=>x===true).length}));
+    const topH=rates.reduce((a,b)=>b.r>a.r?b:a);
+    const botH=rates.reduce((a,b)=>b.r<a.r?b:a);
+    if(topH.r>=5){
+      const em=topH.h.emoji?topH.h.emoji+' ':'';
+      insights.push({ico:'🌟',txt:`今週の安定習慣: <b>${em}${esc(topH.h.name)}</b>（${topH.r}/7日）`});
+    }
+    if(botH.r<=2&&botH.h.id!==topH.h.id){
+      const em=botH.h.emoji?botH.h.emoji+' ':'';
+      insights.push({ico:'⚠️',txt:`今週の要チェック: <b>${em}${esc(botH.h.name)}</b>（${botH.r}/7日）`});
+    }
+  }
+  // Insight 3: trend vs last week
+  const thisW=[0,1,2,3,4,5,6].map(i=>{const d=dateAgo(i);return habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,d)).length?rawDayRate(d):null;}).filter(r=>r!==null);
+  const lastW=[7,8,9,10,11,12,13].map(i=>{const d=dateAgo(i);return habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,d)).length?rawDayRate(d):null;}).filter(r=>r!==null);
+  if(thisW.length>=3&&lastW.length>=3){
+    const tw=thisW.reduce((a,b)=>a+b,0)/thisW.length;
+    const lw=lastW.reduce((a,b)=>a+b,0)/lastW.length;
+    const diff=Math.round((tw-lw)*100);
+    if(diff>=5)insights.push({ico:'🚀',txt:`先週より <b>+${diff}%</b> 上昇中！絶好調`});
+    else if(diff<=-10)insights.push({ico:'💪',txt:`先週より ${Math.abs(diff)}% 低下 — もう一踏ん張り！`});
+    else if(Math.abs(diff)<=5&&tw>=0.7)insights.push({ico:'🏆',txt:`安定した達成率を維持中（${Math.round(tw*100)}%）`});
+  }
+  return insights;
+}
+function renderInsightCard(){
+  const el=document.getElementById('insight-card');if(!el)return;
+  const ins=generateInsights();
+  if(!ins.length){el.style.display='none';return;}
+  el.style.display='';
+  const rr=document.getElementById('insight-rows');
+  if(rr)rr.innerHTML=ins.map(i=>`<div class="insight-row"><span class="insight-ico">${i.ico}</span><span class="insight-txt">${i.txt}</span></div>`).join('');
+}
+
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
   const all=habits.filter(h=>!h.archived);
