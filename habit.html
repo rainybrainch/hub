@@ -993,6 +993,14 @@
     .dur-inp:focus{border-color:rgba(91,200,232,.4)}
     .dur-unit{font-size:11px;color:var(--muted)}
     body.light .dur-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    /* Cycle 99: duration preset buttons */
+    .dur-presets{display:flex;gap:5px;margin-top:-8px;margin-bottom:14px}
+    .dur-preset{flex:1;padding:5px 2px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .12s;text-align:center}
+    .dur-preset:hover{color:var(--white);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
+    .dur-preset.sel{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    body.light .dur-preset{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .dur-preset:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3);background:rgba(0,0,0,.03)}
+    body.light .dur-preset.sel{background:rgba(91,200,232,.12);border-color:var(--sky);color:var(--sky)}
     /* Cycle 51: glass sheen on dark mode habit cards */
     body:not(.light) .habit:not(.done):not(.paused){background-image:linear-gradient(180deg,rgba(255,255,255,.022) 0%,transparent 55%)}
 
@@ -1342,6 +1350,7 @@
     /* Cycle 79: weekly bar chart tooltip */
     .bar-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--dark3);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:5px 9px;font-size:10px;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;text-align:center;color:var(--white);box-shadow:0 4px 12px rgba(0,0,0,.4);line-height:1.6}
     @media(hover:hover){.chart-col:hover .bar-tooltip{opacity:1}}
+    .bar-tooltip.show{opacity:1}
     body.light .bar-tooltip{background:#fff;border-color:rgba(0,0,0,.12);color:#1a1a2e;box-shadow:0 4px 12px rgba(0,0,0,.12)}
 
     /* Cycle 84: 7-day diary view modal */
@@ -1871,8 +1880,16 @@
     </div>
     <div class="dur-row">
       <span class="dur-row-lbl">⏱</span>
-      <input class="dur-inp" id="dur-inp" type="number" min="1" max="180" placeholder="—" title="推定所要時間（分）：任意。ペースボックスの「残り推定時間」に使用">
+      <input class="dur-inp" id="dur-inp" type="number" min="1" max="180" placeholder="—" title="推定所要時間（分）：任意。ペースボックスの「残り推定時間」に使用" oninput="_syncDurPresets(this.value)">
       <span class="dur-unit">分 / 回（任意）</span>
+    </div>
+    <!-- Cycle 99: duration preset buttons -->
+    <div class="dur-presets">
+      <button class="dur-preset" type="button" onclick="setDurPreset(5)">5m</button>
+      <button class="dur-preset" type="button" onclick="setDurPreset(15)">15m</button>
+      <button class="dur-preset" type="button" onclick="setDurPreset(30)">30m</button>
+      <button class="dur-preset" type="button" onclick="setDurPreset(60)">60m</button>
+      <button class="dur-preset" type="button" onclick="setDurPreset(90)">90m</button>
     </div>
     <div class="color-row">
       <span class="color-row-lbl">色</span>
@@ -2884,6 +2901,37 @@ function renderWeekTimeBadge(){
   if(chartView==='line')badge.style.display='';
 }
 
+// ── Cycle 99: duration preset buttons ──
+function setDurPreset(m){
+  const el=document.getElementById('dur-inp');
+  if(!el)return;
+  el.value=m;
+  _syncDurPresets(String(m));
+}
+function _syncDurPresets(val){
+  const v=parseInt(val,10);
+  document.querySelectorAll('.dur-preset').forEach(btn=>{
+    btn.classList.toggle('sel',parseInt(btn.textContent,10)===v);
+  });
+}
+
+// ── Cycle 99: bar chart tap tooltip (mobile) ──
+function _initChartTapTooltips(){
+  const bars=document.getElementById('chart');
+  if(!bars)return;
+  bars.addEventListener('click',function(e){
+    const col=e.target.closest('.chart-col');
+    if(!col)return document.querySelectorAll('.bar-tooltip.show').forEach(t=>t.classList.remove('show'));
+    const tip=col.querySelector('.bar-tooltip');
+    if(!tip)return;
+    const shown=tip.classList.contains('show');
+    document.querySelectorAll('.bar-tooltip.show').forEach(t=>t.classList.remove('show'));
+    if(!shown)tip.classList.add('show');
+    e.stopPropagation();
+  });
+  document.addEventListener('click',()=>document.querySelectorAll('.bar-tooltip.show').forEach(t=>t.classList.remove('show')),{capture:false});
+}
+
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const tc=h.targetCount||1;const isCounter=tc>1;
@@ -3693,7 +3741,7 @@ function openModal(id=null){
     selDays=h&&h.days?[...h.days]:[];document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('sel',selDays.includes(+b.dataset.day)));
     selColor(h&&h.color?h.color:'');
     const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
-    const durEl=document.getElementById('dur-inp');if(durEl)durEl.value=(h&&h.duration>=1)?h.duration:'';
+    const durEl=document.getElementById('dur-inp');if(durEl){durEl.value=(h&&h.duration>=1)?h.duration:'';_syncDurPresets(durEl.value);}
     const tagEl=document.getElementById('tag-inp');if(tagEl)tagEl.value=h&&h.tags?h.tags.join(' '):'';
     toggleTough(!!(h&&h.tough));
     toggleImportant(!!(h&&h.important));
@@ -3711,7 +3759,7 @@ function openModal(id=null){
     selDays=[];document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('sel'));
     selColor('');
     const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
-    const durElN=document.getElementById('dur-inp');if(durElN)durElN.value='';
+    const durElN=document.getElementById('dur-inp');if(durElN){durElN.value='';_syncDurPresets('');}
     toggleTough(false);
     toggleImportant(false);
     if(ttl)ttl.textContent='習慣を追加';
@@ -4877,6 +4925,7 @@ initAccent();
 toggleTough(false); // Cycle 47: init tough buttons
 toggleImportant(false); // Cycle 70: init important buttons
 render();
+_initChartTapTooltips(); // Cycle 99: tap-to-show tooltips on bar chart (mobile)
 // Cycle 74: restore hide-done button state
 document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);
 document.body.classList.add('loaded');

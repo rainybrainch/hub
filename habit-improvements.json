@@ -1818,6 +1818,29 @@
         }
       ],
       "notes": "ファイルサイズ: 5985行。カスタム曜日スケジュールはdaily/weekdayに続く第3の頻度オプション。週3回などの特定曜日ルーティンに完全対応。月次サマリーは習慣継続のモチベーション維持を助ける定期的なふり返り機能（先行する類似機能なし）。"
+    },
+    {
+      "cycle": 99,
+      "version": "v2.99",
+      "timestamp": "2026-07-01T05:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "所要時間プリセットボタン（Duration Preset Buttons）",
+          "description": "習慣モーダルの⏱所要時間入力フィールド直下に5m・15m・30m・60m・90mのクイック選択ボタン群（.dur-presets）を追加。ボタンクリックでsetDurPreset(m)がdur-inp入力欄に値をセットし該当ボタンを水色ハイライト（.sel クラス）。手入力でも_syncDurPresets()がoninputイベントで即時呼ばれ対応ボタンを自動ハイライト。モーダルopen時（edit/new両モード）に_syncDurPresets()を呼び既存値に対応したボタンをハイライト済み状態で表示。5種のプリセットはトレーニング・読書・瞑想・作業セッション等の代表的な習慣時間をカバー。ボタンはflex均等配置でコンパクト。ダーク/ライト両テーマ対応。LocalStorage変更なし・dur-inp互換性完全維持。"
+        },
+        {
+          "type": "ux",
+          "title": "週間バーチャートのタッチ対応ツールチップ（Bar Chart Tap Tooltip for Mobile）",
+          "description": "週間バーチャート（chartView==='week'）の各バーをタップ/クリックすると詳細ツールチップが表示されるJavaScript機能を追加。既存のCycle 79で実装されたホバーツールチップ（@media(hover:hover)のCSS専用）はタッチデバイスでは動作しないため、_initChartTapTooltips()関数をinit時に1回呼び出してイベントデリゲーションで実装。.bar-tooltip.show{opacity:1}CSSクラスをトグルする方式で、タップで表示・同じバーを再タップまたは外側クリックで非表示・複数バーを同時表示しない（前のを自動非表示）設計。既存ホバーCSSとの競合なし（どちらも同じ.bar-tooltipを操作）。LocalStorage変更なし・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 99は「入力UX改善」と「モバイルチャートUX改善」の2軸改善。所要時間プリセットボタンはCycle 52で追加したduration入力フィールドの入力摩擦を低減。数値キーボードを開かずタップ1回で設定完了できる。5種の時間(5/15/30/60/90分)はよく使われる習慣時間の公約数的な選択肢。_syncDurPresets関数はoninputイベントとsetDurPreset()両方から呼ばれ常に同期を保つ設計。バーチャートタップツールチップはモバイルユーザーへの改善で、現在Cycle 79のツールチップはhover専用（@media(hover:hover)）のため、スマートフォンでは全くツールチップを確認できなかった。イベントデリゲーション方式により毎回のrenderChart()でリスナーを付け直す必要がなく、パフォーマンス上も優れた設計。両機能ともLocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T05:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
