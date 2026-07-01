@@ -738,6 +738,17 @@
     body.light .freq-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
     body.light .freq-btn:hover{color:#1a1a2e}
     body.light .freq-btn.sel{background:rgba(91,200,232,.1);border-color:var(--sky);color:var(--sky)}
+    /* Cycle 98: custom weekday picker */
+    .days-picker{display:none;gap:4px;flex-wrap:wrap;padding-top:8px}
+    .days-picker.show{display:flex}
+    .day-btn{min-width:32px;padding:7px 5px;border-radius:9px;border:2px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center;flex-shrink:0}
+    .day-btn:hover{color:var(--white)}
+    .day-btn.sel{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    body.light .day-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .day-btn.sel{background:rgba(91,200,232,.1);border-color:var(--sky);color:var(--sky)}
+    /* Cycle 98: monthly summary toast */
+    .monthly-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(91,200,232,.92),rgba(155,109,214,.85));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:10px 22px;border-radius:30px;box-shadow:0 8px 30px rgba(91,200,232,.4);z-index:460;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);text-align:center;max-width:calc(100vw - 40px);white-space:nowrap}
+    .monthly-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
     /* Cycle 40: custom habit accent color */
     .color-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
@@ -1842,6 +1853,16 @@
       <span class="freq-row-lbl">頻度</span>
       <button class="freq-btn sel" id="freq-daily" onclick="selFreq('daily')" type="button">📅 毎日</button>
       <button class="freq-btn" id="freq-weekday" onclick="selFreq('weekday')" type="button">🏢 平日のみ</button>
+      <button class="freq-btn" id="freq-custom" onclick="selFreq('custom')" type="button">📆 曜日選択</button>
+    </div>
+    <div class="days-picker" id="days-picker">
+      <button class="day-btn" data-day="1" onclick="toggleDay(1)" type="button">月</button>
+      <button class="day-btn" data-day="2" onclick="toggleDay(2)" type="button">火</button>
+      <button class="day-btn" data-day="3" onclick="toggleDay(3)" type="button">水</button>
+      <button class="day-btn" data-day="4" onclick="toggleDay(4)" type="button">木</button>
+      <button class="day-btn" data-day="5" onclick="toggleDay(5)" type="button">金</button>
+      <button class="day-btn" data-day="6" onclick="toggleDay(6)" type="button">土</button>
+      <button class="day-btn" data-day="0" onclick="toggleDay(0)" type="button">日</button>
     </div>
     <div class="target-row">
       <span class="target-row-lbl">目標</span>
@@ -1882,6 +1903,7 @@
 </div>
 
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
+<div class="monthly-toast" id="monthly-toast"></div>
 <div class="milestone-toast" id="milestone-toast"></div>
 <div class="shield-toast" id="shield-toast"></div>
 <div class="halfway-toast" id="halfway-toast"></div>
@@ -2073,18 +2095,26 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 
 // ── Cycle 39: habit frequency (daily / weekday-only) ──
 function isScheduled(h, dateStr){
-  if((h.frequency||'daily')==='weekday'){
-    const dow=new Date(dateStr+'T00:00:00').getDay();
-    return dow>=1&&dow<=5;
-  }
+  const f=h.frequency||'daily';
+  if(f==='weekday'){const dow=new Date(dateStr+'T00:00:00').getDay();return dow>=1&&dow<=5;}
+  if(f==='custom'&&Array.isArray(h.days)&&h.days.length>0){const dow=new Date(dateStr+'T00:00:00').getDay();return h.days.includes(dow);}
   return true;
 }
 let selFreqVal='daily';
+let selDays=[];
 function selFreq(freq){
   selFreqVal=freq;
-  const d=document.getElementById('freq-daily'),w=document.getElementById('freq-weekday');
+  const d=document.getElementById('freq-daily'),w=document.getElementById('freq-weekday'),c=document.getElementById('freq-custom');
   if(d)d.classList.toggle('sel',freq==='daily');
   if(w)w.classList.toggle('sel',freq==='weekday');
+  if(c)c.classList.toggle('sel',freq==='custom');
+  document.getElementById('days-picker')?.classList.toggle('show',freq==='custom');
+}
+// ── Cycle 98: custom weekday toggle ──
+function toggleDay(d){
+  const idx=selDays.indexOf(d);
+  if(idx>=0)selDays.splice(idx,1);else selDays.push(d);
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('sel',selDays.includes(+b.dataset.day)));
 }
 
 // ── Cycle 40: custom habit accent color ──
@@ -2899,8 +2929,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 39: weekday-only frequency
   const freq=h.frequency||'daily';
   const isWeekendOff=!isPaused&&!isScheduled(h,today());
-  const freqBadge=freq==='weekday'&&!isWeekendOff?'<span class="freq-badge">平日</span>':'';
-  const weekendLbl=isWeekendOff?'<span class="weekend-lbl">週末お休み</span>':'';
+  const freqBadge=freq==='weekday'&&!isWeekendOff?'<span class="freq-badge">平日</span>':freq==='custom'&&h.days?.length&&!isWeekendOff?`<span class="freq-badge">${(h.days||[]).slice().sort((a,b)=>a-b).map(d=>'日月火水木金土'[d]).join('')}</span>`:'';
+  const weekendLbl=isWeekendOff?`<span class="weekend-lbl">${freq==='custom'?'今日はお休み':'週末お休み'}</span>`:'';
+
   // Cycle 40: custom accent color
   const hcol=h.color||'';
   const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
@@ -3659,6 +3690,7 @@ function openModal(id=null){
     selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
     selFreq(h&&h.frequency?h.frequency:'daily');
+    selDays=h&&h.days?[...h.days]:[];document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('sel',selDays.includes(+b.dataset.day)));
     selColor(h&&h.color?h.color:'');
     const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
     const durEl=document.getElementById('dur-inp');if(durEl)durEl.value=(h&&h.duration>=1)?h.duration:'';
@@ -3676,6 +3708,7 @@ function openModal(id=null){
     selCatVal='';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
     selFreq('daily');
+    selDays=[];document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('sel'));
     selColor('');
     const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
     const durElN=document.getElementById('dur-inp');if(durElN)durElN.value='';
@@ -3716,7 +3749,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3724,6 +3757,7 @@ function saveHabit(){
     if(why)nh.why=why;
     if(emoji)nh.emoji=emoji;
     if(selFreqVal!=='daily')nh.frequency=selFreqVal;
+    if(selFreqVal==='custom'&&selDays.length>0)nh.days=[...selDays];
     if(selColorVal)nh.color=selColorVal;
     if(tcSave>1)nh.targetCount=tcSave;
     if(selTough)nh.tough=true;
@@ -4847,6 +4881,7 @@ render();
 document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);
 document.body.classList.add('loaded');
 _checkAutoWReport(); // Cycle 70: auto weekly report on Monday
+setTimeout(checkMonthlySummary,1500); // Cycle 98: show last month summary on first visit of new month
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync (Cycle 73: OLED) ──
 function syncThemeColor(){
@@ -5928,6 +5963,31 @@ function updateHabitHint(){
   const d=new Date();
   box.textContent='💡 '+hints[(d.getDate()+d.getHours())%hints.length];
   box.className='habit-hint show';
+}
+
+// ── Cycle 98: monthly summary toast ──
+function checkMonthlySummary(){
+  const el=document.getElementById('monthly-toast');
+  if(!el||!habits.length)return;
+  const n=new Date();
+  const ym=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
+  if(localStorage.getItem('rh_monthly_'+ym))return;
+  localStorage.setItem('rh_monthly_'+ym,'1');
+  const lastMonth=n.getMonth()===0?12:n.getMonth();
+  const lastYear=n.getMonth()===0?n.getFullYear()-1:n.getFullYear();
+  const daysInLM=new Date(lastYear,lastMonth,0).getDate();
+  let doneDays=0,totalRate=0,validDays=0;
+  for(let d=1;d<=daysInLM;d++){
+    const ds=`${lastYear}-${String(lastMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const r=dayRate(ds);
+    if(r>0){validDays++;totalRate+=r;}
+    if(r>=1)doneDays++;
+  }
+  if(validDays<3)return;
+  const avgPct=Math.round(totalRate/validDays*100);
+  el.textContent=`📅 ${lastMonth}月の振り返り：${doneDays}日完全達成・平均${avgPct}%`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),5000);
 }
 </script>
 
