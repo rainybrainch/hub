@@ -1512,9 +1512,29 @@
     body.light .tag-stat-bar-wrap{background:rgba(0,0,0,.06)}
     body.oled .tag-stat-box{background:#0a0a0a;border-color:rgba(255,255,255,.04)}
 
+    /* Cycle 104: streak goal badge */
+    .sg-badge{font-size:10px;font-weight:700;flex-shrink:0;padding:2px 6px;border-radius:8px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px;background:rgba(91,200,232,.09);border:1px solid rgba(91,200,232,.2);color:var(--sky)}
+    .sg-badge.sg-reached{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.3);color:var(--green)}
+    body.compact .sg-badge{display:none}
+    body.light .sg-badge{background:rgba(91,200,232,.07);border-color:rgba(91,200,232,.22)}
+    body.light .sg-badge.sg-reached{background:rgba(76,175,125,.09);border-color:rgba(76,175,125,.28);color:#1f6e40}
+    .sg-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(245,200,66,.94),rgba(212,160,23,.96));color:#1a1200;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.5);z-index:453;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .sg-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 104: streak goal modal row */
+    .sg-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+    .sg-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:36px}
+    .sg-preset-btn{padding:6px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .sg-preset-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .sg-preset-btn.sel{background:rgba(91,200,232,.15);border-color:rgba(91,200,232,.4);color:var(--sky)}
+    body.light .sg-preset-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .sg-preset-btn.sel{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.4);color:#1e8aab}
+    /* Cycle 104: habits-on-streak count badge */
+    .hab-on-streak{font-size:10px;font-weight:700;color:var(--gold);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.25);border-radius:14px;padding:3px 9px;flex-shrink:0;transition:all .25s;cursor:default}
+    body.light .hab-on-streak{background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.3);color:#8a6500}
+
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.sg-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box{display:none!important}
@@ -1741,6 +1761,7 @@
     <span class="score-badge" id="score-badge" style="display:none"></span>
     <span class="perfect-week-badge" id="perfect-week-badge" style="display:none"></span>
     <span class="perfect-month-badge" id="perfect-month-badge" style="display:none"></span>
+    <span class="hab-on-streak" id="hab-on-streak" style="display:none"></span>
   </div>
 
   <!-- Cycle 87: weekly completion dots -->
@@ -1979,6 +2000,15 @@
       <button class="imp-toggle-btn" id="imp-btn-off" type="button" onclick="toggleImportant(false)">通常</button>
       <button class="imp-toggle-btn" id="imp-btn-on" type="button" onclick="toggleImportant(true)">⭐ 重要</button>
     </div>
+    <!-- Cycle 104: streak goal row -->
+    <div class="sg-row">
+      <span class="sg-row-lbl">目標</span>
+      <button class="sg-preset-btn sel" id="sg-btn-off" type="button" onclick="selSG(0)">なし</button>
+      <button class="sg-preset-btn" id="sg-btn-7" type="button" onclick="selSG(7)">7日</button>
+      <button class="sg-preset-btn" id="sg-btn-21" type="button" onclick="selSG(21)">21日</button>
+      <button class="sg-preset-btn" id="sg-btn-30" type="button" onclick="selSG(30)">30日</button>
+      <button class="sg-preset-btn" id="sg-btn-100" type="button" onclick="selSG(100)">100日</button>
+    </div>
     <div class="habit-hint" id="habit-hint"></div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
@@ -1993,6 +2023,7 @@
 <div class="anniversary-toast" id="anniversary-toast"></div>
 <div class="restart-toast" id="restart-toast"></div>
 <div class="habit-pr-toast" id="habit-pr-toast"></div>
+<div class="sg-toast" id="sg-toast"></div>
 
 <div class="check-snackbar" id="check-snackbar">
   <span class="check-sb-msg" id="check-sb-msg"></span>
@@ -2132,7 +2163,10 @@ const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラ�
 let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false;
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
+let _selSG=0; // Cycle 104: streak goal selection
 function selWeeklyTarget(n){_selWeeklyTarget=n;document.querySelectorAll('.wt-preset').forEach(b=>b.classList.toggle('sel',+b.dataset.wt===n));}
+// Cycle 104: streak goal selection
+function selSG(val){_selSG=val;['off',7,21,30,100].forEach(v=>{const b=document.getElementById('sg-btn-'+v);if(b)b.classList.toggle('sel',(v==='off'&&val===0)||(v===val));});}
 // Cycle 74: hide-done toggle
 let _hideDone=localStorage.getItem('rh_hide_done')==='1';
 function toggleHideDone(){_hideDone=!_hideDone;localStorage.setItem('rh_hide_done',_hideDone?'1':'0');document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);renderList();}
@@ -2776,6 +2810,10 @@ function renderStats(){
   const badge=document.getElementById('streak-badge');
   badge.textContent=`🔥 ${streak}日連続達成中`;
   badge.classList.toggle('fire',streak>=3);
+  // Cycle 104: habits-on-streak count badge
+  const _onSt=habits.filter(h=>!h.archived&&!h.paused&&habitStreak(h.id)>=2).length;
+  const _hsc=document.getElementById('hab-on-streak');
+  if(_hsc){if(_onSt>0){_hsc.textContent=`${_onSt}習慣連続中`;_hsc.style.display='';}else{_hsc.style.display='none';}}
   // cycle 4 + 16: update progress ring with dynamic color
   const rf=document.getElementById('ring-fill');
   if(rf){
@@ -3112,7 +3150,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const pinBtn=`<button class="pin-btn${h.pinned?' on':''}" onclick="event.stopPropagation();togglePin('${h.id}')" title="${h.pinned?'ピン留めを解除':'カテゴリー先頭に固定'}" aria-label="ピン留め">📌</button>`;
   const pinBadge=h.pinned?'<span class="pin-badge">📌</span>':'';
   const pinnedClass=h.pinned?' pinned':'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 104: streak goal badge
+  let sgBadge='';
+  if(h.streakGoal>0){const _sgReached=hs>=h.streakGoal;sgBadge=`<span class="sg-badge${_sgReached?' sg-reached':''}" title="ストリーク目標: ${h.streakGoal}日">${_sgReached?'🏅 達成':'🎯 '+hs+'/'+h.streakGoal}</span>`;}
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3559,6 +3600,8 @@ function toggle(id,evt){
   render();
   // Cycle 102: per-habit streak PR check (after render to avoid toast conflicts)
   if(!wasCompleted&&_hh)_checkHabitPR(id,_hh);
+  // Cycle 104: streak goal check
+  if(!wasCompleted&&_hh)_checkStreakGoal(id,_hh);
   // cycle 2: celebration check
   if(todayRate()===100&&!celebrated){
     celebrated=true;
@@ -3837,6 +3880,7 @@ function openModal(id=null){
     toggleTough(!!(h&&h.tough));
     toggleImportant(!!(h&&h.important));
     _selWeeklyTarget=h&&h.weeklyTarget>0?h.weeklyTarget:0;selWeeklyTarget(_selWeeklyTarget);
+    selSG(h&&h.streakGoal>0?h.streakGoal:0); // Cycle 104
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -3855,6 +3899,7 @@ function openModal(id=null){
     toggleTough(false);
     toggleImportant(false);
     _selWeeklyTarget=0;selWeeklyTarget(0);
+    selSG(0); // Cycle 104
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -3890,7 +3935,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;if(_selSG>0)h.streakGoal=_selSG;else delete h.streakGoal; /* Cycle 104 */}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3906,6 +3951,7 @@ function saveHabit(){
     if(durSave>=1&&durSave<=180)nh.duration=durSave;
     if(tagsSave.length)nh.tags=tagsSave;
     if(_selWeeklyTarget>0)nh.weeklyTarget=_selWeeklyTarget;
+    if(_selSG>0)nh.streakGoal=_selSG; // Cycle 104
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -5862,6 +5908,25 @@ function _checkHabitPR(id,hh){
   _prToastTimer=setTimeout(()=>el.classList.remove('show'),3200);
 }
 
+// ── Cycle 104: streak goal achievement toast ──
+let _sgToastTimer=null;
+function _checkStreakGoal(id,hh){
+  if(!hh.streakGoal||hh.streakGoal<1)return;
+  const cur=habitStreak(id);
+  if(cur<hh.streakGoal)return;
+  const k='rh_sgc_'+id+'_'+hh.streakGoal;
+  if(localStorage.getItem(k))return;
+  localStorage.setItem(k,'1');
+  showSGToast(hh);
+}
+function showSGToast(hh){
+  const el=document.getElementById('sg-toast');if(!el)return;
+  const nm=(hh.emoji?hh.emoji+' ':'')+hh.name;
+  el.textContent=`🏅 ${nm} ${hh.streakGoal}日目標達成！おめでとう！`;
+  el.classList.add('show');
+  clearTimeout(_sgToastTimer);
+  _sgToastTimer=setTimeout(()=>el.classList.remove('show'),4000);
+}
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
   const all=habits.filter(h=>!h.archived);

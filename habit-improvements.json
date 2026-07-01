@@ -1934,6 +1934,29 @@
         "deployedAt": "2026-07-01T08:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 104,
+      "version": "v2.104",
+      "timestamp": "2026-07-01T10:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣別ストリーク目標バッジ（Per-Habit Streak Goal）",
+          "description": "習慣ごとに連続達成目標日数（7/21/30/100日）を設定できる機能を追加。習慣追加・編集モーダルに「目標」行を新設し、5つのプリセットボタン（なし/7日/21日/30日/100日）で設定。`h.streakGoal`フィールドに整数値を保存（0またはundefinedで目標なし）。習慣カードに`.sg-badge`「🎯 N/G」バッジを表示（N=現在ストリーク、G=目標）。目標達成時（habitStreak(id) >= h.streakGoal）はバッジが「🏅 達成」グリーン表示に変化。初回達成時に`_checkStreakGoal()`がゴールドグラデーションの`.sg-toast`を4秒間表示し、`rh_sgc_[id]_[goal]`キーで重複発火を防止。同じ習慣のgoal変更時は自然に次回達成でリセット。コンパクトモード時は`.sg-badge`非表示（`body.compact .sg-badge{display:none}`）。印刷時はtoast非表示。LocalStorage追加: `rh_sgc_[id]_[goal]`（達成記録）・後方完全互換（streakGoal未設定習慣は従来通り）。"
+        },
+        {
+          "type": "ux",
+          "title": "連続中の習慣数バッジ（Habits on Streak Count Badge）",
+          "description": "streak-rowに新バッジ`.hab-on-streak`を追加。render()の毎回更新で`habits.filter(h=>!h.archived&&!h.paused&&habitStreak(h.id)>=2).length`を計算し、2日以上連続中の習慣が1件以上ある場合に「N習慣連続中」ゴールドバッジを表示。0件の場合は自動的にdisplay:noneで非表示。既存のstreak-badge（全体ストリーク）・shield-badge・score-badge・grade-badge等と横並びでstreak-rowに配置（flex-wrap:wrapで自動折り返し済み）。個々のカードのstreakBadge（🔥N）と補完関係にある上位サマリー：「全体で何個の習慣が今ストリーク中か」を一目で把握できる。全習慣の達成状況のモチベーション概観として機能。LocalStorage変更なし・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 104は「目標設定による習慣継続の動機付け」と「ストリーク状況の俯瞰」の2軸改善。ストリーク目標は習慣心理学でよく引用される「21日で習慣化」「66日で完全定着」の研究に基づき、7/21/30/100日の4段階プリセットを用意。目標バッジはカードに常時表示することで毎日の進捗を可視化し、達成直前の7日前バッジ変化（色変更は未実装、シンプルに数値のみ）で焦りや期待感を演出。連続中習慣カウントは「今日5習慣が連続中！」という集合的達成感をヘッダー近くで示し、個別ストリーク（各カード🔥バッジ）では得られない全体俯瞰を補う。両機能ともLocalStorage後方互換・コンパクトモード対応済み。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T10:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
