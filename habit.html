@@ -1376,12 +1376,33 @@
     .chart-trend-lbl.down{color:var(--red)}
     body.light .chart-trend-lbl{color:rgba(0,0,0,.35)}
 
+    /* Cycle 93: compact monthly calendar widget */
+    .calcal-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px;transition:background .25s,border-color .25s}
+    body.light .calcal-box{border-color:rgba(0,0,0,.08)}
+    .calcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+    .calcal-dow{font-size:9px;font-weight:700;color:var(--muted);text-align:center;padding:2px 0;letter-spacing:.05em}
+    .calcal-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:default;transition:transform .1s}
+    .calcal-cell:hover{transform:scale(1.2)}
+    .calcal-cell.cc-empty{background:transparent;pointer-events:none}
+    .calcal-cell.cc-future{background:rgba(255,255,255,.04);color:rgba(255,255,255,.18)}
+    .calcal-cell.cc-miss{background:rgba(255,255,255,.07);color:rgba(255,255,255,.35)}
+    .calcal-cell.cc-part{background:rgba(91,200,232,.18);color:var(--sky)}
+    .calcal-cell.cc-done{background:rgba(76,175,125,.22);color:var(--green)}
+    .calcal-cell.cc-today{box-shadow:0 0 0 2px var(--gold)}
+    .calcal-cell.cc-off{background:rgba(255,255,255,.03);color:rgba(255,255,255,.15)}
+    body.light .calcal-cell.cc-future{background:rgba(0,0,0,.04);color:rgba(0,0,0,.18)}
+    body.light .calcal-cell.cc-miss{background:rgba(0,0,0,.07);color:rgba(0,0,0,.3)}
+    body.light .calcal-cell.cc-part{background:rgba(91,200,232,.15);color:#2a8eb0}
+    body.light .calcal-cell.cc-done{background:rgba(76,175,125,.15);color:#2e7d52}
+    body.light .calcal-cell.cc-off{background:rgba(0,0,0,.03);color:rgba(0,0,0,.15)}
+    body.oled .calcal-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
@@ -1593,6 +1614,9 @@
     <div class="chart-ttl">📆 年間達成カレンダー</div>
     <div class="year-scroll" id="year-scroll"></div>
   </div>
+
+  <!-- Cycle 93: compact monthly calendar widget -->
+  <div class="calcal-box" id="calcal-box" style="display:none"></div>
 
   <div class="streak-row">
     <span class="streak-badge" id="streak-badge">🔥 0日連続達成中</span>
@@ -1935,7 +1959,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false;
 // Cycle 74: hide-done toggle
 let _hideDone=localStorage.getItem('rh_hide_done')==='1';
 function toggleHideDone(){_hideDone=!_hideDone;localStorage.setItem('rh_hide_done',_hideDone?'1':'0');document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);renderList();}
@@ -2925,13 +2949,20 @@ function renderList(){
     const rawCh=list.filter(h=>h.category===cat);
     if(!rawCh.length)continue;
     let ch;
-    if(sortUndone)ch=[...rawCh].sort((a,b)=>{
+    if(sortUndone===1)ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       if(aOff!==bOff)return aOff?1:-1;
       // Cycle 70: important undone habits float above non-important undone
       const aImp=!!a.important,bImp=!!b.important;
       if(!dc[a.id]&&!dc[b.id]&&aImp!==bImp)return aImp?-1:1;
       return(dc[a.id]?1:0)-(dc[b.id]?1:0);
+    });
+    else if(sortUndone===2)ch=[...rawCh].sort((a,b)=>{
+      // Cycle 93: struggling habits (low 7-day rate) to top
+      const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
+      if(aOff!==bOff)return aOff?1:-1;
+      if(dc[a.id]||dc[b.id])return(dc[a.id]?1:0)-(dc[b.id]?1:0);
+      return habit7Days(a.id).filter(Boolean).length-habit7Days(b.id).filter(Boolean).length;
     });
     else ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
@@ -3203,6 +3234,7 @@ function render(){
   renderMonthlyTrend();
   renderWeekMatrix(); // Cycle 48
   renderYearCalendar();
+  renderCalWidget(); // Cycle 93
   renderMonthStats();
   renderChartTrend(); // Cycle 92
   renderWeeklyRanking();
@@ -3686,11 +3718,11 @@ function updateThemeBtn(){
   syncThemeColor();
 }
 
-// ── sort undone (cycle 7) ──
+// ── sort undone (cycle 7) / cycle 93: 3-mode sort ──
 function toggleSortUndone(){
-  sortUndone=!sortUndone;
+  sortUndone=(sortUndone+1)%3;
   const btn=document.getElementById('sort-undone-btn');
-  if(btn)btn.classList.toggle('active',sortUndone);
+  if(btn){btn.classList.toggle('active',sortUndone>0);btn.textContent=sortUndone===2?'📉 要改善を上に':'⬆ 未完了を上に';}
   renderList();
 }
 
@@ -4893,7 +4925,8 @@ document.addEventListener('keydown',e=>{
     const cats2=filter==='all'?['学習','運動','創作','自己改善']:[filter];
     for(const cat of cats2){
       const rawC=vl.filter(h=>h.category===cat);
-      const ch=sortUndone?[...rawC].sort((a,b)=>{const aO=a.paused||!isScheduled(a,td2),bO=b.paused||!isScheduled(b,td2);if(aO!==bO)return aO?1:-1;return(dc2[a.id]?1:0)-(dc2[b.id]?1:0);}):
+      const ch=sortUndone===1?[...rawC].sort((a,b)=>{const aO=a.paused||!isScheduled(a,td2),bO=b.paused||!isScheduled(b,td2);if(aO!==bO)return aO?1:-1;return(dc2[a.id]?1:0)-(dc2[b.id]?1:0);}):
+        sortUndone===2?[...rawC].sort((a,b)=>{const aO=a.paused||!isScheduled(a,td2),bO=b.paused||!isScheduled(b,td2);if(aO!==bO)return aO?1:-1;if(dc2[a.id]||dc2[b.id])return(dc2[a.id]?1:0)-(dc2[b.id]?1:0);return habit7Days(a.id).filter(Boolean).length-habit7Days(b.id).filter(Boolean).length;}):
         [...rawC].sort((a,b)=>{const aO=a.paused||!isScheduled(a,td2),bO=b.paused||!isScheduled(b,td2);return aO&&!bO?1:!aO&&bO?-1:0;});
       ch.forEach(h=>{if(!seen.has(h.id)){seen.add(h.id);ordered.push(h);}});
     }
@@ -5021,6 +5054,32 @@ function renderCatSummary(){
   el.style.display='grid';
   el.innerHTML=rows.join('');
 }
+// ── Cycle 93: compact monthly calendar widget ──
+function renderCalWidget(){
+  const el=document.getElementById('calcal-box');if(!el)return;
+  if(!isWidgetOn('w_calcal')){el.style.display='none';return;}
+  const td=today();const[yr,mo]=td.split('-').map(Number);
+  const firstDay=new Date(yr,mo-1,1).getDay();
+  const daysInMonth=new Date(yr,mo,0).getDate();
+  const DOW=['月','火','水','木','金','土','日'];
+  const offset=(firstDay+6)%7;
+  let cells=DOW.map(d=>`<div class="calcal-dow">${d}</div>`).join('');
+  for(let i=0;i<offset;i++)cells+=`<div class="calcal-cell cc-empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${yr}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isOff=isDayOff(ds),isTod=ds===td,isFut=ds>td;
+    let cls='calcal-cell',ttl=ds;
+    if(isOff){cls+=' cc-off';ttl+=' (休日)';}
+    else if(isFut){cls+=' cc-future';}
+    else{const r=rawDayRate(ds);if(r>=1){cls+=' cc-done';ttl+=` 100%`;}else if(r>0){cls+=' cc-part';ttl+=` ${Math.round(r*100)}%`;}else{cls+=' cc-miss';ttl+=' 0%';}}
+    if(isTod)cls+=' cc-today';
+    cells+=`<div class="${cls}" title="${ttl}">${d}</div>`;
+  }
+  const mNames=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  el.innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--muted);margin-bottom:4px">📅 ${yr}年 ${mNames[mo-1]}</div><div class="calcal-grid">${cells}</div>`;
+  el.style.display='';
+}
+
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
@@ -5031,6 +5090,7 @@ const WIDGET_DEFS=[
   {key:'w_dow',    name:'📈 曜日別平均達成率',        id:'dow-box'},
   {key:'w_trend',  name:'📉 月別達成率トレンド',      id:'trend-box'},
   {key:'w_year',   name:'📆 年間達成カレンダー',      id:'year-box'},
+  {key:'w_calcal', name:'📅 今月カレンダー（コンパクト）', id:'calcal-box'},
   {key:'w_streak', name:'🔥 ストリークバッジ',        id:'streak-row'},
   {key:'w_wdots',  name:'📅 今週の達成ドット',        id:'week-dots'},
   {key:'w_month',  name:'📅 月次サマリー',            id:'month-box'},
