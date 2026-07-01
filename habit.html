@@ -629,6 +629,17 @@
     body.light .batch-btn:hover{border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.08);color:var(--green)}
     body.light .batch-btn.all-done{color:var(--green);border-color:rgba(76,175,125,.35);background:rgba(76,175,125,.08)}
     body.compact .batch-btn{display:none}
+    /* Cycle 97: category batch skip button */
+    .batch-skip-btn{background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);cursor:pointer;font-size:9px;padding:2px 6px;border-radius:10px;transition:all .15s;flex-shrink:0;line-height:1.6;font-family:"Zen Maru Gothic",sans-serif;font-weight:700;margin-left:4px}
+    .batch-skip-btn:hover{color:var(--sky);border-color:rgba(91,200,232,.5);background:rgba(91,200,232,.1)}
+    .batch-skip-btn.all-skipped{color:var(--sky);border-color:rgba(91,200,232,.3);background:rgba(91,200,232,.07)}
+    body.light .batch-skip-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.38)}
+    body.light .batch-skip-btn:hover{border-color:rgba(91,200,232,.5);background:rgba(91,200,232,.08);color:var(--sky)}
+    body.light .batch-skip-btn.all-skipped{color:var(--sky);border-color:rgba(91,200,232,.35);background:rgba(91,200,232,.08)}
+    body.compact .batch-skip-btn{display:none}
+    /* Cycle 97: category header soft glow when all habits in category are handled (done or skipped) */
+    .sec-hdr.all-cat-done{background:linear-gradient(90deg,rgba(76,175,125,.09) 0%,transparent 65%)}
+    body.light .sec-hdr.all-cat-done{background:linear-gradient(90deg,rgba(76,175,125,.07) 0%,transparent 65%)}
 
     /* Cycle 33: next milestone preview widget */
     .ms-widget{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
@@ -1438,7 +1449,7 @@
 
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box{display:none!important}
@@ -3027,7 +3038,12 @@ function renderList(){
     const _npc=ch.filter(h=>!h.paused&&isScheduled(h,td));
     const _acd=_npc.length>0&&_npc.every(h=>!!dc[h.id]);
     const _batchBtn=_npc.length>0?`<button class="batch-btn${_acd?' all-done':''}" onclick="batchComplete('${cat}',event)" title="${_acd?'チェックを全て解除':'全ての習慣を完了'}">${_acd?'✓ 全解除':'✓ 全完了'}</button>`:'';
-    html+=`<div class="habit-sec"><div class="sec-hdr" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span>${_batchBtn}<span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*250+20+'px'}">`;
+    // Cycle 97: batch skip + all-handled glow
+    const _undoneCh=_npc.filter(h=>!dc[h.id]);
+    const _askipped=_undoneCh.length>0&&_undoneCh.every(h=>isSkippedToday(h.id));
+    const _skipCatBtn=_undoneCh.length>0?`<button class="batch-skip-btn${_askipped?' all-skipped':''}" onclick="batchSkip('${cat}',event)" title="${_askipped?'スキップを全て解除':'未完了を全てスキップ'}">${_askipped?'⊘ 全解除':'⊘ 全スキップ'}</button>`:'';
+    const _catAllHandled=_npc.length>0&&_npc.every(h=>!!dc[h.id]||isSkippedToday(h.id));
+    html+=`<div class="habit-sec"><div class="sec-hdr${_catAllHandled?' all-cat-done':''}" onclick="toggleCatCollapse('${cat}',event)" title="${isClosed?'展開する':'折りたたむ'}"><div class="sec-dot" style="background:${col}"></div><span class="sec-name" style="color:${col}">${cat}</span><div class="sec-progress"><div class="sec-progress-fill" style="width:${pct}%;background:${col}"></div></div><span class="sec-count">${done}/${ch.length}</span>${_skipCatBtn}${_batchBtn}<span class="sec-chev${isClosed?' closed':''}">▶</span></div><div class="sec-habits${isClosed?' closed':''}" style="max-height:${isClosed?'0':ch.length*250+20+'px'}">`;
     ch.forEach(h=>{const ri=rawCh.findIndex(x=>x.id===h.id);html+=_hCard(h,dc,col,focusIds,ri,rawCh.length);});
     html+='</div></div>';
   }
@@ -5047,6 +5063,20 @@ function batchComplete(cat,e){
   }
   saveC();render();
   if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();}
+}
+// ── Cycle 97: category batch skip ──
+function batchSkip(cat,e){
+  e.stopPropagation();
+  const td=today();
+  const dc=completions[td]||{};
+  const catH=habits.filter(h=>h.category===cat&&!h.paused&&isScheduled(h,td)&&!dc[h.id]);
+  if(!catH.length)return;
+  const sk=getSkipIds();
+  const allSkipped=catH.every(h=>sk.includes(h.id));
+  if(allSkipped){catH.forEach(h=>{const idx=sk.indexOf(h.id);if(idx>=0)sk.splice(idx,1);});}
+  else{catH.forEach(h=>{if(!sk.includes(h.id))sk.push(h.id);});}
+  localStorage.setItem(SKK+td,JSON.stringify(sk));
+  celebrated=false;render();
 }
 // ── Cycle 32: scroll to top ──
 function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
