@@ -605,9 +605,24 @@
     body.compact .habit-detail{display:none!important}
     body.light .habit-detail{border-color:rgba(0,0,0,.08)}
     .hd-inner{padding:10px 14px 12px}
-    .mini-hm{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px}
+    .mini-hm{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
     .mhm-cell{aspect-ratio:1;border-radius:2px;transition:transform .1s}
     .mhm-cell:hover{transform:scale(1.3)}
+    /* Cycle 100: skip vs miss distinction in mini heatmap */
+    .mhm-cell.skip{background:rgba(91,200,232,.38)!important}
+    .mhm-cell.rest{background:rgba(255,255,255,.02)!important;border:1px solid rgba(255,255,255,.06)}
+    .mini-hm-legend{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+    .mhm-leg-item{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted)}
+    .mhm-leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+    /* Cycle 100: habit×mood correlation widget */
+    .hmc-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .hmc-ttl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+    .hmc-list{display:flex;flex-direction:column;gap:6px}
+    .hmc-row{display:flex;align-items:center;gap:8px;font-size:12px}
+    .hmc-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .hmc-delta{font-size:11px;font-weight:700;color:var(--green);padding:2px 6px;background:rgba(76,175,125,.12);border-radius:6px;flex-shrink:0;font-variant-numeric:tabular-nums}
+    .hmc-delta.neg{color:var(--red);background:rgba(232,53,74,.1)}
+    body.light .hmc-box{border-color:rgba(0,0,0,.07)}
     .hd-stats{display:flex;gap:14px}
     .hd-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
     .hd-stat-val{font-family:"Dela Gothic One",sans-serif;font-size:13px;color:var(--gold);line-height:1}
@@ -1304,7 +1319,7 @@
     body.oled .challenge-box,body.oled .pace-box,body.oled .streak-row,body.oled .motto-box,
     body.oled .intention-box,body.oled .weekly-box,body.oled .ach-box,body.oled .mood-box,
     body.oled .mood-stats-box,body.oled .highlight-box,body.oled .wm-box,body.oled .dow-box,
-    body.oled .donut-box,body.oled .tmrw-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
+    body.oled .donut-box,body.oled .tmrw-box,body.oled .hmc-box{background:#0a0a0a;border-color:rgba(255,255,255,.06)}
     body.oled .modal-inner{background:#000;border-color:rgba(255,255,255,.08)}
     body.oled .overlay{background:rgba(0,0,0,.9)}
     body.oled .progress-footer{background:rgba(255,255,255,.04)}
@@ -1472,7 +1487,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
@@ -1761,6 +1776,12 @@
 
   <!-- Cycle 51: mood vs achievement correlation -->
   <div class="mood-stats-box" id="mood-stats-box" style="display:none"></div>
+
+  <!-- Cycle 100: habit × mood correlation widget -->
+  <div class="hmc-box" id="hmc-box" style="display:none">
+    <div class="hmc-ttl">🧠 習慣×気分 相関（過去30日）</div>
+    <div class="hmc-list" id="hmc-list"></div>
+  </div>
 
   <!-- Cycle 50: daily highlight note -->
   <div class="highlight-box" id="highlight-box">
@@ -3393,6 +3414,7 @@ function render(){
   renderTimeline();
   renderMoodWidget();
   renderMoodStats(); // Cycle 51
+  renderHabitMoodCorr(); // Cycle 100
   renderHighlightBox();
   renderList();
   renderChallenge();
@@ -4668,12 +4690,33 @@ function _habitBestStreak(id){
 function _habitDetailHtml(id){
   const isLight=document.body.classList.contains('light');
   const emptyBg=isLight?'rgba(0,0,0,.07)':'rgba(255,255,255,.08)';
-  const cells=[];
+  const hObj=habits.find(x=>x.id===id);
+  // Cycle 100: 28-day grid (4 weeks × 7 days) with skip/miss distinction
+  let hmHtml='<div class="mini-hm">';
   for(let i=27;i>=0;i--){
     const ds=dateAgo(i),done=!!(completions[ds]||{})[id];
     const d=daysAgo(i);
-    cells.push(`<div class="mhm-cell" style="background:${done?'var(--green)':emptyBg}" title="${d.getMonth()+1}/${d.getDate()}${done?' ✓':''}"></div>`);
+    // Cycle 100: distinguish skip vs miss vs rest day
+    let cls='',title='';
+    if(done){
+      title=`${d.getMonth()+1}/${d.getDate()} ✓完了`;
+    } else if(hObj&&!isScheduled(hObj,ds)){
+      cls=' rest';
+      title=`${d.getMonth()+1}/${d.getDate()} 休日`;
+    } else {
+      const skipIds=_readDayJSON(SKK+ds,[]);
+      if(skipIds.includes(id)){
+        cls=' skip';
+        title=`${d.getMonth()+1}/${d.getDate()} スキップ`;
+      } else {
+        title=`${d.getMonth()+1}/${d.getDate()} ✗未達成`;
+      }
+    }
+    hmHtml+=`<div class="mhm-cell${cls}" style="background:${done?'var(--green)':emptyBg}" title="${title}"></div>`;
   }
+  hmHtml+='</div>';
+  // Legend
+  const legendHtml=`<div class="mini-hm-legend"><div class="mhm-leg-item"><div class="mhm-leg-dot" style="background:var(--green)"></div>完了</div><div class="mhm-leg-item"><div class="mhm-leg-dot" style="background:rgba(91,200,232,.38)"></div>スキップ</div><div class="mhm-leg-item"><div class="mhm-leg-dot" style="background:${emptyBg}"></div>未達成</div><div class="mhm-leg-item"><div class="mhm-leg-dot" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.1)"></div>休日</div></div>`;
   const total=habitTotalCount(id);
   const streak=habitStreak(id);
   const best=_habitBestStreak(id);
@@ -4711,12 +4754,11 @@ function _habitDetailHtml(id){
   const _MS=[10,30,100,300,500,1000];
   const _nxtMs=_MS.find(m=>m>total);
   const msHtml=_nxtMs!==undefined?`<div class="hd-next-ms">🎯 次の目標 <strong>${_nxtMs}日</strong>まで あと<strong>${_nxtMs-total}日</strong></div>`:`<div class="hd-next-ms">🏆 全マイルストーン達成！</div>`;
-  const _hObj=habits.find(x=>x.id===id);
-  const whySec=_hObj&&_hObj.why?`<div class="hd-why">💭 ${esc(_hObj.why)}</div>`:'';
+  const whySec=hObj&&hObj.why?`<div class="hd-why">💭 ${esc(hObj.why)}</div>`:'';
   // Cycle 87: habit health score
   const _hs=habitHealthScore(id);
   const healthSec=`<div class="hd-health"><div class="hd-health-row"><span class="hd-health-lbl">📊 継続スコア</span><span class="hd-health-score ${_hs.cls}">${_hs.score}<span style="font-size:11px;font-weight:600;opacity:.65">/100</span></span></div><div class="hd-health-bar"><div class="hd-health-bar-fill ${_hs.cls}" style="width:${_hs.score}%"></div></div></div>`;
-  return `<div class="hd-inner"><div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${healthSec}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
+  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${healthSec}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
@@ -5354,6 +5396,7 @@ const WIDGET_DEFS=[
   {key:'w_radar',    name:'🕸️ カテゴリーバランス（レーダー）', id:'radar-box'},
   {key:'w_tagstat',  name:'🏷️ タグ別達成率（7日）',           id:'tag-stat-box'},
   {key:'w_insight',  name:'💡 週間データインサイト',            id:'insight-box'},
+  {key:'w_hmc',      name:'🧠 習慣×気分 相関（30日）',        id:'hmc-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
@@ -5493,6 +5536,47 @@ function renderMoodStats(){
     else insight=`💡 気分に関わらず安定した達成率を維持中`;
   }
   el.innerHTML=`<div class="mood-stats-ttl">📊 気分と達成率の関係（過去30日）</div><div class="mood-stats-rows">${rows}</div>${insight?`<div class="mood-stats-insight">${insight}</div>`:''}`;
+}
+
+// ── Cycle 100: habit × mood correlation widget ──
+function renderHabitMoodCorr(){
+  const box=document.getElementById('hmc-box');
+  const el=document.getElementById('hmc-list');
+  if(!box||!el)return;
+  if(!isWidgetOn('w_hmc')){box.style.display='none';return;}
+  const activeHabits=habits.filter(h=>!h.paused&&!h.archived);
+  const habitData={};
+  activeHabits.forEach(h=>{habitData[h.id]={done:[],miss:[]};});
+  for(let i=1;i<=30;i++){
+    const ds=dateAgo(i);
+    const m=getMood(ds);
+    if(m<1)continue;
+    const dc=completions[ds]||{};
+    const skipIds=_readDayJSON(SKK+ds,[]);
+    activeHabits.forEach(h=>{
+      if(!isScheduled(h,ds))return;
+      if(dc[h.id])habitData[h.id].done.push(m);
+      else if(!skipIds.includes(h.id))habitData[h.id].miss.push(m);
+    });
+  }
+  const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+  const correlations=activeHabits.map(h=>{
+    const d=habitData[h.id];
+    const doneAvg=avg(d.done),missAvg=avg(d.miss);
+    if(d.done.length<3||d.miss.length<3)return null;
+    const delta=Math.round((doneAvg-missAvg)*10)/10;
+    return{h,delta};
+  }).filter(x=>x&&Math.abs(x.delta)>=0.3);
+  correlations.sort((a,b)=>b.delta-a.delta);
+  if(!correlations.length){box.style.display='none';return;}
+  box.style.display='';
+  const top=correlations.slice(0,5);
+  el.innerHTML=top.map(c=>{
+    const sign=c.delta>0?'+':'';
+    const cls=c.delta<0?' neg':'';
+    const emoji=c.h.emoji?c.h.emoji+' ':'';
+    return `<div class="hmc-row"><span class="hmc-name">${emoji}${esc(c.h.name)}</span><span class="hmc-delta${cls}" title="達成日の平均気分 vs 未達成日の差">${sign}${c.delta.toFixed(1)}</span></div>`;
+  }).join('');
 }
 
 // ── Cycle 50: daily highlight note ──
