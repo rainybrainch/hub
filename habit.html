@@ -65,6 +65,10 @@
     .tab.active[data-cat="運動"]{background:var(--green);border-color:transparent;color:var(--dark)}
     .tab.active[data-cat="創作"]{background:var(--purple);border-color:transparent;color:var(--white)}
     .tab.active[data-cat="自己改善"]{background:var(--gold);border-color:transparent;color:var(--dark)}
+    /* Cycle 111: per-tab completion count badge */
+    .tab-cnt{font-size:9px;font-weight:900;opacity:.7;margin-left:4px;letter-spacing:0}
+    .tab.active .tab-cnt{opacity:.85}
+    .tab-cnt.all-done{color:var(--green);opacity:1}
 
     /* Habit list */
     .habit-sec{margin-bottom:24px}
@@ -2161,6 +2165,7 @@
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
       <tr><td><kbd class="kbdkey">H</kbd></td><td class="kbd-desc">過去日付の習慣履歴を閲覧</td></tr>
       <tr><td><kbd class="kbdkey">R</kbd></td><td class="kbd-desc">ランダムに未完了習慣を選んでハイライト</td></tr>
+      <tr><td><kbd class="kbdkey">[</kbd> / <kbd class="kbdkey">]</kbd></td><td class="kbd-desc">カテゴリータブを前後に切り替え</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">↑</kbd> <kbd class="kbdkey">↓</kbd></td><td class="kbd-desc">習慣リストを上下に移動（Enterでトグル）</td></tr>
       <tr><td><kbd class="kbdkey">Space</kbd></td><td class="kbd-desc">次の未完了習慣をチェック</td></tr>
@@ -3701,6 +3706,7 @@ function render(){
   renderDoneMins(); // Cycle 96: today's achieved-duration badge
   renderInsightBox(); // Cycle 96: weekly data insights widget
   updateHdrProgStrip(); // Cycle 103: header progress strip
+  updateTabCounts(); // Cycle 111: category tab completion count badges
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -5462,6 +5468,13 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='y'||e.key==='Y')openYFix();
   else if(e.key==='h'||e.key==='H')openHistoryBrowser();
   else if(e.key==='r'||e.key==='R')pickRandomHabit();
+  // Cycle 111: [ / ] to cycle category tabs
+  else if(e.key==='['||e.key===']'){
+    const _tabOrder=['all','学習','運動','創作','自己改善','important'];
+    const _ci=_tabOrder.indexOf(filter);
+    const _ni=e.key==='['?(_ci-1+_tabOrder.length)%_tabOrder.length:(_ci+1)%_tabOrder.length;
+    setFilter(_tabOrder[_ni]);
+  }
   // Cycle 91: arrow-key navigation through habit list
   else if(e.key==='ArrowDown'||e.key==='ArrowUp'){
     e.preventDefault();
@@ -6533,6 +6546,39 @@ function updateHdrProgStrip(){
   const pct=Math.round(done/acts.length*100);
   el.style.width=pct+'%';
   el.style.background=pct>=100?'var(--green)':pct>=50?'var(--gold)':'var(--sky)';
+}
+
+// ── Cycle 111: category tab completion count badges ──
+function updateTabCounts(){
+  const td=today(),dc=completions[td]||{};
+  const cats=['学習','運動','創作','自己改善'];
+  let allDone=0,allTotal=0;
+  const perCat={};
+  cats.forEach(cat=>{
+    const ch=habits.filter(h=>h.category===cat&&!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+    const d=ch.filter(h=>!!dc[h.id]).length;
+    perCat[cat]={d,t:ch.length};
+    allDone+=d;allTotal+=ch.length;
+  });
+  document.querySelectorAll('.tab[data-cat]').forEach(btn=>{
+    const cat=btn.dataset.cat;
+    let cntEl=btn.querySelector('.tab-cnt');
+    if(!cntEl){cntEl=document.createElement('span');cntEl.className='tab-cnt';btn.appendChild(cntEl);}
+    if(cat==='all'){
+      if(!allTotal){cntEl.textContent='';return;}
+      cntEl.textContent=allDone===allTotal?'✓':`${allDone}/${allTotal}`;
+      cntEl.classList.toggle('all-done',allDone===allTotal);
+    }else if(cat==='important'){
+      const imp=habits.filter(h=>h.important&&!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+      const id=imp.filter(h=>!!dc[h.id]).length;
+      cntEl.textContent=imp.length?id===imp.length?'✓':`${id}/${imp.length}`:'';
+      cntEl.classList.toggle('all-done',imp.length>0&&id===imp.length);
+    }else if(perCat[cat]){
+      const{d,t}=perCat[cat];
+      cntEl.textContent=t?d===t?'✓':`${d}/${t}`:'';
+      cntEl.classList.toggle('all-done',t>0&&d===t);
+    }
+  });
 }
 
 // ── Cycle 98: monthly summary toast ──
