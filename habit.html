@@ -46,6 +46,9 @@
     .bar-fill.today{background:linear-gradient(180deg,var(--sky),#2a8eb0)}
     .bar-lbl{font-size:9px;color:var(--muted);font-weight:700}
     .bar-lbl.today{color:var(--sky)}
+    /* Cycle 110: inline bar percentage label */
+    .bar-inner-pct{position:absolute;top:3px;left:0;right:0;text-align:center;font-size:8px;font-weight:900;color:rgba(255,255,255,.85);pointer-events:none;line-height:1}
+    body.light .bar-inner-pct{color:rgba(0,0,0,.65)}
 
     /* Streak badge — cycle 2 feature */
     .streak-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
@@ -1557,6 +1560,11 @@
     body.light .nc-preset-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
     body.light .nc-preset-btn.sel{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.4);color:#7a5500}
 
+    /* Cycle 110: accessibility — respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+    }
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.sg-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -3022,7 +3030,8 @@ function renderChart(){
       const doneH=activeH.filter(h=>dc7[h.id]).length;
       const totalH=activeH.length;
       const tipHtml=totalH>0?`${lbl}<br><span style="opacity:.6;font-size:9px">${dateStr7}</span><br><span style="color:var(--sky)">${doneH}/${totalH}</span> <span style="opacity:.7">${pct}%</span>`:`${lbl}<br><span style="opacity:.6;font-size:9px">${dateStr7}</span>`;
-      col.innerHTML=`<div class="bar-wrap" style="position:relative"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%"></div><div class="bar-tooltip">${tipHtml}</div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
+      const pctLbl=pct>=25?`<span class="bar-inner-pct">${pct}%</span>`:'';
+      col.innerHTML=`<div class="bar-wrap" style="position:relative"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%">${pctLbl}</div><div class="bar-tooltip">${tipHtml}</div></div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
       c.appendChild(col);
     }
   }else if(chartView==='line'){
