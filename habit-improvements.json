@@ -2044,6 +2044,29 @@
         "deployedAt": "2026-07-01T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 109,
+      "version": "v2.109",
+      "timestamp": "2026-07-01T03:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣N日チャレンジモード（N-Day Challenge Mode）",
+          "description": "習慣編集モーダルに「挑戦」行を追加。7日・14日・21日・30日のN日チャレンジを習慣ごとに設定可能（.nc-row）。設定したチャレンジ日数は habit.challengeDays に保存。習慣カードに「🎯 hs/cd日」形式の進捗バッジ（.nc-badge）を表示し、達成時（現在ストリーク>=目標日数）は「🏆 N日達成」へ変化（.nc-done、グリーン色）。チャレンジ達成時には _checkNChallenge() が rh_ncc_HABITID_DAYS キーで重複チェックの上、.nc-toast（金グラデーション）を4.5秒表示。チャレンジ日数を変更した場合は challengeStart をリセットし新規カウント開始。既存のstreakGoal（連続日数目標バッジ）と役割が異なり、streakGoalは「ストリーク継続の目安」、N日チャレンジは「完了を一度だけ祝う短期挑戦」として設計。コンパクトモード時は非表示。ライト/ダーク/OLEDテーマ対応。"
+        },
+        {
+          "type": "feature",
+          "title": "ソートモードの永続化（Sort Mode Persistence）",
+          "description": "ページリロード後もソート設定が維持されるよう、toggleSortUndone() に localStorage.setItem('rh_sort_mode', sortUndone) を追加。toggleSortImportant() にも localStorage.setItem('rh_sort_imp', '1'/'0') を追加。初期化時（Cycle 44 のフィルター復元と同じ場所）に rh_sort_mode を読み込み sortUndone を復元し sort-undone-btn のテキスト・アクティブ状態を反映、rh_sort_imp が '1' なら sortImportant=true かつ sort-prio-btn.active を設定。これにより「未完了を上に」「要改善を上に」「重要優先」の3設定がリロード前後で保持される。Cycle 93で追加した3段階ソートモードとCycle 107の重要優先ソートが実用的に使えるようになる。既存コードへの変更は最小限（各関数1行追加、init1行追加）で副作用なし。"
+        }
+      ],
+      "notes": "Cycle 109はユーザーの継続動機づけとUX利便性に焦点。N日チャレンジは既存のCycle 35「今日のチャレンジ」（毎日1習慣をピック）とは異なり、特定習慣に対してユーザー自身がN日連続達成の挑戦を設定できる能動的な機能。Cycle 104のstreakGoalとの差別化：streakGoalは「継続的に達成したい目安」を示すバッジ、N日チャレンジは「このN日間だけ頑張る短期目標」をゲーム的に達成できる。ソートモード永続化はCycle 7/93/107で積み上げてきたソート機能を実用化する改善で、毎回ページ読み込み後に「未完了を上に」を設定し直す手間がなくなる。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T03:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

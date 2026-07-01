@@ -1541,6 +1541,22 @@
     .hab-on-streak{font-size:10px;font-weight:700;color:var(--gold);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.25);border-radius:14px;padding:3px 9px;flex-shrink:0;transition:all .25s;cursor:default}
     body.light .hab-on-streak{background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.3);color:#8a6500}
 
+    /* Cycle 109: N-day challenge mode */
+    .nc-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.28);border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0;white-space:nowrap}
+    .nc-badge.nc-done{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.3);color:var(--green)}
+    body.compact .nc-badge{display:none}
+    body.light .nc-badge{background:rgba(245,200,66,.08);border-color:rgba(245,200,66,.28)}
+    body.light .nc-badge.nc-done{background:rgba(76,175,125,.09);border-color:rgba(76,175,125,.28);color:#1f6e40}
+    .nc-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(245,200,66,.94),rgba(212,160,23,.96));color:#1a1200;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.5);z-index:454;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .nc-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .nc-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+    .nc-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:36px}
+    .nc-preset-btn{padding:6px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .nc-preset-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .nc-preset-btn.sel{background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.4);color:var(--gold)}
+    body.light .nc-preset-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.5)}
+    body.light .nc-preset-btn.sel{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.4);color:#7a5500}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.sg-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
@@ -2072,6 +2088,15 @@
       <button class="sg-preset-btn" id="sg-btn-30" type="button" onclick="selSG(30)">30日</button>
       <button class="sg-preset-btn" id="sg-btn-100" type="button" onclick="selSG(100)">100日</button>
     </div>
+    <!-- Cycle 109: N-day challenge row -->
+    <div class="nc-row">
+      <span class="nc-row-lbl">挑戦</span>
+      <button class="nc-preset-btn sel" id="nc-btn-0" type="button" onclick="selChall(0)">なし</button>
+      <button class="nc-preset-btn" id="nc-btn-7" type="button" onclick="selChall(7)">7日</button>
+      <button class="nc-preset-btn" id="nc-btn-14" type="button" onclick="selChall(14)">14日</button>
+      <button class="nc-preset-btn" id="nc-btn-21" type="button" onclick="selChall(21)">21日</button>
+      <button class="nc-preset-btn" id="nc-btn-30" type="button" onclick="selChall(30)">30日</button>
+    </div>
     <div class="habit-hint" id="habit-hint"></div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
@@ -2087,6 +2112,7 @@
 <div class="restart-toast" id="restart-toast"></div>
 <div class="habit-pr-toast" id="habit-pr-toast"></div>
 <div class="sg-toast" id="sg-toast"></div>
+<div class="nc-toast" id="nc-toast"></div>
 
 <div class="check-snackbar" id="check-snackbar">
   <span class="check-sb-msg" id="check-sb-msg"></span>
@@ -2228,9 +2254,12 @@ let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = 
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
 let _selSG=0; // Cycle 104: streak goal selection
+let _selChallDays=0; // Cycle 109: N-day challenge selection
 function selWeeklyTarget(n){_selWeeklyTarget=n;document.querySelectorAll('.wt-preset').forEach(b=>b.classList.toggle('sel',+b.dataset.wt===n));}
 // Cycle 104: streak goal selection
 function selSG(val){_selSG=val;['off',7,21,30,100].forEach(v=>{const b=document.getElementById('sg-btn-'+v);if(b)b.classList.toggle('sel',(v==='off'&&val===0)||(v===val));});}
+// Cycle 109: N-day challenge selection
+function selChall(val){_selChallDays=val;[0,7,14,21,30].forEach(v=>{const b=document.getElementById('nc-btn-'+v);if(b)b.classList.toggle('sel',v===val);});}
 // Cycle 74: hide-done toggle
 let _hideDone=localStorage.getItem('rh_hide_done')==='1';
 function toggleHideDone(){_hideDone=!_hideDone;localStorage.setItem('rh_hide_done',_hideDone?'1':'0');document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);renderList();}
@@ -3251,7 +3280,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 108: per-habit monthly progress badge
   let mthProgBadge='';
   {const _n=new Date();const _day=_n.getDate();let _mDone=0,_mSched=0;for(let i=0;i<_day;i++){const _d=new Date(_n.getFullYear(),_n.getMonth(),_day-i);const _ds=toStr(_d);if(isScheduled(h,_ds)){_mSched++;if((completions[_ds]||{})[h.id])_mDone++;}}if(_mSched>=3)mthProgBadge=`<span class="mth-prog" title="今月の達成: ${_mDone}/${_mSched}日">📅${_mDone}/${_mSched}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 109: N-day challenge badge
+  let ncBadge='';
+  if(h.challengeDays>0){const _cd=h.challengeDays;const _done=hs>=_cd;ncBadge=`<span class="nc-badge${_done?' nc-done':''}" title="N日チャレンジ目標: ${_cd}日連続">${_done?'🏆 '+_cd+'日達成':'🎯 '+hs+'/'+_cd+'日'}</span>`;}
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3718,6 +3750,8 @@ function toggle(id,evt){
   if(!wasCompleted&&_hh)_checkHabitPR(id,_hh);
   // Cycle 104: streak goal check
   if(!wasCompleted&&_hh)_checkStreakGoal(id,_hh);
+  // Cycle 109: N-day challenge check
+  if(!wasCompleted&&_hh&&_hh.challengeDays>0)_checkNChallenge(id,_hh);
   // cycle 2: celebration check
   if(todayRate()===100&&!celebrated){
     celebrated=true;
@@ -3997,6 +4031,7 @@ function openModal(id=null){
     toggleImportant(!!(h&&h.important));
     _selWeeklyTarget=h&&h.weeklyTarget>0?h.weeklyTarget:0;selWeeklyTarget(_selWeeklyTarget);
     selSG(h&&h.streakGoal>0?h.streakGoal:0); // Cycle 104
+    selChall(h&&h.challengeDays>0?h.challengeDays:0); // Cycle 109
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -4016,6 +4051,7 @@ function openModal(id=null){
     toggleImportant(false);
     _selWeeklyTarget=0;selWeeklyTarget(0);
     selSG(0); // Cycle 104
+    selChall(0); // Cycle 109
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -4051,7 +4087,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;if(_selSG>0)h.streakGoal=_selSG;else delete h.streakGoal; /* Cycle 104 */}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;if(_selSG>0)h.streakGoal=_selSG;else delete h.streakGoal; /* Cycle 104 */if(_selChallDays>0){if(h.challengeDays!==_selChallDays){h.challengeDays=_selChallDays;delete h.challengeStart;/* reset when goal changes */}else h.challengeDays=_selChallDays;}else{delete h.challengeDays;delete h.challengeStart;} /* Cycle 109 */}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -4068,6 +4104,7 @@ function saveHabit(){
     if(tagsSave.length)nh.tags=tagsSave;
     if(_selWeeklyTarget>0)nh.weeklyTarget=_selWeeklyTarget;
     if(_selSG>0)nh.streakGoal=_selSG; // Cycle 104
+    if(_selChallDays>0)nh.challengeDays=_selChallDays; // Cycle 109
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -4144,17 +4181,19 @@ function updateThemeBtn(){
   syncThemeColor();
 }
 
-// ── sort undone (cycle 7) / cycle 93: 3-mode sort ──
+// ── sort undone (cycle 7) / cycle 93: 3-mode sort / Cycle 109: persist sort mode ──
 function toggleSortUndone(){
   sortUndone=(sortUndone+1)%3;
+  localStorage.setItem('rh_sort_mode',sortUndone); // Cycle 109
   const btn=document.getElementById('sort-undone-btn');
   if(btn){btn.classList.toggle('active',sortUndone>0);btn.textContent=sortUndone===2?'📉 要改善を上に':'⬆ 未完了を上に';}
   renderList();
 }
 
-// ── Cycle 107: important-first sort ──
+// ── Cycle 107: important-first sort / Cycle 109: persist ──
 function toggleSortImportant(){
   sortImportant=!sortImportant;
+  localStorage.setItem('rh_sort_imp',sortImportant?'1':'0'); // Cycle 109
   const btn=document.getElementById('sort-prio-btn');
   if(btn)btn.classList.toggle('active',sortImportant);
   renderList();
@@ -5277,6 +5316,8 @@ initModalSwipe();
 initAccent();
 // Cycle 44: restore last selected category filter
 (()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善','important'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
+// Cycle 109: restore sort mode and important sort
+(()=>{const sm=parseInt(localStorage.getItem('rh_sort_mode')||'0');if(sm>0&&sm<3){sortUndone=sm;const b=document.getElementById('sort-undone-btn');if(b){b.classList.add('active');b.textContent=sm===2?'📉 要改善を上に':'⬆ 未完了を上に';}}const si=localStorage.getItem('rh_sort_imp');if(si==='1'){sortImportant=true;const b=document.getElementById('sort-prio-btn');if(b)b.classList.add('active');}})();
 toggleTough(false); // Cycle 47: init tough buttons
 toggleImportant(false); // Cycle 70: init important buttons
 render();
@@ -6105,6 +6146,22 @@ function showSGToast(hh){
   el.classList.add('show');
   clearTimeout(_sgToastTimer);
   _sgToastTimer=setTimeout(()=>el.classList.remove('show'),4000);
+}
+// ── Cycle 109: N-day challenge completion check ──
+let _ncToastTimer=null;
+function _checkNChallenge(id,hh){
+  if(!hh.challengeDays||hh.challengeDays<1)return;
+  const cur=habitStreak(id);
+  if(cur<hh.challengeDays)return;
+  const k='rh_ncc_'+id+'_'+hh.challengeDays;
+  if(localStorage.getItem(k))return;
+  localStorage.setItem(k,'1');
+  const el=document.getElementById('nc-toast');if(!el)return;
+  const nm=(hh.emoji?hh.emoji+' ':'')+hh.name;
+  el.textContent=`🏆 ${nm} ${hh.challengeDays}日チャレンジ達成！すごい！`;
+  el.classList.add('show');
+  clearTimeout(_ncToastTimer);
+  _ncToastTimer=setTimeout(()=>el.classList.remove('show'),4500);
 }
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
