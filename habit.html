@@ -1231,6 +1231,9 @@
     /* Cycle 60: night deadline risk pulse */
     @keyframes nightRisk{0%,100%{box-shadow:0 0 0 0 rgba(232,53,74,0)}50%{box-shadow:0 0 0 3px rgba(232,53,74,.35)}}
     body.night-mode .habit.night-risk:not(.done):not(.paused):not(.skipped-today){animation:nightRisk 2s ease-in-out infinite}
+    /* Cycle 113: evening streak risk pulse (18:00-21:59) */
+    @keyframes eveningRisk{0%,100%{box-shadow:0 0 0 0 rgba(255,167,38,0)}50%{box-shadow:0 0 0 3px rgba(255,167,38,.3)}}
+    .habit.evening-risk:not(.done):not(.paused):not(.skipped-today){animation:eveningRisk 2.5s ease-in-out infinite}
 
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
@@ -3202,7 +3205,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const lv=habitLevel(cnt);
   const lvBadge=`<span class="habit-level lv${lv}" title="${LV_NAMES[lv]}（累計${cnt}日）">Lv.${lv}</span>`;
   const hs=habitStreak(h.id);
-  const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  // Cycle 113: streak badge with start-date tooltip
+  const _ssdStr=hs>=2?dateAgo(hs-1):'';const _ssd=_ssdStr?new Date(_ssdStr+'T00:00:00'):null;
+  const streakBadge=hs>=2?`<span class="habit-streak" title="${hs}日連続（${_ssd?(_ssd.getMonth()+1)+'/'+_ssd.getDate():'-'}開始）">🔥${hs}</span>`:'';
   const hbs=habitBestStreak(h.id);
   const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const fix30=habitFix30(h.id);
@@ -3265,6 +3270,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 60: night-risk pulse for habits with streak ≥ 3 after 22:00
   const _hr=new Date().getHours();
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
+  // Cycle 113: evening-risk amber pulse (18:00-21:59) for streak ≥ 3 undone habits
+  const eveningRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=18&&_hr<22&&hs>=3?' evening-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
   // Cycle 66: left category color border strip; Cycle 70: gold when important
@@ -3301,7 +3308,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 109: N-day challenge badge
   let ncBadge='';
   if(h.challengeDays>0){const _cd=h.challengeDays;const _done=hs>=_cd;ncBadge=`<span class="nc-badge${_done?' nc-done':''}" title="N日チャレンジ目標: ${_cd}日連続">${_done?'🏆 '+_cd+'日達成':'🎯 '+hs+'/'+_cd+'日'}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
