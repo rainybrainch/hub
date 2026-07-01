@@ -1724,7 +1724,9 @@
       "notes": "Cycle 94は「タグ活用の深化」と「時間管理の可視化」の2軸改善。タグ別達成率はCycle 84のタグ機能・Cycle 89のタグフィルターバーに続く分析機能の追加で、ユーザーが自分の習慣をタグカテゴリー単位で振り返れるようにする。残り所要時間はCycle 52のdurationフィールドを活用したUI改善で、習慣完了のたびに自動更新し今日の計画管理をサポート。両機能ともLocalStorage変更なし・後方完全互換。",
       "deploy": {
         "branch": "main",
-        "status": "pending"
+        "status": "success",
+        "commit": "2aa27c3",
+        "deployedAt": "2026-07-01T01:00:00Z"
       }
     }
   ]
