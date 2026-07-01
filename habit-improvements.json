@@ -1700,7 +1700,10 @@
         "branch": "main",
         "deployedAt": "2026-07-01T00:00:00Z",
         "status": "pending"
-      }
+      },
+      "status": "success",
+      "commit": "61ec5b7",
+      "deployed_at": "2026-07-01T00:00:00Z"
     }
   ]
 }
