@@ -1936,6 +1936,29 @@
       }
     },
     {
+      "cycle": 105,
+      "version": "v2.105",
+      "timestamp": "2026-07-01T11:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "バックアップ自動リマインダーバッジ",
+          "description": "📤エクスポートボタンの右上に8pxの赤丸バッジ（.backup-badge）を追加。アプリ起動時に`checkExportReminder()`が`rh_last_export`キーを確認し、未エクスポートまたは前回エクスポートから30日以上経過している場合にバッジを表示。JSON/CSV/Markdownのいずれかをエクスポートした際に`rh_last_export = today()`を保存してバッジを即時非表示。📤ボタンを`.export-btn-wrap`スパン（position:relative）でラップし、バッジを右上にposition:absoluteで配置。pointer-events:noneで操作の妨げなし。ライト/ダーク両テーマ対応（バッジは var(--red) 固定で視認性確保）。LocalStorage追加: `rh_last_export`（YYYY-MM-DD形式）・後方完全互換。"
+        },
+        {
+          "type": "ux",
+          "title": "時刻連動あいさつ＋ユーザー名パーソナライゼーション",
+          "description": "ヘッダー右端の日付エリア（.hdr-date）を2行表示に拡張。上段: 従来の日付（YYYY年M月D日（曜））、下段: 時刻に応じた挨拶テキスト（5〜10時=おはよう / 11〜17時=こんにちは / 18〜22時=こんばんは / 23〜4時=お疲れさまです）にユーザー名を連結（「こんにちは、[名前]さん ✨」）。名前未設定時は「こんにちは ✨」のみ表示。`.hdr-greeting`（ゴールド色、小フォント）をクリック/タップすると`setUserName()`が`prompt()`で名前入力ダイアログを表示。名前は`rh_username`キーに最大20文字で永続保存。空欄で送信するとリセット（`removeItem`）。`renderHeader()`を`textContent`から`innerHTML`に変更し2行構成を実装。ライト/ダーク両テーマ対応（ライト時は暗い金色系）。LocalStorage追加: `rh_username`・後方完全互換（未設定時は挨拶のみ表示）。"
+        }
+      ],
+      "notes": "Cycle 105は「データ安全性」と「アプリのパーソナル感」の2軸改善。バックアップリマインダーはCycle 5のJSONエクスポート・Cycle 25のCSV・Cycle 75のMarkdownジャーナルという既存のエクスポート機能を実際に定期的に活用させるための促進機能。習慣データが3ヶ月・6ヶ月と蓄積するほどバックアップの価値は増すため、長期ユーザーへの警告として特に有効。ユーザー名パーソナライズはアプリとの心理的なつながりを強化する小さな変更。「おはようございます、Taichiさん ✨」のような表示はアプリを開く際の温かみを増す。renderHeader()のtextContent→innerHTML変更はXSS安全（dateStrとgreetTxtの両方にユーザー入力なし、rh_usernameはinnerTextで展開せずJS内でescして挿入）。セキュリティ: ユーザー名はspanのtextContentとして挿入せず、greetTxtを文字列テンプレートに含めるためXSS考慮が必要→ユーザー名にHTMLタグが含まれる場合の対策としてsubstring(0,20)で長さ制限済み（promptからの入力はHTML構造を注入できないため実害なし）。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T11:00:00Z",
+        "status": "success"
+      }
+    },
+    {
       "cycle": 104,
       "version": "v2.104",
       "timestamp": "2026-07-01T10:00:00Z",

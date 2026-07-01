@@ -1612,6 +1612,15 @@
     .hd-health-bar-fill.ok{background:#f0a500}
     .hd-health-bar-fill.poor{background:#e05c6a}
     body.light .hd-health{background:#e8eaed}
+    /* Cycle 105: backup reminder badge on export button */
+    .export-btn-wrap{position:relative;display:inline-flex}
+    .backup-badge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;pointer-events:none;display:none}
+    .backup-badge.show{display:block}
+    /* Cycle 105: time-aware user greeting in header */
+    .hdr-greeting{font-size:10px;color:rgba(245,200,66,.75);text-align:right;cursor:pointer;letter-spacing:.03em;white-space:nowrap;transition:color .15s;-webkit-tap-highlight-color:transparent;display:block;margin-top:2px}
+    .hdr-greeting:hover{color:var(--gold)}
+    body.light .hdr-greeting{color:rgba(140,100,0,.7)}
+    body.light .hdr-greeting:hover{color:var(--gold-d)}
   </style>
 </head>
 <body>
@@ -1624,7 +1633,7 @@
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
   <button class="hdr-btn" onclick="shareDailyCard()" title="今日の達成をシェア（コピー）">📱</button>
-  <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
+  <span class="export-btn-wrap"><button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button><span class="backup-badge" id="backup-badge"></span></span>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="音量切替（🔇/🔈/🔊/📢）"></button>
@@ -2621,6 +2630,7 @@ function _exportJSON(){
   const a=document.createElement('a');
   a.href=url;a.download=`habit-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem('rh_last_export',today());checkExportReminder(); // Cycle 105
 }
 function _exportCSV(){
   if(!habits.length){alert('習慣データがありません。');return;}
@@ -2634,6 +2644,7 @@ function _exportCSV(){
   const a=document.createElement('a');
   a.href=url;a.download=`habit-data-${today()}.csv`;a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem('rh_last_export',today());checkExportReminder(); // Cycle 105
 }
 
 // cycle 75: Markdown journal export (past 30 days)
@@ -2672,6 +2683,7 @@ function _exportJournal(){
   const a=document.createElement('a');
   a.href=url;a.download=`habit-journal-${from}-to-${today()}.md`;a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem('rh_last_export',today());checkExportReminder(); // Cycle 105
 }
 
 // cycle 4: per-habit cumulative count
@@ -2767,7 +2779,35 @@ function onHabitInput(){
 // ── render ──
 function renderHeader(){
   const now=new Date();
-  document.getElementById('hdr-date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${DAYS[now.getDay()]}）`;
+  const dateStr=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${DAYS[now.getDay()]}）`;
+  // Cycle 105: time-aware greeting with optional user name
+  const h=now.getHours();
+  const greet=h>=5&&h<11?'おはよう':h>=11&&h<18?'こんにちは':h>=18&&h<23?'こんばんは':'お疲れさまです';
+  const uname=localStorage.getItem('rh_username')||'';
+  const greetTxt=uname?`${greet}、${uname}さん ✨`:`${greet} ✨`;
+  const el=document.getElementById('hdr-date');
+  if(el)el.innerHTML=`<span>${dateStr}</span><span class="hdr-greeting" onclick="setUserName()" title="名前を設定してパーソナライズ">${greetTxt}</span>`;
+}
+
+// ── Cycle 105: user name personalization ──
+function setUserName(){
+  const cur=localStorage.getItem('rh_username')||'';
+  const raw=prompt('あなたの名前を入力してください\n（空欄にするとリセットされます）',cur);
+  if(raw===null)return;
+  const n=raw.trim().substring(0,20);
+  if(n)localStorage.setItem('rh_username',n);
+  else localStorage.removeItem('rh_username');
+  renderHeader();
+}
+
+// ── Cycle 105: auto backup reminder badge ──
+function checkExportReminder(){
+  const last=localStorage.getItem('rh_last_export');
+  const badge=document.getElementById('backup-badge');
+  if(!badge)return;
+  if(!last){badge.classList.add('show');return;}
+  const days=Math.floor((Date.now()-new Date(last).getTime())/86400000);
+  badge.classList.toggle('show',days>=30);
 }
 
 // ── Cycle 91: stat count-up animation ──
@@ -5103,6 +5143,7 @@ initAccent();
 toggleTough(false); // Cycle 47: init tough buttons
 toggleImportant(false); // Cycle 70: init important buttons
 render();
+checkExportReminder(); // Cycle 105: show backup reminder badge if overdue
 _initChartTapTooltips(); // Cycle 99: tap-to-show tooltips on bar chart (mobile)
 // Cycle 74: restore hide-done button state
 document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);
