@@ -623,6 +623,22 @@
     .hmc-delta{font-size:11px;font-weight:700;color:var(--green);padding:2px 6px;background:rgba(76,175,125,.12);border-radius:6px;flex-shrink:0;font-variant-numeric:tabular-nums}
     .hmc-delta.neg{color:var(--red);background:rgba(232,53,74,.1)}
     body.light .hmc-box{border-color:rgba(0,0,0,.07)}
+    /* Cycle 101: per-habit weekly count target */
+    .wt-row{display:flex;align-items:center;gap:10px;margin:12px 0 4px;flex-wrap:wrap}
+    .wt-row-lbl{font-size:12px;color:var(--muted);flex-shrink:0;min-width:72px}
+    .wt-presets{display:flex;gap:5px;flex-wrap:wrap}
+    .wt-preset{padding:4px 10px;border-radius:16px;border:1px solid rgba(255,255,255,.12);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;background:none;font-family:"Zen Maru Gothic",sans-serif;transition:all .15s}
+    .wt-preset.sel{background:var(--sky);border-color:transparent;color:var(--dark)}
+    .wt-preset:hover:not(.sel){border-color:rgba(255,255,255,.3);color:var(--white)}
+    body.light .wt-preset{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.5)}
+    body.light .wt-preset.sel{color:#0d1117}
+    body.light .wt-preset:hover:not(.sel){border-color:rgba(0,0,0,.2);color:rgba(0,0,0,.7)}
+    .wt-badge{display:inline-flex;align-items:center;gap:2px;background:rgba(91,200,232,.08);border:1px solid rgba(91,200,232,.2);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;color:rgba(91,200,232,.65);flex-shrink:0;transition:all .2s}
+    .wt-badge.met{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.3);color:var(--green)}
+    .wt-badge.close{background:rgba(245,200,66,.08);border-color:rgba(245,200,66,.2);color:var(--gold)}
+    body.light .wt-badge{background:rgba(91,200,232,.07);border-color:rgba(91,200,232,.25);color:#1e8aab}
+    body.light .wt-badge.met{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.3);color:#2d7a55}
+    body.light .wt-badge.close{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.3);color:#9a7a00}
     .hd-stats{display:flex;gap:14px}
     .hd-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
     .hd-stat-val{font-family:"Dela Gothic One",sans-serif;font-size:13px;color:var(--gold);line-height:1}
@@ -1912,6 +1928,19 @@
       <button class="dur-preset" type="button" onclick="setDurPreset(60)">60m</button>
       <button class="dur-preset" type="button" onclick="setDurPreset(90)">90m</button>
     </div>
+    <!-- Cycle 101: per-habit weekly count target -->
+    <div class="wt-row">
+      <span class="wt-row-lbl">📆 週の目標</span>
+      <div class="wt-presets" id="wt-presets">
+        <button class="wt-preset sel" type="button" data-wt="0" onclick="selWeeklyTarget(0)">なし</button>
+        <button class="wt-preset" type="button" data-wt="1" onclick="selWeeklyTarget(1)">1回</button>
+        <button class="wt-preset" type="button" data-wt="2" onclick="selWeeklyTarget(2)">2回</button>
+        <button class="wt-preset" type="button" data-wt="3" onclick="selWeeklyTarget(3)">3回</button>
+        <button class="wt-preset" type="button" data-wt="4" onclick="selWeeklyTarget(4)">4回</button>
+        <button class="wt-preset" type="button" data-wt="5" onclick="selWeeklyTarget(5)">5回</button>
+        <button class="wt-preset" type="button" data-wt="7" onclick="selWeeklyTarget(7)">毎日</button>
+      </div>
+    </div>
     <div class="color-row">
       <span class="color-row-lbl">色</span>
       <div class="color-swatches">
@@ -2084,6 +2113,9 @@ const DAYS = ['日','月','火','水','木','金','土'];
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
 let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false;
+// Cycle 101: weekly count target modal state
+let _selWeeklyTarget=0;
+function selWeeklyTarget(n){_selWeeklyTarget=n;document.querySelectorAll('.wt-preset').forEach(b=>b.classList.toggle('sel',+b.dataset.wt===n));}
 // Cycle 74: hide-done toggle
 let _hideDone=localStorage.getItem('rh_hide_done')==='1';
 function toggleHideDone(){_hideDone=!_hideDone;localStorage.setItem('rh_hide_done',_hideDone?'1':'0');document.getElementById('hide-done-btn')?.classList.toggle('hide-done',_hideDone);renderList();}
@@ -3048,7 +3080,11 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 82: days-since-last-done badge for uncompleted habits
   const lastDoneAgo=!isDone&&!isPaused&&!isWeekendOff?habitLastDone(h.id):null;
   const lastDoneBadge=lastDoneAgo!==null?`<span class="last-done-badge">${lastDoneAgo}日前</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 101: weekly count target badge
+  const _wt=h.weeklyTarget||0;
+  let wtBadge='';
+  if(_wt>0){const _wNow=new Date();const _wDow=_wNow.getDay();const _monOff=_wDow===0?6:_wDow-1;let _wkCnt=0;for(let i=0;i<=_monOff;i++){if((completions[dateAgo(i)]||{})[h.id])_wkCnt++;}const _wMet=_wkCnt>=_wt;const _wClose=!_wMet&&_wt>1&&_wkCnt>=_wt-1;wtBadge=`<span class="wt-badge${_wMet?' met':_wClose?' close':''}" title="週の目標: ${_wt}回（今週${_wkCnt}/${_wt}達成）">今週${_wkCnt}/${_wt}</span>`;}
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3767,6 +3803,7 @@ function openModal(id=null){
     const tagEl=document.getElementById('tag-inp');if(tagEl)tagEl.value=h&&h.tags?h.tags.join(' '):'';
     toggleTough(!!(h&&h.tough));
     toggleImportant(!!(h&&h.important));
+    _selWeeklyTarget=h&&h.weeklyTarget>0?h.weeklyTarget:0;selWeeklyTarget(_selWeeklyTarget);
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -3784,6 +3821,7 @@ function openModal(id=null){
     const durElN=document.getElementById('dur-inp');if(durElN){durElN.value='';_syncDurPresets('');}
     toggleTough(false);
     toggleImportant(false);
+    _selWeeklyTarget=0;selWeeklyTarget(0);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -3819,7 +3857,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3834,6 +3872,7 @@ function saveHabit(){
     if(selImportant)nh.important=true;
     if(durSave>=1&&durSave<=180)nh.duration=durSave;
     if(tagsSave.length)nh.tags=tagsSave;
+    if(_selWeeklyTarget>0)nh.weeklyTarget=_selWeeklyTarget;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -4687,6 +4726,22 @@ function _habitBestStreak(id){
   }
   return best;
 }
+// Cycle 101: best week = max completions in any single Mon-Sun window
+function _habitBestWeek(id){
+  const weeks={};
+  for(const[ds,dc]of Object.entries(completions)){
+    if(!dc||!dc[id])continue;
+    const d=new Date(ds+'T00:00:00');
+    if(isNaN(d.getTime()))continue;
+    const dow=d.getDay();
+    const mon=new Date(d);
+    mon.setDate(d.getDate()-((dow+6)%7));
+    const wk=toStr(mon);
+    weeks[wk]=(weeks[wk]||0)+1;
+  }
+  const vals=Object.values(weeks);
+  return vals.length?Math.max(...vals):0;
+}
 function _habitDetailHtml(id){
   const isLight=document.body.classList.contains('light');
   const emptyBg=isLight?'rgba(0,0,0,.07)':'rgba(255,255,255,.08)';
@@ -4720,6 +4775,7 @@ function _habitDetailHtml(id){
   const total=habitTotalCount(id);
   const streak=habitStreak(id);
   const best=_habitBestStreak(id);
+  const bestWeek=_habitBestWeek(id);
   let cnt30=0;
   for(let i=0;i<30;i++)if((completions[dateAgo(i)]||{})[id])cnt30++;
   const rate30=Math.round(cnt30/30*100);
@@ -4758,7 +4814,8 @@ function _habitDetailHtml(id){
   // Cycle 87: habit health score
   const _hs=habitHealthScore(id);
   const healthSec=`<div class="hd-health"><div class="hd-health-row"><span class="hd-health-lbl">📊 継続スコア</span><span class="hd-health-score ${_hs.cls}">${_hs.score}<span style="font-size:11px;font-weight:600;opacity:.65">/100</span></span></div><div class="hd-health-bar"><div class="hd-health-bar-fill ${_hs.cls}" style="width:${_hs.score}%"></div></div></div>`;
-  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${healthSec}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
+  const bestWeekStat=bestWeek>0?`<div class="hd-stat"><div class="hd-stat-val">${bestWeek}</div><div class="hd-stat-lbl">週最高</div></div>`:'';
+  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${bestWeekStat}${avgTimeStat}</div>${healthSec}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();

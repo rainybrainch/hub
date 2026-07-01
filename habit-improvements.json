@@ -1864,6 +1864,29 @@
         "deployedAt": "2026-07-01T06:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 101,
+      "timestamp": "2026-07-01T07:00:00Z",
+      "version": "v2.101",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣ごとの週次達成目標バッジ（Per-Habit Weekly Count Target）",
+          "description": "習慣オブジェクトに `weeklyTarget`（0=なし、1〜7）フィールドを追加。習慣追加・編集モーダルの「⏱ 所要時間」プリセットの直下に「📆 週の目標」行を追加し、「なし/1回/2回/3回/4回/5回/毎日」の7ボタン選択UIを実装（`.wt-preset`/`.wt-presets`スタイル、水色ハイライト）。`selWeeklyTarget(n)`関数がボタン選択状態と`_selWeeklyTarget`変数を同期。`openModal(id)`の編集モードで既存の`weeklyTarget`値を復元、新規追加時はデフォルト「なし」にリセット。`saveHabit()`が`_selWeeklyTarget>0`の場合のみ`h.weeklyTarget`に保存し、0のときはプロパティを削除して後方互換性を維持。`_hCard()`内で当週月曜〜今日の完了数（`_wkCnt`）をカウントし、`weeklyTarget>0`の習慣に「今週X/N」バッジ（`.wt-badge`）を表示。達成時: 緑（`.met`）、1回未満で残り1回: ゴールド（`.wt-badge.close`）、それ以外: 水色。バッジは`${durBadge}`の直後に配置。LocalStorage変更なし（`weeklyTarget`は既存の`rh_habits`キー内に保存）・後方完全互換。"
+        },
+        {
+          "type": "ux",
+          "title": "習慣詳細パネルへの「週最高」記録統計追加（Best Week Count in Detail Panel）",
+          "description": "習慣詳細パネル（📊ボタン展開時）の統計行（`.hd-stats`）に「週最高」統計カードを追加。新関数 `_habitBestWeek(id)` が全`completions`データをスキャンし、Mon〜Sun区切りの1週間単位でその習慣が最も多く完了した週のカウント数を返す。実装: `completions[ds]`の各日付文字列を`new Date(ds+'T00:00:00')`でパース→曜日から月曜日付を算出（`(dow+6)%7`でオフセット）→`toStr(mon)`でキーを生成→週ごとのカウントをオブジェクトに集計→`Math.max(...vals)`。既存の4統計（累計達成・現連続・最高連続・30日達成率）の後ろ・平均完了時刻の前に「週最高」カードを挿入（`bestWeekStat`）。完了履歴がない（bestWeek===0）場合はカード非表示として画面のノイズを防止。追加のLocalStorageキーなし・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 101は「目標設定と記録の深化」をテーマに、従来の「毎日」前提だった習慣追跡に週単位の柔軟な目標管理を追加。週次達成目標バッジは、毎日やらなくてもよい習慣（週3回のジム、週2回の読書など）に対して明確な進捗可視化を提供し、カスタム曜日スケジュール（Cycle 98）の補完機能として機能する。週最高記録は既存の「最高連続（best streak）」と対をなす統計で、「一番調子の良かった週に何回達成できたか」という新たな自己ベスト指標を提供。いずれも追加のLocalStorageキーなし・既存データとの後方互換性を完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T07:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
