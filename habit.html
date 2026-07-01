@@ -231,6 +231,17 @@
     .snackbar-undo:hover{background:rgba(245,200,66,.15)}
     body.light .snackbar{background:#1a1a2e;border-color:rgba(255,255,255,.15)}
 
+    /* Cycle 95: undo completion snackbar */
+    .check-snackbar{position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(16px);background:#0e2d40;color:#fff;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:12px;z-index:601;opacity:0;transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 6px 28px rgba(0,0,0,.5);pointer-events:none;border:1px solid rgba(91,200,232,.3);max-width:calc(100vw - 32px)}
+    .check-snackbar.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .check-sb-msg{overflow:hidden;text-overflow:ellipsis;max-width:180px}
+    .check-sb-undo{background:none;border:none;color:var(--sky);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:900;cursor:pointer;padding:4px 10px;border-radius:8px;transition:background .15s;flex-shrink:0}
+    .check-sb-undo:hover{background:rgba(91,200,232,.15)}
+
+    /* Cycle 95: streak restart toast */
+    .restart-toast{position:fixed;top:120px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,#1565a8,#0d4a80);color:#e8f4ff;font-family:"Zen Maru Gothic",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(91,200,232,.45);z-index:449;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+    .restart-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
     /* Cycle 13: habit streak milestone toast */
     .milestone-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.55);z-index:450;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
     .milestone-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -1414,7 +1425,7 @@
 
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box{display:none!important}
@@ -1848,6 +1859,12 @@
 <div class="halfway-toast" id="halfway-toast"></div>
 <div class="comeback-toast" id="comeback-toast"></div>
 <div class="anniversary-toast" id="anniversary-toast"></div>
+<div class="restart-toast" id="restart-toast"></div>
+
+<div class="check-snackbar" id="check-snackbar">
+  <span class="check-sb-msg" id="check-sb-msg"></span>
+  <button class="check-sb-undo" id="check-sb-undo-btn">元に戻す</button>
+</div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -3321,6 +3338,10 @@ function toggle(id,evt){
     // Cycle 62: comeback toast for 3+ day gap
     const _gap=daysSinceLastCompletion(id);
     if(_gap!==null&&_gap>=3)showComebackToast(_hh,_gap);
+    // Cycle 95: streak restart toast (missed exactly 1 day, had strong streak before)
+    if(_hh&&_gap===2&&habitBestStreak(id)>=5)showRestartToast(_hh);
+    // Cycle 95: undo completion snackbar
+    if(_hh)showUndoCheckSnackbar(id,(_hh.emoji?_hh.emoji+' ':'')+_hh.name);
     // Cycle 63: detect level-up and show toast
     const _newTot=habitTotalCount(id);
     if(habitLevel(_newTot)>habitLevel(_newTot-1)){
@@ -5658,6 +5679,37 @@ function showComebackToast(h,daysSince){
   requestAnimationFrame(()=>el.classList.add('show'));
   clearTimeout(_comebackTimer);
   _comebackTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>{el.style.display='none';},400);},3000);
+}
+
+// ── Cycle 95: streak restart toast (gap=2 + best≥5) ──
+let _restartTimer=null;
+function showRestartToast(h){
+  const el=document.getElementById('restart-toast');if(!el)return;
+  const em=h.emoji?h.emoji+' ':'';
+  el.textContent=`🔄 ${em}${h.name} 再スタート！また続けよう`;
+  el.style.display='block';
+  requestAnimationFrame(()=>el.classList.add('show'));
+  clearTimeout(_restartTimer);
+  _restartTimer=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>{el.style.display='none';},400);},3000);
+}
+
+// ── Cycle 95: undo completion snackbar ──
+let _checkSbTimer=null,_checkSbId=null;
+function showUndoCheckSnackbar(id,name){
+  const sb=document.getElementById('check-snackbar');
+  const msg=document.getElementById('check-sb-msg');
+  const btn=document.getElementById('check-sb-undo-btn');
+  if(!sb||!msg||!btn)return;
+  clearTimeout(_checkSbTimer);
+  _checkSbId=id;
+  msg.textContent='✅ '+name;
+  btn.onclick=()=>{
+    if(_checkSbId){toggle(_checkSbId,null);_checkSbId=null;}
+    sb.classList.remove('show');
+  };
+  sb.style.display='flex';
+  requestAnimationFrame(()=>sb.classList.add('show'));
+  _checkSbTimer=setTimeout(()=>{sb.classList.remove('show');setTimeout(()=>{sb.style.display='none';_checkSbId=null;},300);},3500);
 }
 
 // ── Cycle 71: habit anniversary toast ──

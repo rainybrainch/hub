@@ -1728,6 +1728,28 @@
         "commit": "2aa27c3",
         "deployedAt": "2026-07-01T01:00:00Z"
       }
+    },
+    {
+      "cycle": 95,
+      "timestamp": "2026-07-01T02:00:00Z",
+      "version": "v2.95",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "ストリーク再スタートトースト（1日ブレーク後の励まし）",
+          "description": "習慣を1日だけ飛ばしてしまった翌日（gap=2）にチェックすると「🔄 再スタート！また続けよう」ブルーグラデーショントーストを3秒間表示。条件: daysSinceLastCompletion(id)===2 かつ habitBestStreak(id)>=5（過去に5日以上の連続記録を持つ習慣）。Cycle 62のcomebackToast（3日以上ブランクで励まし）とは独立した「1日ブレーク専用」トーストで、2つが同時に出ることはない。CSS: .restart-toast（スカイブルー系グラデーション、z-index 449、ポジションtop:120px）。showRestartToast(h)関数をshowComebackToast()の直後に追加。LocalStorage変更なし・完全後方互換。"
+        },
+        {
+          "type": "ux",
+          "title": "チェック取り消しスナックバー（Undo Completion）",
+          "description": "習慣をチェックした直後、画面下部に「✅ [習慣名] | 元に戻す」スナックバー（.check-snackbar）を3.5秒間表示。「元に戻す」を押すとtoggle(id, null)を呼んでチェックを即座に取り消す。既存のCycle 10の削除undo（#snackbar）とは別要素（#check-snackbar）としてz-index:601に独立配置。スタイルはスカイブルー系ボーダー+ダーク背景でチェック完了のポジティブフィードバックと視覚的に区別。showUndoCheckSnackbar(id,name)関数がtoggle()のif(!wasCompleted)ブロック末尾で呼ばれる。3.5秒後に自動非表示、undo後は即座に非表示。LocalStorage変更なし・完全後方互換。"
+        }
+      ],
+      "notes": "Cycle 95は「ミス後の心理的サポート」と「誤操作のリカバリー」の2軸改善。ストリーク再スタートトーストは1日ブランクで諦めがちなユーザーへの励まし（comeback toastは3日以上ブランク用なので1日ブランクをカバーする補完機能）。チェック取り消しスナックバーはモバイルで誤タップした際の救済措置で、既存の削除undoと同様の一貫したUXパターンを習慣チェックにも適用する。両機能ともLocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "status": "pending"
+      }
     }
   ]
 }
