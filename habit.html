@@ -969,6 +969,15 @@
     body.light .yfix-name{color:#1a1a2e}
     body.light .yfix-close{background:rgba(0,0,0,.06);color:#1a1a2e}
     body.light .yfix-close:hover{background:rgba(0,0,0,.1)}
+    /* Cycle 107: yfix date nav */
+    .yfix-date-nav{display:flex;gap:5px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none;padding-bottom:2px}
+    .yfix-date-nav::-webkit-scrollbar{display:none}
+    .yfix-day-btn{flex-shrink:0;padding:5px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .yfix-day-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .yfix-day-btn.active{background:var(--sky);border-color:transparent;color:var(--dark)}
+    body.light .yfix-day-btn{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.4)}
+    body.light .yfix-day-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .yfix-day-btn.active{color:#fff}
 
     /* Cycle 49: habit duplicate button */
     .copy-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
@@ -1898,6 +1907,7 @@
     <button class="sort-btn" id="hide-done-btn" onclick="toggleHideDone()" style="margin-left:8px" title="完了済みを非表示">✓ 非表示</button>
     <button class="sort-btn" id="roulette-btn" onclick="pickRandomHabit()" style="margin-left:8px" title="ランダムに未完了習慣を選ぶ（Rキー）">🎲</button>
     <button class="sort-btn" id="complete-all-btn" onclick="completeAllToday()" style="margin-left:8px" title="今日の未完了習慣を一括完了（Cycle 80）">✓ 全完了</button>
+    <button class="sort-btn" id="sort-prio-btn" onclick="toggleSortImportant()" style="margin-left:8px" title="重要フラグ付き習慣を先頭に表示">⭐ 重要優先</button>
     <span class="rem-mins" id="rem-mins" style="display:none;margin-left:8px"></span>
     <span class="done-mins" id="done-mins" style="display:none;margin-left:8px"></span>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
@@ -2126,6 +2136,7 @@
 <div class="yfix-ovl" id="yfix-ovl" onclick="if(event.target===this)closeYFix()">
   <div class="yfix-modal">
     <div class="yfix-ttl" id="yfix-ttl">📅 昨日の習慣</div>
+    <div class="yfix-date-nav" id="yfix-date-nav"></div>
     <div id="yfix-list"></div>
     <button class="yfix-close" onclick="closeYFix()">閉じる（ESCでも）</button>
   </div>
@@ -2181,7 +2192,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0;
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
 let _selSG=0; // Cycle 104: streak goal selection
@@ -3273,21 +3284,26 @@ function renderList(){
     if(sortUndone===1)ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       if(aOff!==bOff)return aOff?1:-1;
+      // Cycle 107: sortImportant overrides per-mode important sort
+      if(sortImportant&&a.important!==b.important)return a.important?-1:1;
       // Cycle 70: important undone habits float above non-important undone
       const aImp=!!a.important,bImp=!!b.important;
-      if(!dc[a.id]&&!dc[b.id]&&aImp!==bImp)return aImp?-1:1;
+      if(!sortImportant&&!dc[a.id]&&!dc[b.id]&&aImp!==bImp)return aImp?-1:1;
       return(dc[a.id]?1:0)-(dc[b.id]?1:0);
     });
     else if(sortUndone===2)ch=[...rawCh].sort((a,b)=>{
       // Cycle 93: struggling habits (low 7-day rate) to top
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       if(aOff!==bOff)return aOff?1:-1;
+      if(sortImportant&&a.important!==b.important)return a.important?-1:1;
       if(dc[a.id]||dc[b.id])return(dc[a.id]?1:0)-(dc[b.id]?1:0);
       return habit7Days(a.id).filter(Boolean).length-habit7Days(b.id).filter(Boolean).length;
     });
     else ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
-      return aOff&&!bOff?1:!aOff&&bOff?-1:0;
+      if(aOff!==bOff)return aOff&&!bOff?1:-1;
+      if(sortImportant&&a.important!==b.important)return a.important?-1:1;
+      return 0;
     });
     // Cycle 103: pinned habits always float to top within category
     ch=[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)];
@@ -3516,21 +3532,34 @@ function renderWeekMatrix(){
   tw.innerHTML=html;
 }
 
-// ── Cycle 48: yesterday fix modal ──
+// ── Cycle 48: yesterday fix modal / Cycle 107: past-7-day nav ──
 function openYFix(){
-  const yest=dateAgo(1);
-  const yestDate=daysAgo(1);
-  const ttl=document.getElementById('yfix-ttl');
-  if(ttl)ttl.textContent=`📅 昨日の習慣（${yestDate.getMonth()+1}/${yestDate.getDate()}）`;
-  _renderYFixList(yest);
+  _yfixOffset=0;
+  _renderYFixNav();
+  _renderYFixList(dateAgo(_yfixOffset+1));
   document.getElementById('yfix-ovl').classList.add('open');
 }
 function closeYFix(){document.getElementById('yfix-ovl')?.classList.remove('open');}
+function _renderYFixNav(){
+  const nav=document.getElementById('yfix-date-nav');
+  const ttl=document.getElementById('yfix-ttl');
+  if(nav)nav.innerHTML=Array.from({length:7},(_,i)=>{
+    const d=daysAgo(i+1);
+    const lbl=i===0?'昨日':`${d.getMonth()+1}/${d.getDate()}`;
+    return`<button class="yfix-day-btn${i===_yfixOffset?' active':''}" onclick="setYFixDay(${i})">${lbl}</button>`;
+  }).join('');
+  if(ttl){const d=daysAgo(_yfixOffset+1);ttl.textContent=`📅 ${_yfixOffset===0?'昨日':`${d.getMonth()+1}月${d.getDate()}日`}の習慣`;}
+}
+function setYFixDay(offset){
+  _yfixOffset=offset;
+  _renderYFixNav();
+  _renderYFixList(dateAgo(_yfixOffset+1));
+}
 function _renderYFixList(yest){
   const el=document.getElementById('yfix-list');
   if(!el)return;
   const active=habits.filter(h=>!h.paused&&isScheduled(h,yest));
-  if(!active.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:12px;font-size:13px">昨日は対象習慣がありません</div>';return;}
+  if(!active.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:12px;font-size:13px">対象習慣がありません</div>';return;}
   const dc=completions[yest]||{};
   el.innerHTML=active.map(h=>{
     const done=!!dc[h.id];
@@ -4085,6 +4114,14 @@ function toggleSortUndone(){
   sortUndone=(sortUndone+1)%3;
   const btn=document.getElementById('sort-undone-btn');
   if(btn){btn.classList.toggle('active',sortUndone>0);btn.textContent=sortUndone===2?'📉 要改善を上に':'⬆ 未完了を上に';}
+  renderList();
+}
+
+// ── Cycle 107: important-first sort ──
+function toggleSortImportant(){
+  sortImportant=!sortImportant;
+  const btn=document.getElementById('sort-prio-btn');
+  if(btn)btn.classList.toggle('active',sortImportant);
   renderList();
 }
 

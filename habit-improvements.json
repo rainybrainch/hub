@@ -2003,6 +2003,24 @@
         "deployedAt": "2026-07-01T10:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 107,
+      "timestamp": "2026-07-01T13:00:00Z",
+      "version": "v2.107",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "⭐ 重要優先ソートボタン（重要フラグ習慣を先頭へ）",
+          "description": "ソート行に「⭐ 重要優先」ボタン（id: sort-prio-btn）を追加。クリックすると sortImportant フラグをトグルし、全カテゴリーの習慣カードで .important フラグ付き習慣が最優先で上部に表示される。未完了優先(mode=1)・低達成率優先(mode=2)・デフォルト(mode=0) の全3ソートモードで一貫して動作。ボタンはアクティブ時に .sort-btn.active クラスで空色強調。既存の Cycle 70 の .important フラグデータと完全後方互換。"
+        },
+        {
+          "type": "enhancement",
+          "title": "昨日修正モーダルの過去7日間日付ナビ（YFix Date Nav）",
+          "description": "Cycle 48 の「昨」ボタン（openYFix）モーダルに過去7日分の日付ナビゲーションバーを追加。_yfixOffset グローバル変数でオフセットを管理し、「昨日」から最大7日前まで横スクロール可能なボタンナビ（.yfix-date-nav / .yfix-day-btn）を表示。選択した日付で _renderYFixList() を呼び出し、その日の習慣チェック状態を編集可能。setYFixDay(offset) でナビ切替、_renderYFixNav() でナビ再描画。モーダルタイトルも選択日に応じて動的更新。ライト/ダーク両テーマ対応CSS付き。"
+        }
+      ],
+      "details": "重要習慣の視認性と管理効率を向上する「重要優先ソート」と、昨日だけでなく過去7日間の習慣記録を遡って修正できるようにする「YFix日付ナビ」の2機能を追加。どちらも既存データと完全後方互換。"
     }
   ]
 }
