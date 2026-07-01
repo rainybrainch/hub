@@ -242,6 +242,19 @@
     .restart-toast{position:fixed;top:120px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,#1565a8,#0d4a80);color:#e8f4ff;font-family:"Zen Maru Gothic",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(91,200,232,.45);z-index:449;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
     .restart-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+    /* Cycle 96: today's achieved-duration badge */
+    .done-mins{font-size:11px;color:var(--green);background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.15);border-radius:8px;padding:3px 9px;flex-shrink:0;transition:opacity .2s}
+    body.light .done-mins{background:rgba(76,175,125,.06);border-color:rgba(76,175,125,.2)}
+    /* Cycle 96: weekly data insights widget */
+    .insight-box{background:var(--dark2);border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+    .insight-ttl{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+    .insight-item{font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.5}
+    .insight-item:last-child{border-bottom:none;padding-bottom:0}
+    .insight-val{font-weight:700;color:var(--white)}
+    body.light .insight-box{border-color:rgba(245,200,66,.2)}
+    body.light .insight-item{border-color:rgba(0,0,0,.05)}
+    body.light .insight-val{color:var(--dark)}
+
     /* Cycle 13: habit streak milestone toast */
     .milestone-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.55);z-index:450;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
     .milestone-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -1740,6 +1753,9 @@
   <!-- Cycle 94: tag achievement stats widget -->
   <div class="tag-stat-box" id="tag-stat-box" style="display:none"></div>
 
+  <!-- Cycle 96: weekly data insights widget -->
+  <div class="insight-box" id="insight-box" style="display:none"></div>
+
   <div class="tabs">
     <button class="tab active" data-cat="all" onclick="setFilter('all')">全て</button>
     <button class="tab" data-cat="学習" onclick="setFilter('学習')">📚 学習</button>
@@ -1758,6 +1774,7 @@
     <button class="sort-btn" id="roulette-btn" onclick="pickRandomHabit()" style="margin-left:8px" title="ランダムに未完了習慣を選ぶ（Rキー）">🎲</button>
     <button class="sort-btn" id="complete-all-btn" onclick="completeAllToday()" style="margin-left:8px" title="今日の未完了習慣を一括完了（Cycle 80）">✓ 全完了</button>
     <span class="rem-mins" id="rem-mins" style="display:none;margin-left:8px"></span>
+    <span class="done-mins" id="done-mins" style="display:none;margin-left:8px"></span>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
       <button class="font-size-btn" data-size="sm" onclick="_applyFontSize('sm',true)" title="小さいテキスト">A-</button>
       <button class="font-size-btn" data-size="normal" onclick="_applyFontSize('normal',true)" title="標準テキスト">A</button>
@@ -3300,6 +3317,8 @@ function render(){
   checkHabitAnniversaries(); // Cycle 71: anniversary toast
   updateCompleteAllBtn(); // Cycle 80: complete all remaining button
   renderRemMins(); // Cycle 94: remaining time badge
+  renderDoneMins(); // Cycle 96: today's achieved-duration badge
+  renderInsightBox(); // Cycle 96: weekly data insights widget
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -5154,6 +5173,44 @@ function renderRemMins(){
   else{el.style.display='none';}
 }
 
+// ── Cycle 96: today's achieved-duration badge ──
+function renderDoneMins(){
+  const el=document.getElementById('done-mins');if(!el)return;
+  const td=today();const dc=completions[td]||{};
+  const mins=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id)&&dc[h.id]&&h.duration>0).reduce((s,h)=>s+(h.duration||0),0);
+  if(mins>0){const str=mins>=60?`${Math.floor(mins/60)}h${mins%60>0?String(mins%60).padStart(2,'0')+'m':''}`:mins+'m';el.textContent=`✅ ${str}達成済`;el.style.display='';}
+  else{el.style.display='none';}
+}
+
+// ── Cycle 96: weekly data insights widget ──
+function renderInsightBox(){
+  const el=document.getElementById('insight-box');if(!el)return;
+  if(!isWidgetOn('w_insight')){el.style.display='none';return;}
+  const active=habits.filter(h=>!h.paused&&!h.archived);
+  if(!active.length){el.style.display='none';return;}
+  const insights=[];
+  const tw=Math.round(weekAvg(0)*100);const lw=Math.round(weekAvg(1)*100);
+  const diff=tw-lw;
+  const diffStr=diff>0?`<span class="insight-val" style="color:var(--green)">↑${diff}%上昇</span>`:diff<0?`<span class="insight-val" style="color:var(--red)">↓${Math.abs(diff)}%低下</span>`:`<span class="insight-val">同水準</span>`;
+  insights.push(`今週の達成率は<span class="insight-val">${tw}%</span>で、先週比${diffStr}。`);
+  const todayD=new Date();const todayDow=todayD.getDay();
+  const daysSinceMon=todayDow===0?6:todayDow-1;
+  const DAYS_JP=['日','月','火','水','木','金','土'];
+  let bestDow=-1,bestRate=-1;
+  for(let i=0;i<=daysSinceMon;i++){const ds=dateAgo(daysSinceMon-i);const r=dayRate(ds);const dow=new Date(ds+'T00:00:00').getDay();if(r>bestRate){bestRate=r;bestDow=dow;}}
+  if(bestDow>=0&&bestRate>0){insights.push(`今週最高達成率は<span class="insight-val">${DAYS_JP[bestDow]}曜日</span>（<span class="insight-val">${Math.round(bestRate*100)}%</span>）。`);}
+  let bestH=null,bestHRate=0;
+  for(const h of active){
+    let cnt=0,sch=0;
+    for(let i=1;i<=30;i++){const ds=dateAgo(i);if(!isScheduled(h,ds))continue;sch++;const dc=completions[ds]||{};if(dc[h.id])cnt++;}
+    if(sch>=7){const r=cnt/sch;if(r>bestHRate){bestHRate=r;bestH=h;}}
+  }
+  if(bestH){const em=bestH.emoji?bestH.emoji+' ':'';insights.push(`最も安定した習慣: <span class="insight-val">${esc(em+bestH.name)}</span>（30日達成率<span class="insight-val">${Math.round(bestHRate*100)}%</span>）。`);}
+  if(!insights.length){el.style.display='none';return;}
+  el.innerHTML=`<div class="insight-ttl">💡 今週のデータインサイト</div>${insights.map(s=>`<div class="insight-item">${s}</div>`).join('')}`;
+  el.style.display='';
+}
+
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
@@ -5182,6 +5239,7 @@ const WIDGET_DEFS=[
   {key:'w_cat_summary',name:'📊 カテゴリー別達成バー', id:'cat-summary-box'},
   {key:'w_radar',    name:'🕸️ カテゴリーバランス（レーダー）', id:'radar-box'},
   {key:'w_tagstat',  name:'🏷️ タグ別達成率（7日）',           id:'tag-stat-box'},
+  {key:'w_insight',  name:'💡 週間データインサイト',            id:'insight-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
