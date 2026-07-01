@@ -234,6 +234,9 @@
     /* Cycle 13: habit streak milestone toast */
     .milestone-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,var(--gold),var(--gold-d));color:var(--dark);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:10px 20px;border-radius:30px;box-shadow:0 8px 30px rgba(245,200,66,.55);z-index:450;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
     .milestone-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 69: first-check-of-day toast */
+    .first-check-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(76,175,125,.92),rgba(91,200,232,.8));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:9px 22px;border-radius:30px;box-shadow:0 8px 28px rgba(76,175,125,.45);z-index:445;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+    .first-check-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
     /* Cycle 13: compact view mode */
     body.compact .habit{padding:8px 12px}
@@ -637,6 +640,21 @@
     .pace-msg{font-size:11px;color:var(--muted);text-align:center;flex:1;padding:0 4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     body.light .pace-box{border-color:rgba(0,0,0,.08)}
     body.light .pace-sep{background:rgba(0,0,0,.08)}
+    /* Cycle 69: today's schedule widget */
+    .schedule-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    body.light .schedule-box{border-color:rgba(0,0,0,.08)}
+    .schedule-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .schedule-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .schedule-item:last-child{border-bottom:none}
+    body.light .schedule-item{border-bottom-color:rgba(0,0,0,.06)}
+    .sch-time{font-size:12px;font-weight:700;color:var(--sky);min-width:40px;flex-shrink:0}
+    .sch-time.past{color:var(--muted)}
+    .sch-time.soon{color:var(--gold);animation:schTimePulse 2s ease infinite}
+    @keyframes schTimePulse{0%,100%{opacity:1}50%{opacity:.6}}
+    .sch-name{flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sch-done{color:var(--green);font-size:14px;font-weight:700;flex-shrink:0}
+    .sch-pending{color:rgba(255,255,255,.2);font-size:14px;flex-shrink:0}
+    body.light .sch-pending{color:rgba(0,0,0,.2)}
     /* Cycle 36: ranking view tabs */
     .ranking-view-tabs{display:flex;gap:4px}
     .ranking-view-tab{padding:3px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -1105,7 +1123,7 @@
     body.focus-mode .challenge-box,body.focus-mode .motto-box,body.focus-mode .ach-box,body.focus-mode .ms-widget,
     body.focus-mode .intention-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,
     body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .pace-box,
-    body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row{display:none!important}
+    body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row,body.focus-mode .schedule-box{display:none!important}
     .hdr-btn.focus-on{color:var(--sky)!important}
     /* Cycle 63: keyboard arrow navigation focus ring */
     .habit.kfocus{outline:2px solid var(--sky);outline-offset:2px;box-shadow:0 0 0 4px rgba(91,200,232,.15)!important}
@@ -1200,7 +1218,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn{display:none!important}
@@ -1235,6 +1253,8 @@
 </header>
 <div class="combo-toast" id="combo-toast"></div>
 <div class="next-habit-toast" id="next-habit-toast"></div>
+<!-- Cycle 69: first check of day toast -->
+<div class="first-check-toast" id="first-check-toast">🌱 今日のスタート！</div>
 <!-- Cycle 53: habit focus timer bar -->
 <div class="timer-bar" id="timer-bar">
   <span class="timer-habit-name" id="timer-habit-name"></span>
@@ -1272,6 +1292,9 @@
 
   <!-- Cycle 36: today's pace indicator -->
   <div class="pace-box" id="pace-box" style="display:none"></div>
+
+  <!-- Cycle 69: today's time schedule widget -->
+  <div class="schedule-box" id="schedule-box" style="display:none"></div>
 
   <div class="chart-box">
     <div class="chart-hdr">
@@ -2601,7 +2624,7 @@ function renderCatPills(){
   el.style.display=html?'flex':'none';
 }
 
-/ ── Cycle 36: today's pace indicator ──
+// ── Cycle 36: today's pace indicator ──
 function renderPaceBox(){
   const el=document.getElementById('pace-box');
   if(!el||!habits.length){if(el)el.style.display='none';return;}
@@ -2629,6 +2652,33 @@ function renderPaceBox(){
   if(remMins>0){const ed=new Date(now.getTime()+remMins*60000);etaHtml=`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--sky);font-size:14px">${String(ed.getHours()).padStart(2,'0')}:${String(ed.getMinutes()).padStart(2,'0')}</span><span class="pace-lbl">完了予測</span></div>`;}
   const estHtml=remEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--muted)">${remEstStr}</span><span class="pace-lbl">残り推定</span></div>${etaHtml}`:'';
   el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${estHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
+}
+
+// ── Cycle 69: today's time schedule widget ──
+function renderScheduleBox(){
+  const el=document.getElementById('schedule-box');
+  if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  const scheduled=habits.filter(h=>h.recTime&&!h.archived&&!h.paused&&isScheduled(h,td));
+  if(!scheduled.length){el.style.display='none';return;}
+  el.style.display='';
+  const now=new Date();
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const sorted=[...scheduled].sort((a,b)=>{
+    const[ah,am]=a.recTime.split(':').map(Number);
+    const[bh,bm]=b.recTime.split(':').map(Number);
+    return(ah*60+am)-(bh*60+bm);
+  });
+  const rows=sorted.map(h=>{
+    const[rh,rm]=h.recTime.split(':').map(Number);
+    const recMin=rh*60+rm;
+    const diff=recMin-nowMin;
+    const done=!!dc[h.id];
+    const timeClass=done?'past':diff<-30?'past':diff<=30?'soon':'';
+    const nm=esc((h.emoji?h.emoji+' ':'')+h.name);
+    return`<div class="schedule-item"><span class="sch-time ${timeClass}">${h.recTime}</span><span class="sch-name">${nm}</span><span class="${done?'sch-done':'sch-pending'}">${done?'✓':'○'}</span></div>`;
+  }).join('');
+  el.innerHTML=`<div class="schedule-ttl">⏰ 今日のスケジュール</div>${rows}`;
 }
 
 // ── Cycle 48: weekly habit matrix widget ──
@@ -2729,6 +2779,7 @@ function render(){
   renderStats();
   processShield(); // Cycle 47: check shield state
   renderPaceBox();
+  renderScheduleBox(); // Cycle 69
   renderChart();
   renderWeekComparison();
   renderWeekTimeBadge();
@@ -2785,6 +2836,9 @@ function toggle(id,evt){
   // cycle 9: store ISO timestamp on completion, null on undo
   completions[td][id]=wasCompleted?null:new Date().toISOString();
   if(!wasCompleted){
+    // Cycle 69: first check of the day toast
+    const prevDone=habits.filter(h=>h.id!==id&&!!(completions[td]||{})[h.id]).length;
+    if(prevDone===0)showFirstCheckToast();
     playTick();vib(50);checkHabitMilestone(id);triggerCombo();
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
@@ -2801,6 +2855,18 @@ function toggle(id,evt){
   }else if(todayRate()<100){
     celebrated=false;
   }
+}
+
+// ── Cycle 69: first check of the day celebration ──
+let _firstCheckShown={};
+function showFirstCheckToast(){
+  const td=today();
+  if(_firstCheckShown[td])return;
+  _firstCheckShown[td]=true;
+  const el=document.getElementById('first-check-toast');
+  if(!el)return;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
 }
 
 // ── Cycle 60: Next habit suggestion toast ──
@@ -4061,6 +4127,7 @@ function scrollToHabit(id){
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_pace',   name:'⏱ ペース指標',             id:'pace-box'},
+  {key:'w_schedule',name:'⏰ 今日のスケジュール',    id:'schedule-box'},
   {key:'w_chart',  name:'📊 週間/月間チャート',      id:'chart-box'},
   {key:'w_weekly', name:'📓 週次振り返りメモ',        id:'weekly-box'},
   {key:'w_wm',     name:'📋 今週のグリッド',          id:'wm-box'},
