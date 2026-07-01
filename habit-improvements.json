@@ -1889,6 +1889,29 @@
       }
     },
     {
+      "cycle": 103,
+      "timestamp": "2026-07-01T09:00:00Z",
+      "version": "v2.103",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "ページトップ進捗バー（ヘッダー下端の薄い進捗ストリップ）",
+          "description": "スティッキーヘッダー（.hdr）の下端に3px高の進捗バー（.hdr-prog-strip / #hdr-prog-strip）を追加。updateHdrProgStrip()関数が今日のアクティブ習慣（非アーカイブ・非停止・スケジュール済み・非スキップ）の完了率を計算し、width:0〜100%でバーを描画。カラーコード: 達成率1〜49%=スカイブルー（--sky）、50〜99%=ゴールド（--gold）、100%=グリーン（--green）。デイオフ時は100%グリーン表示。CSS transition: width 0.7s cubic-bezier + background 0.5sで習慣チェックのたびに滑らかにアニメーション。.hdrはposition:stickyのためchildren with position:absoluteはヘッダーを基準に配置され、overflowの変更なしで実装可能。render()の末尾からupdateHdrProgStrip()を呼び出し。印刷時はヘッダー非表示のため自動的に除外される。pointer-events:noneでクリックインターセプトなし。LocalStorage変更なし・後方完全互換。"
+        },
+        {
+          "type": "feature",
+          "title": "習慣ピン留め機能（カテゴリー先頭への固定）",
+          "description": "各習慣カードに📌ピン留めボタン（.pin-btn）を追加。クリックでtogglePin(id)が呼び出され、h.pinnedフラグをtrue/undefinedでトグル（falseではなくdelete演算子でプロパティを除去して後方互換を維持）。pinned=trueの習慣はrenderList()内で各カテゴリーの表示順の最先頭に強制配置（既存のsortUndone 0/1/2全モードに対して、sort後にch=[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)]で安定ソート）。ピン留め中の習慣カードにはゴールドのインセットシャドウ（.habit.pinned）と📌ピンバッジ（.pin-badge）が表示される。ピン留めボタンはアクティブ時（.pin-btn.on）にゴールドカラーでハイライト。コンパクトモード時はボタンとバッジを非表示。印刷時は非表示（.pin-btnを@media printの非表示リストに追加）。ライトテーマ対応済み。localStorageはrh_habitsキー内のh.pinnedフィールドとして保存。後方完全互換（pinned未設定=false扱い）。"
+        }
+      ],
+      "notes": "Cycle 103は「進捗の常時視認性」と「習慣の優先度固定」の2軸改善。ヘッダー進捗バーはスクロールしても常に見えるヘッダーを活用して今日の達成状況を一目で伝える。既存のhdr-progressバッジ（Cycle 38）はテキスト数値（N/M）だが、進捗バーはビジュアル幅で達成率を直感的に表現し、色の変化（青→金→緑）で段階的な達成感を演出する。習慣ピン留めは「重要」フラグ（Cycle 70、ソートモード1時のみ先頭）・フォーカス（Cycle 19、別セクション）とは異なり、通常カテゴリー内で常に先頭に表示されるシンプルな固定機能。「毎朝必ずやりたい習慣を同じ位置に固定したい」というニーズに応える。両機能ともLocalStorage後方互換を完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-01T09:00:00Z",
+        "status": "success"
+      }
+    },
+    {
       "cycle": 102,
       "timestamp": "2026-07-01T08:00:00Z",
       "version": "v2.102",

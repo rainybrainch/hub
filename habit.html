@@ -648,6 +648,17 @@
     .habit-pr-toast{position:fixed;top:54px;left:50%;transform:translateX(-50%) translateY(-14px);background:linear-gradient(135deg,rgba(76,175,125,.92),rgba(34,110,65,.96));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:8px 18px;border-radius:28px;box-shadow:0 6px 24px rgba(76,175,125,.45);z-index:454;opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
     .habit-pr-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+    /* Cycle 103: header progress strip */
+    .hdr-prog-strip{position:absolute;bottom:0;left:0;height:3px;width:0%;transition:width .7s cubic-bezier(.34,1.56,.64,1),background .5s;pointer-events:none;z-index:1}
+    /* Cycle 103: pin habit button & badge */
+    .pin-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:12px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .pin-btn:hover{color:var(--gold);background:rgba(245,200,66,.1)}
+    .pin-btn.on{color:var(--gold)}
+    .pin-badge{display:inline-flex;align-items:center;font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0;line-height:1.5}
+    .habit.pinned{box-shadow:0 0 0 1px rgba(245,200,66,.18) inset}
+    body.light .pin-btn{color:rgba(0,0,0,.15)}
+    body.compact .pin-btn,body.compact .pin-badge{display:none}
+
     /* Cycle 32: scroll-to-top button */
     .scroll-top{position:fixed;bottom:90px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--dark2);border:1px solid rgba(255,255,255,.12);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:190;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s,background .15s,border-color .15s;pointer-events:none;line-height:1}
     .scroll-top.show{opacity:1;transform:translateY(0);pointer-events:auto}
@@ -1503,7 +1514,7 @@
 
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box{display:none!important}
@@ -1613,6 +1624,7 @@
   <button class="hdr-btn" onclick="openDiaryView()" title="過去7日間のダイアリーを表示">📖</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
+  <div class="hdr-prog-strip" id="hdr-prog-strip"></div>
 </header>
 <div class="combo-toast" id="combo-toast"></div>
 <div class="next-habit-toast" id="next-habit-toast"></div>
@@ -2390,6 +2402,13 @@ function toggleSkip(id){
   celebrated=false;render();
 }
 
+// ── Cycle 103: pin habit to top of category ──
+function togglePin(id){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  if(h.pinned)delete h.pinned;else h.pinned=true;
+  saveHabits();render();
+}
+
 // ── Cycle 46: counter habit helpers ──
 function _ctrs(ds){return _readDayJSON(CTK+(ds||today()),{});}
 function getHabitCount(id){return _ctrs()[id]||0;}
@@ -3089,7 +3108,11 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const _wt=h.weeklyTarget||0;
   let wtBadge='';
   if(_wt>0){const _wNow=new Date();const _wDow=_wNow.getDay();const _monOff=_wDow===0?6:_wDow-1;let _wkCnt=0;for(let i=0;i<=_monOff;i++){if((completions[dateAgo(i)]||{})[h.id])_wkCnt++;}const _wMet=_wkCnt>=_wt;const _wClose=!_wMet&&_wt>1&&_wkCnt>=_wt-1;wtBadge=`<span class="wt-badge${_wMet?' met':_wClose?' close':''}" title="週の目標: ${_wt}回（今週${_wkCnt}/${_wt}達成）">今週${_wkCnt}/${_wt}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${goldenBadge}${impBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 103: pin habit to top of category
+  const pinBtn=`<button class="pin-btn${h.pinned?' on':''}" onclick="event.stopPropagation();togglePin('${h.id}')" title="${h.pinned?'ピン留めを解除':'カテゴリー先頭に固定'}" aria-label="ピン留め">📌</button>`;
+  const pinBadge=h.pinned?'<span class="pin-badge">📌</span>':'';
+  const pinnedClass=h.pinned?' pinned':'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3173,6 +3196,8 @@ function renderList(){
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       return aOff&&!bOff?1:!aOff&&bOff?-1:0;
     });
+    // Cycle 103: pinned habits always float to top within category
+    ch=[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)];
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
     const isClosed=!!catCol[cat];
@@ -3477,6 +3502,7 @@ function render(){
   renderRemMins(); // Cycle 94: remaining time badge
   renderDoneMins(); // Cycle 96: today's achieved-duration badge
   renderInsightBox(); // Cycle 96: weekly data insights widget
+  updateHdrProgStrip(); // Cycle 103: header progress strip
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -6184,6 +6210,19 @@ function updateHabitHint(){
   const d=new Date();
   box.textContent='💡 '+hints[(d.getDate()+d.getHours())%hints.length];
   box.className='habit-hint show';
+}
+
+// ── Cycle 103: header progress strip ──
+function updateHdrProgStrip(){
+  const el=document.getElementById('hdr-prog-strip');if(!el)return;
+  const td=today(),dc=completions[td]||{};
+  if(isDayOff(td)){el.style.width='100%';el.style.background='var(--green)';return;}
+  const acts=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id));
+  if(!acts.length){el.style.width='0%';return;}
+  const done=acts.filter(h=>!!dc[h.id]).length;
+  const pct=Math.round(done/acts.length*100);
+  el.style.width=pct+'%';
+  el.style.background=pct>=100?'var(--green)':pct>=50?'var(--gold)':'var(--sky)';
 }
 
 // ── Cycle 98: monthly summary toast ──
