@@ -1249,6 +1249,29 @@
         "deployedAt": "2026-07-02T03:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 75,
+      "version": "v2.75",
+      "timestamp": "2026-07-02T04:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "過去7日間修正モーダル拡張",
+          "description": "Cycle 48で追加した「昨日の習慣修正」モーダルを過去7日間対応に拡張。モーダル上部に日付セレクターボタン行（.yfix-dates）を追加し、昨日〜6日前まで選択可能に。「昨日」「M/D(曜)」形式のラベルで各日を表示。選択日をアクティブハイライト（var(--sky)背景）。_yfixDate変数で選択状態を管理し、selectYFixDate()で動的切替。_renderYFixList()は選択日の習慣スケジュールと完了状態を反映。h.archivedチェックを追加してアーカイブ済み習慣を除外。ヘッダーボタンtitle・キーボードショートカット説明も「過去7日間」に更新。LocalStorage構造変更なし・後方互換。"
+        },
+        {
+          "type": "feature",
+          "title": "Oceanカラーテーマ追加（3テーマサイクル）",
+          "description": "既存のDark/Lightの2テーマに加え、Oceanテーマ（深海ネイビー＋ティール）を追加。テーマ切替がDark→Light→Ocean→Darkの3サイクルに。body.theme-oceanクラスでCSS Custom Propertiesを上書き（--sky:#38B9FF, --gold:#2DCCB0, --dark:#06101A等）。ヘッダー・FAB・モーダルOKボタン・ストリークバッジ等にOcean固有のスタイルを適用。テーマボタン絵文字がOcean時は🌊に変化。initTheme()でrh_theme='ocean'を復元対応。syncThemeColor()でPWAメタテーマカラーを#06101Aに設定。"
+        }
+      ],
+      "notes": "Cycle 75は「既存機能の実用性向上」と「視覚テーマの拡充」の2軸改善。過去7日間修正はCycle 48の昨日修正を7倍に強化し、「2日前に記録し忘れた」ようなケースに対応。Oceanテーマはダークとライトの中間的な存在として、深夜・低輝度環境でも目に優しいティールカラーアクセントを提供。両改善ともLocalStorage構造変更なし・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T04:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
