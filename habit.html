@@ -1298,6 +1298,38 @@
     /* Cycle 71: login streak badge */
     .login-streak-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(155,109,214,.15),rgba(155,109,214,.08));border:1px solid rgba(155,109,214,.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#b48fdc;flex-shrink:0}
     body.light .login-streak-badge{background:linear-gradient(135deg,rgba(155,109,214,.12),rgba(155,109,214,.06));border-color:rgba(155,109,214,.35);color:#7c52b8}
+    /* Cycle 74: counter habit progress bar */
+    .habit-counter{flex-wrap:wrap}
+    .ctr-prog{width:100%;height:2px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:3px;flex-shrink:0}
+    .ctr-prog-fill{height:100%;border-radius:2px;transition:width .45s cubic-bezier(.34,1.56,.64,1)}
+    body.light .ctr-prog{background:rgba(0,0,0,.09)}
+    /* Cycle 74: daily journal modal */
+    .journal-ovl{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:720;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .journal-ovl.open{opacity:1;pointer-events:auto}
+    .journal-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:24px 24px 0 0;padding:20px 20px 36px;width:100%;max-width:520px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-height:80vh;overflow-y:auto}
+    .journal-ovl.open .journal-modal{transform:translateY(0)}
+    .journal-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 16px}
+    .journal-ttl{font-family:"Dela Gothic One",sans-serif;font-size:17px;margin-bottom:16px}
+    .journal-section{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .journal-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .journal-sec-lbl{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+    .journal-text{font-size:13px;line-height:1.65;color:var(--white)}
+    .journal-mood-em{font-size:28px;line-height:1}
+    .journal-score-val{font-family:"Dela Gothic One",sans-serif;font-size:26px;color:var(--gold)}
+    .journal-habit-row{display:flex;align-items:flex-start;gap:8px;padding:3px 0;font-size:12px}
+    .journal-chk{flex-shrink:0;width:16px;text-align:center;font-size:13px;margin-top:1px}
+    .journal-habit-info{flex:1;min-width:0}
+    .journal-habit-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .journal-note-txt{font-size:10px;color:var(--sky);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .journal-empty{font-size:12px;color:var(--muted);font-style:italic}
+    .journal-close{width:100%;padding:13px;border-radius:13px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:14px}
+    .journal-close:hover{background:rgba(255,255,255,.12)}
+    body.light .journal-modal{border-color:rgba(0,0,0,.1)}
+    body.light .journal-section{border-bottom-color:rgba(0,0,0,.06)}
+    body.light .journal-text{color:#1a1a2e}
+    body.light .journal-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .journal-close:hover{background:rgba(0,0,0,.1)}
+    body.light .journal-handle{background:rgba(0,0,0,.12)}
   </style>
 </head>
 <body>
@@ -1322,6 +1354,7 @@
   <button class="hdr-btn" onclick="openWidgetSettings()" title="ウィジェット表示設定（各セクションの表示/非表示）">⚙️</button>
   <button class="hdr-btn" id="focus-mode-btn" onclick="toggleFocusMode()" title="フォーカスモード（習慣リストのみ表示・Qキー）">👁</button>
   <button class="hdr-btn" onclick="openYFix()" title="昨日の習慣記録を修正（Yキー）">昨</button>
+  <button class="hdr-btn" onclick="openJournal()" title="今日のジャーナル（意図・気分・達成メモを一覧）">📖</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -1687,6 +1720,16 @@
 </div>
 
 <!-- Cycle 48: yesterday fix modal -->
+<!-- Cycle 74: daily journal modal -->
+<div class="journal-ovl" id="journal-ovl" onclick="if(event.target===this)closeJournal()">
+  <div class="journal-modal">
+    <div class="journal-handle"></div>
+    <div class="journal-ttl">📖 今日のジャーナル</div>
+    <div id="journal-content"></div>
+    <button class="journal-close" onclick="closeJournal()">閉じる（ESCでも）</button>
+  </div>
+</div>
+
 <div class="yfix-ovl" id="yfix-ovl" onclick="if(event.target===this)closeYFix()">
   <div class="yfix-modal">
     <div class="yfix-ttl" id="yfix-ttl">📅 昨日の習慣</div>
@@ -2551,8 +2594,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 54: archive button
   const archiveBtnHtml=`<button class="archive-btn" onclick="event.stopPropagation();archiveHabit('${h.id}')" title="アーカイブ（リストから非表示、データは保持）" aria-label="アーカイブ">📦</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
+  // Cycle 74: counter progress bar
+  const ctrPct=tc>0?Math.min(100,Math.round(ctrCount/tc*100)):0;
   const chkHtml=isCounter
-    ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button></div>`
+    ?`<div class="habit-counter"><button class="ctr-btn dec" onclick="event.stopPropagation();decrCtr('${h.id}')" aria-label="減らす"${ctrCount<=0?' disabled':''}>−</button><span class="ctr-val${isDone?' done':''}">${ctrCount}/${tc}</span><button class="ctr-btn inc" onclick="event.stopPropagation();incrCtr('${h.id}',event)" aria-label="増やす"${isDone?' disabled':''}>+</button><div class="ctr-prog"><div class="ctr-prog-fill" style="width:${ctrPct}%;background:${isDone?'var(--green)':'var(--gold)'}"></div></div></div>`
     :`<div class="chk"><span class="chk-ico">✓</span></div>`;
   // Cycle 60: night-risk pulse for habits with streak ≥ 3 after 22:00
   const _hr=new Date().getHours();
@@ -2904,6 +2949,34 @@ function openYFix(){
   document.getElementById('yfix-ovl').classList.add('open');
 }
 function closeYFix(){document.getElementById('yfix-ovl')?.classList.remove('open');}
+// Cycle 74: daily journal modal
+function openJournal(){
+  const td=today();
+  const mood=getMood(td);
+  const moodLabels=['','😞','😕','😐','😊','😄'];
+  const intent=localStorage.getItem('rh_intent_'+td)||'';
+  const hl=localStorage.getItem('rh_hl_'+td)||'';
+  const score=parseInt(localStorage.getItem('rh_daily_score_'+td)||'0');
+  const dc=completions[td]||{};
+  const active=habits.filter(h=>!h.paused&&isScheduled(h,td));
+  const done=active.filter(h=>dc[h.id]);
+  const undone=active.filter(h=>!dc[h.id]);
+  let html='';
+  if(mood){html+=`<div class="journal-section"><div class="journal-sec-lbl">気分</div><div class="journal-mood-em">${moodLabels[mood]}</div></div>`;}
+  if(intent){html+=`<div class="journal-section"><div class="journal-sec-lbl">今日の意図</div><div class="journal-text">${esc(intent)}</div></div>`;}
+  if(score){html+=`<div class="journal-section"><div class="journal-sec-lbl">スコア</div><div class="journal-score-val">+${score}</div></div>`;}
+  if(active.length){
+    html+=`<div class="journal-section"><div class="journal-sec-lbl">今日の習慣（${done.length}/${active.length}）</div>`;
+    done.forEach(h=>{const n=getCompletionNote(h.id);html+=`<div class="journal-habit-row"><div class="journal-chk">✓</div><div class="journal-habit-info"><div class="journal-habit-name">${esc(h.name)}</div>${n?`<div class="journal-note-txt">${esc(n)}</div>`:''}</div></div>`;});
+    undone.forEach(h=>{html+=`<div class="journal-habit-row"><div class="journal-chk" style="color:var(--muted)">○</div><div class="journal-habit-info"><div class="journal-habit-name" style="color:var(--muted)">${esc(h.name)}</div></div></div>`;});
+    html+='</div>';
+  }
+  if(hl){html+=`<div class="journal-section"><div class="journal-sec-lbl">今日のハイライト</div><div class="journal-text">${esc(hl)}</div></div>`;}
+  if(!html){html=`<div class="journal-empty">まだ記録がありません。気分・意図・ハイライトを記録してみましょう！</div>`;}
+  document.getElementById('journal-content').innerHTML=html;
+  document.getElementById('journal-ovl').classList.add('open');
+}
+function closeJournal(){document.getElementById('journal-ovl')?.classList.remove('open');}
 function _renderYFixList(yest){
   const el=document.getElementById('yfix-list');
   if(!el)return;
@@ -4145,6 +4218,7 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('wset-ovl')?.classList.contains('open')){closeWidgetSettings();return;}
     if(document.getElementById('yfix-ovl')?.classList.contains('open')){closeYFix();return;}
     if(document.getElementById('stats-ovl')?.classList.contains('open')){closeStatsModal();return;}
+    if(document.getElementById('journal-ovl')?.classList.contains('open')){closeJournal();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
     else if(_kfocusId){_setKfocus(-1);}
