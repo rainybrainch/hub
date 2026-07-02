@@ -2269,6 +2269,29 @@
         "deployedAt": "2026-07-02T04:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 119,
+      "version": "v2.119",
+      "timestamp": "2026-07-02T05:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "月初振り返りカード（先月グレード・達成率・ベスト習慣）を追加",
+          "description": "毎月1〜5日の間、先月の達成状況をカードUIで表示するmonthRecapCard機能を実装。CSS:.mrc-box（グラデーションボーダー・fadeInUpアニメーション付き）。HTML:#month-recap（.wrap内の最上部に配置）。JS:renderMonthRecap()は_mrcCalcLastMonth()で先月全日分のdayRate()・isScheduled()を集計し、平均達成率からグレード（S=≥95%🏆/A=≥80%🌟/B=≥65%👍/C=≥50%📈/D=≥35%💪/F=🔥）を算出して表示。最も達成率の高い習慣名も「🏅ベスト習慣」として表示。dismissMonthRecap()でLocalStorageキー'rh_mrc_YYYY-MM'に1を記録し翌月まで非表示。Cycle 98のmonthlyサマリートースト（5秒で消える）とは異なり、ユーザーが明示的に閉じるまで表示し続けるUI。Cycle 108のMWB（今月目標設定）とは異なり先月の実績を振り返る機能。"
+        },
+        {
+          "type": "feature",
+          "title": "月初バナー（MWB）に今月達成率プログレスバーを追加",
+          "description": "Cycle 108の月初ウェルカムバナー（.mwb）下部に、今月の日次達成率の進捗バーを追加。renderMWBProgress()が月初から昨日までの各日のdayRate()平均を算出し、設定済み目標値（rh_mg_YYYY-MM）と対比表示。目標未達成時はskybluebarsで表示、達成済みは緑色に切替。進捗バー（.mwb-prog-bar + .mwb-prog-fill）と「今月N日時点: 実績% / 目標%」テキストをフレックスレイアウトで表示。目標未設定時・データ不足時は非表示。setMWBGoal()呼び出し時にも即時更新。"
+        }
+      ],
+      "notes": "Cycle 119は「月の振り返り体験の強化」と「目標と進捗の可視化」の2軸改善。月初振り返りカードはCycle 98の5秒トーストの課題（すぐ消えて見逃す）を解決し、1〜5日間表示し続けることで先月のパフォーマンスをしっかり振り返れる。Cycle 108のMWBとは補完関係にあり、月初めに「先月振り返り（mrc-box）→今月目標設定（mwb）→目標に対する現状確認（mwb-prog）」の流れが完成する。LocalStorage新規キー: rh_mrc_YYYY-MM（再表示抑制フラグ）。後方互換性完全維持。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T05:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

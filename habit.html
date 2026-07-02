@@ -1613,7 +1613,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.sg-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box,.mrc-box,.mwb{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
@@ -1742,6 +1742,36 @@
     .mth-prog{display:inline-flex;align-items:center;gap:2px;background:rgba(91,200,232,.08);border:1px solid rgba(91,200,232,.18);border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;color:rgba(91,200,232,.75);margin-left:4px;flex-shrink:0}
     body.light .mth-prog{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.25)}
     body.compact .mth-prog{display:none}
+    /* Cycle 119: monthly recap card */
+    .mrc-box{background:linear-gradient(135deg,rgba(245,200,66,.07),rgba(76,175,125,.05));border:1px solid rgba(245,200,66,.18);border-radius:14px;padding:14px 16px;margin-bottom:16px;position:relative;animation:fadeInUp .4s ease both}
+    body.light .mrc-box{background:linear-gradient(135deg,rgba(245,200,66,.09),rgba(76,175,125,.06));border-color:rgba(245,200,66,.28)}
+    .mrc-hd{font-family:"Dela Gothic One",sans-serif;font-size:13px;color:var(--gold);margin-bottom:8px;padding-right:28px}
+    body.light .mrc-hd{color:var(--gold-d)}
+    .mrc-grade{display:inline-flex;align-items:center;gap:8px;margin-bottom:10px}
+    .mrc-grade-em{font-size:32px;line-height:1}
+    .mrc-grade-ltr{font-family:"Dela Gothic One",sans-serif;font-size:26px;line-height:1}
+    .mrc-grade-ltr.s{color:#f5c842}.mrc-grade-ltr.a{color:#4caf7d}.mrc-grade-ltr.b{color:#5bc8e8}.mrc-grade-ltr.c{color:var(--muted)}.mrc-grade-ltr.d{color:#ff8c5a}.mrc-grade-ltr.f{color:var(--red)}
+    body.light .mrc-grade-ltr.c{color:rgba(0,0,0,.4)}
+    .mrc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+    .mrc-stat{background:rgba(255,255,255,.04);border-radius:9px;padding:7px 8px;text-align:center}
+    body.light .mrc-stat{background:rgba(0,0,0,.04)}
+    .mrc-stat-val{font-size:16px;font-weight:700;color:var(--gold)}
+    body.light .mrc-stat-val{color:var(--gold-d)}
+    .mrc-stat-lbl{font-size:9px;color:var(--muted);margin-top:2px}
+    .mrc-best{font-size:11px;color:var(--muted);line-height:1.45}
+    .mrc-best strong{color:var(--fg)}
+    body.light .mrc-best strong{color:#1a1a2e}
+    .mrc-x{position:absolute;top:9px;right:11px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:6px;line-height:1;transition:color .15s}
+    .mrc-x:hover{color:var(--white)}
+    body.light .mrc-x:hover{color:#1a1a2e}
+    /* Cycle 119: month goal progress badge in MWB */
+    .mwb-prog{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--muted)}
+    .mwb-prog-bar{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+    body.light .mwb-prog-bar{background:rgba(0,0,0,.08)}
+    .mwb-prog-fill{height:100%;border-radius:3px;background:var(--sky);transition:width .5s ease}
+    .mwb-prog-fill.goal-met{background:var(--green)}
+    .mwb-prog-pct{font-size:11px;font-weight:700;color:var(--sky);min-width:28px;text-align:right}
+    .mwb-prog-pct.goal-met{color:var(--green)}
   </style>
 </head>
 <body>
@@ -1801,6 +1831,20 @@
       <button class="mwb-gbtn" data-pct="90" onclick="setMWBGoal(90)">90%</button>
       <button class="mwb-gbtn" data-pct="100" onclick="setMWBGoal(100)">100%</button>
     </div>
+    <!-- Cycle 119: current month goal progress bar -->
+    <div class="mwb-prog" id="mwb-prog" style="display:none">
+      <span id="mwb-prog-lbl">今月</span>
+      <div class="mwb-prog-bar"><div class="mwb-prog-fill" id="mwb-prog-fill"></div></div>
+      <span class="mwb-prog-pct" id="mwb-prog-pct"></span>
+    </div>
+  </div>
+  <!-- Cycle 119: monthly recap card (shows days 1-5 of month) -->
+  <div class="mrc-box" id="month-recap" style="display:none">
+    <button class="mrc-x" onclick="dismissMonthRecap()" title="閉じる">✕</button>
+    <div class="mrc-hd" id="mrc-hd">📅 先月の振り返り</div>
+    <div class="mrc-grade" id="mrc-grade"></div>
+    <div class="mrc-stats" id="mrc-stats"></div>
+    <div class="mrc-best" id="mrc-best"></div>
   </div>
   <div class="stats">
     <div class="stat">
@@ -5474,11 +5518,97 @@ function setMWBGoal(pct){
   localStorage.setItem(k,String(pct));
   _syncMWBBtns(pct);
   renderMonthStats();
+  renderMWBProgress(); // Cycle 119: update goal progress bar
 }
 function _syncMWBBtns(pct){
   document.querySelectorAll('.mwb-gbtn').forEach(b=>{
     b.classList.toggle('sel',parseInt(b.dataset.pct,10)===pct);
   });
+}
+// ── Cycle 119: monthly recap card ──
+function _mrcPrevYM(){
+  const n=new Date();
+  const y=n.getMonth()===0?n.getFullYear()-1:n.getFullYear();
+  const m=n.getMonth()===0?12:n.getMonth();
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function _mrcCalcLastMonth(){
+  const n=new Date();
+  const ly=n.getMonth()===0?n.getFullYear()-1:n.getFullYear();
+  const lm=n.getMonth()===0?12:n.getMonth();
+  const days=new Date(ly,lm,0).getDate();
+  let done=0,validDays=0,totalRate=0;
+  const perHabit={};
+  for(let d=1;d<=days;d++){
+    const ds=`${ly}-${String(lm).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const r=dayRate(ds);
+    if(r>0){validDays++;totalRate+=r;}
+    if(r>=1)done++;
+    const dc=completions[ds]||{};
+    habits.forEach(h=>{
+      if(!isScheduled(h,new Date(ly,lm-1,d)))return;
+      if(!perHabit[h.id])perHabit[h.id]={name:h.name,done:0,sched:0};
+      perHabit[h.id].sched++;
+      if(dc[h.id])perHabit[h.id].done++;
+    });
+  }
+  if(validDays<3)return null;
+  const avg=Math.round(totalRate/validDays*100);
+  let grade='F',em='🔥';
+  if(avg>=95){grade='S';em='🏆';}else if(avg>=80){grade='A';em='🌟';}else if(avg>=65){grade='B';em='👍';}else if(avg>=50){grade='C';em='📈';}else if(avg>=35){grade='D';em='💪';}
+  let bestH=null,bestR=0;
+  Object.values(perHabit).forEach(x=>{if(x.sched>0){const r=x.done/x.sched;if(r>bestR){bestR=r;bestH=x;}}});
+  return{avg,done,grade,em,days,lm,bestH,bestR};
+}
+function renderMonthRecap(){
+  const el=document.getElementById('month-recap');
+  if(!el||!habits.length)return;
+  const n=new Date();
+  const day=n.getDate();
+  if(day<1||day>5)return;
+  const ym=_mrcPrevYM();
+  if(localStorage.getItem('rh_mrc_'+ym))return;
+  const st=_mrcCalcLastMonth();
+  if(!st)return;
+  document.getElementById('mrc-hd').textContent=`📅 ${st.lm}月の振り返り`;
+  const gc=st.grade.toLowerCase();
+  document.getElementById('mrc-grade').innerHTML=`<span class="mrc-grade-em">${st.em}</span><span class="mrc-grade-ltr ${gc}">${st.grade}</span><span style="font-size:13px;color:var(--muted);margin-left:4px">平均 ${st.avg}%</span>`;
+  document.getElementById('mrc-stats').innerHTML=`<div class="mrc-stat"><div class="mrc-stat-val">${st.avg}%</div><div class="mrc-stat-lbl">平均達成率</div></div><div class="mrc-stat"><div class="mrc-stat-val">${st.done}</div><div class="mrc-stat-lbl">完全達成日</div></div><div class="mrc-stat"><div class="mrc-stat-val">${st.days}</div><div class="mrc-stat-lbl">日間</div></div>`;
+  document.getElementById('mrc-best').innerHTML=st.bestH?`🏅 最も達成した習慣: <strong>${st.bestH.name}</strong>（${Math.round(st.bestR*100)}%）`:'';
+  el.style.display='';
+}
+function dismissMonthRecap(){
+  const el=document.getElementById('month-recap');
+  if(el)el.style.display='none';
+  localStorage.setItem('rh_mrc_'+_mrcPrevYM(),'1');
+}
+// ── Cycle 119: MWB current-month goal progress bar ──
+function renderMWBProgress(){
+  const pg=document.getElementById('mwb-prog');
+  if(!pg)return;
+  const ym=_mwbYM();
+  const goal=parseInt(localStorage.getItem('rh_mg_'+ym)||'0');
+  if(!goal){pg.style.display='none';return;}
+  const n=new Date();
+  const y=n.getFullYear(),m=n.getMonth();
+  const day=n.getDate();
+  let validDays=0,totalRate=0;
+  for(let d=1;d<day;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const r=dayRate(ds);
+    if(r>0){validDays++;totalRate+=r;}
+  }
+  if(validDays===0){pg.style.display='none';return;}
+  const avg=Math.round(totalRate/validDays*100);
+  const met=avg>=goal;
+  const fill=document.getElementById('mwb-prog-fill');
+  const pct=document.getElementById('mwb-prog-pct');
+  const lbl=document.getElementById('mwb-prog-lbl');
+  if(fill)fill.style.width=Math.min(avg,100)+'%';
+  if(fill)fill.className='mwb-prog-fill'+(met?' goal-met':'');
+  if(pct){pct.textContent=avg+'% / '+goal+'%';pct.className='mwb-prog-pct'+(met?' goal-met':'');}
+  if(lbl)lbl.textContent='今月 '+n.getDate()+'日時点';
+  pg.style.display='flex';
 }
 // ── init ──
 load();
@@ -5510,6 +5640,7 @@ document.body.classList.add('loaded');
 _checkAutoWReport(); // Cycle 70: auto weekly report on Monday
 setTimeout(checkMonthlySummary,1500); // Cycle 98: show last month summary on first visit of new month
 setTimeout(initMWB,2200); // Cycle 108: monthly welcome banner (after monthly toast)
+setTimeout(()=>{renderMonthRecap();renderMWBProgress();},2800); // Cycle 119: monthly recap card + MWB progress
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync (Cycle 73: OLED) ──
 function syncThemeColor(){
