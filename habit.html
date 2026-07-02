@@ -1319,6 +1319,33 @@
     /* Cycle 124: screen wake lock indicator */
     #wakelock-btn.wl-on{color:var(--sky)!important;background:rgba(91,200,232,.1)}
     body.light #wakelock-btn.wl-on{background:rgba(91,200,232,.12)}
+    /* Cycle 125: FAB progress ring */
+    .fab-prog-ring{position:fixed;bottom:21px;right:21px;width:62px;height:62px;pointer-events:none;z-index:199}
+    .fpr-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:2.5}
+    .fpr-fill{fill:none;stroke:var(--sky);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:175.9;stroke-dashoffset:175.9;transform-origin:30px 30px;transform:rotate(-90deg);transition:stroke-dashoffset .6s cubic-bezier(.34,1.56,.64,1),stroke .4s}
+    body.light .fpr-bg{stroke:rgba(0,0,0,.08)}
+    /* Cycle 125: archive farewell modal */
+    .arc-ovl{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .arc-ovl.open{opacity:1;pointer-events:auto}
+    .arc-modal{background:var(--dark2);border-radius:20px;padding:22px 20px;width:min(340px,92vw);text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);transform:scale(.95);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+    .arc-ovl.open .arc-modal{transform:scale(1)}
+    .arc-emoji{font-size:36px;line-height:1;margin-bottom:6px}
+    .arc-title{font-family:"Dela Gothic One",sans-serif;font-size:15px;color:var(--text);margin-bottom:4px}
+    .arc-name{font-size:13px;color:var(--gold);font-weight:700;margin-bottom:12px;word-break:break-word}
+    .arc-stats{display:flex;justify-content:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+    .arc-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .arc-stat-val{font-family:"Dela Gothic One",sans-serif;font-size:16px;color:var(--green);line-height:1}
+    .arc-stat-lbl{font-size:9px;color:var(--muted);letter-spacing:.06em}
+    .arc-msg{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+    .arc-btns{display:flex;gap:10px}
+    .arc-confirm-btn{flex:1;padding:12px;border:none;border-radius:12px;background:rgba(232,53,74,.15);border:1px solid rgba(232,53,74,.3);color:var(--red);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+    .arc-confirm-btn:hover{background:rgba(232,53,74,.22)}
+    .arc-cancel-btn{flex:1;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,.06);color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+    .arc-cancel-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
+    body.light .arc-modal{background:#fff}
+    body.light .arc-confirm-btn{background:rgba(232,53,74,.08)}
+    body.light .arc-cancel-btn{background:rgba(0,0,0,.05);color:rgba(0,0,0,.5)}
+    body.oled .arc-modal{background:#000}
 
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
@@ -2163,7 +2190,25 @@
   <button class="fab-palette-btn" onclick="openModalWithCat('創作');closeFabPalette()">🎨 創作</button>
   <button class="fab-palette-btn" onclick="openModalWithCat('自己改善');closeFabPalette()">⭐ 自己改善</button>
 </div>
+<!-- Cycle 125: FAB progress ring -->
+<div class="fab-prog-ring" id="fab-prog-ring" aria-hidden="true">
+  <svg viewBox="0 0 60 60" width="62" height="62"><circle class="fpr-bg" cx="30" cy="30" r="28"/><circle class="fpr-fill" id="fpr-fill" cx="30" cy="30" r="28"/></svg>
+</div>
 <button class="fab" onclick="openModal()" aria-label="習慣を追加">＋<span class="fab-badge zero" id="fab-badge"></span></button>
+<!-- Cycle 125: archive farewell modal -->
+<div class="arc-ovl" id="arc-ovl" onclick="if(event.target===this)closeArcModal()">
+  <div class="arc-modal">
+    <div class="arc-emoji" id="arc-emoji">📦</div>
+    <div class="arc-title">お疲れさまでした！</div>
+    <div class="arc-name" id="arc-name"></div>
+    <div class="arc-stats" id="arc-stats"></div>
+    <div class="arc-msg" id="arc-msg"></div>
+    <div class="arc-btns">
+      <button class="arc-cancel-btn" onclick="closeArcModal()">キャンセル</button>
+      <button class="arc-confirm-btn" id="arc-confirm-btn" onclick="confirmArchive()">📦 アーカイブする</button>
+    </div>
+  </div>
+</div>
 
 <div class="overlay" id="overlay" onclick="bgClose(event)">
   <div class="modal">
@@ -3961,6 +4006,7 @@ function render(){
   renderTodayGrade(); // Cycle 122: today's live grade widget
   updateHdrProgStrip(); // Cycle 103: header progress strip
   updateTabCounts(); // Cycle 111: category tab completion count badges
+  updateFabRing(); // Cycle 125: FAB progress ring
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -5887,6 +5933,7 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('note-ovl').classList.contains('open')){closeNoteModal();return;}
     if(document.getElementById('kbd-ovl').classList.contains('open')){closeKbdHelp();return;}
     if(document.getElementById('wset-ovl')?.classList.contains('open')){closeWidgetSettings();return;}
+    if(document.getElementById('arc-ovl')?.classList.contains('open')){closeArcModal();return;}
     if(document.getElementById('yfix-ovl')?.classList.contains('open')){closeYFix();return;}
     if(document.getElementById('stats-ovl')?.classList.contains('open')){closeStatsModal();return;}
     if(document.getElementById('hist-ovl')?.classList.contains('open')){closeHistoryBrowser();return;}
@@ -6272,6 +6319,55 @@ function _initWakeLock(){
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')requestWakeLock();});
 }
 
+// ── Cycle 125: FAB progress ring ──
+function updateFabRing(){
+  const fill=document.getElementById('fpr-fill');if(!fill)return;
+  const td=today();
+  const dc=completions[td]||{};
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!isSkippedToday(h.id));
+  if(!active.length){fill.style.strokeDashoffset='175.9';return;}
+  const done=active.filter(h=>dc[h.id]).length;
+  const pct=done/active.length;
+  const circ=2*Math.PI*28; // ≈175.9
+  fill.style.strokeDashoffset=String(circ*(1-pct));
+  fill.style.stroke=pct>=1?'var(--green)':pct>=0.5?'var(--gold)':'var(--sky)';
+}
+// ── Cycle 125: archive farewell modal ──
+let _arcPendingId=null;
+function archiveHabit(id){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  _arcPendingId=id;
+  const emoji=h.emoji||'📦';
+  const nm=h.emoji?h.emoji+' '+h.name:h.name;
+  const total=habitTotalCount(id);
+  const best=habitBestStreak(id);
+  const hs=habitStreak(id);
+  // lifetime completion rate
+  const createdAt=h.createdAt?h.createdAt.slice(0,10):'';
+  let sched=0,done=0;
+  if(createdAt){const start=new Date(createdAt+'T00:00:00');const td2=today();let cur=new Date(start);while(toStr(cur)<=td2){const ds=toStr(cur);if(isScheduled(h,ds)){sched++;if((completions[ds]||{})[id])done++;}cur.setDate(cur.getDate()+1);if(sched>3000)break;}}
+  const rate=sched>0?Math.round(done/sched*100):null;
+  document.getElementById('arc-emoji').textContent=emoji;
+  document.getElementById('arc-name').textContent=nm;
+  document.getElementById('arc-stats').innerHTML=
+    `<div class="arc-stat"><span class="arc-stat-val">${total}</span><span class="arc-stat-lbl">累計完了</span></div>`+
+    (best>=2?`<div class="arc-stat"><span class="arc-stat-val">${best}</span><span class="arc-stat-lbl">最長ストリーク</span></div>`:'') +
+    (rate!==null?`<div class="arc-stat"><span class="arc-stat-val">${rate}%</span><span class="arc-stat-lbl">完了率</span></div>`:'');
+  const msgs=['よくがんばりました！','素晴らしい取り組みでした！','お疲れさまでした！','新たな習慣への第一歩でした！'];
+  document.getElementById('arc-msg').textContent=total>=50?'長期間続けて素晴らしい努力でした！この経験を次の習慣へ。':total>=10?msgs[1]:msgs[0];
+  document.getElementById('arc-ovl').classList.add('open');
+}
+function closeArcModal(){
+  document.getElementById('arc-ovl').classList.remove('open');
+  _arcPendingId=null;
+}
+function confirmArchive(){
+  if(!_arcPendingId)return;
+  const h=habits.find(x=>x.id===_arcPendingId);
+  if(h){h.archived=true;saveH();render();}
+  closeArcModal();
+}
+
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
@@ -6332,9 +6428,8 @@ function toggleWidgetViz(key){
   _renderWsetList();applyWidgetViz();
 }
 
-// ── Cycle 54: habit archive ──
+// ── Cycle 54: habit archive (archiveHabit now in Cycle 125 with farewell modal) ──
 let _archivedOpen=false;
-function archiveHabit(id){const h=habits.find(x=>x.id===id);if(!h)return;h.archived=true;saveH();render();}
 function unarchiveHabit(id){const h=habits.find(x=>x.id===id);if(!h)return;delete h.archived;saveH();render();}
 function toggleArchivedSection(){_archivedOpen=!_archivedOpen;document.getElementById('archived-body')?.classList.toggle('open',_archivedOpen);document.getElementById('archived-chev')?.classList.toggle('open',_archivedOpen);}
 
