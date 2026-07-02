@@ -547,7 +547,7 @@
     body.light .info-btn{color:rgba(0,0,0,.18)}
     body.compact .info-btn{display:none}
     .habit-detail{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-top:none;border-radius:0 0 12px 12px;max-height:0;overflow:hidden;transition:max-height .35s ease}
-    .habit-detail.open{max-height:260px}
+    .habit-detail.open{max-height:300px}
     body.compact .habit-detail{display:none!important}
     body.light .habit-detail{border-color:rgba(0,0,0,.08)}
     .hd-inner{padding:10px 14px 12px}
@@ -1275,6 +1275,20 @@
     /* Cycle 71: weekly N-times target mode */
     .wk-goal-met{display:inline-flex;align-items:center;gap:3px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.3);border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--green);flex-shrink:0}
     body.light .wk-goal-met{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.35)}
+
+    /* Cycle 73: streak milestone countdown badge */
+    .streak-ms{font-size:9px;color:rgba(245,200,66,.75);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(245,200,66,.06);border:1px dashed rgba(245,200,66,.25);border-radius:6px;line-height:1.5;animation:msGlow 2s ease-in-out infinite alternate}
+    body.light .streak-ms{color:rgba(140,100,0,.7);background:rgba(245,200,66,.08);border-color:rgba(245,200,66,.35)}
+    body.compact .streak-ms{display:none}
+    @keyframes msGlow{from{border-color:rgba(245,200,66,.2)}to{border-color:rgba(245,200,66,.55)}}
+
+    /* Cycle 73: habit detail week comparison */
+    .hd-week-cmp{display:flex;align-items:center;gap:8px;margin-top:7px;padding:6px 8px;background:rgba(255,255,255,.04);border-radius:8px}
+    .hd-wc-lbl{font-size:9px;color:var(--muted);flex-shrink:0}
+    .hd-wc-val{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+    .hd-wc-val.up{color:var(--green)}.hd-wc-val.dn{color:var(--red)}.hd-wc-val.eq{color:var(--muted)}
+    .hd-wc-arr{font-size:11px;flex-shrink:0}
+    body.light .hd-week-cmp{background:rgba(0,0,0,.04)}
     .habit.weekly-met{opacity:.75}
     .wk-target-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
     .wk-target-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0}
@@ -2469,6 +2483,11 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const cntBadge=cnt>0?`<span class="habit-cnt">${cnt}日</span>`:'';
   const hs=habitStreak(h.id);
   const streakBadge=hs>=2?`<span class="habit-streak">🔥${hs}</span>`:'';
+  // Cycle 73: milestone countdown badge
+  const _msList=[7,14,21,30,50,100,200,365];
+  const _nextMs=_msList.find(m=>m>hs);
+  const _msBadge=(hs>=2&&_nextMs&&(_nextMs-hs)<=7)?`<span class="streak-ms" title="${_nextMs}日ストリーク達成まであと${_nextMs-hs}日！">→${_nextMs-hs}日</span>`:``;
+
   const hbs=habitBestStreak(h.id);
   const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const fix30=habitFix30(h.id);
@@ -2540,7 +2559,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3936,7 +3955,27 @@ function _habitDetailHtml(id){
   if(tsMins.length>=5){const avg=Math.round(tsMins.reduce((a,b)=>a+b,0)/tsMins.length);const hh=String(Math.floor(avg/60)).padStart(2,'0');const mm=String(avg%60).padStart(2,'0');avgTimeStat=`<div class="hd-stat"><div class="hd-stat-val hd-stat-time">${hh}:${mm}</div><div class="hd-stat-lbl">平均完了時刻</div></div>`;}
   const h=habits.find(x=>x.id===id);
   const whySec=h&&h.why?`<div class="hd-why"><span class="hd-why-ico">💡</span><span class="hd-why-txt">${esc(h.why)}</span></div>`:'';
-  return `<div class="hd-inner">${whySec}<div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${noteSec}</div>`;
+  // Cycle 73: this week vs last week comparison
+  let weekCmpHtml='';
+  {
+    const td=today();
+    const mon=getMondayStr(td);
+    const monDate=new Date(mon+'T00:00:00');
+    let thisW=0,lastW=0;
+    for(let i=0;i<7;i++){
+      // this week: mon + i
+      const tw=new Date(monDate.getTime()+i*86400000);const tws=toStr(tw);
+      if(tws>=mon&&tws<=td&&(completions[tws]||{})[id])thisW++;
+      // last week: (mon - 7) + i
+      const lw=new Date(monDate.getTime()+(i-7)*86400000);const lws=toStr(lw);
+      if(lws>=toStr(new Date(monDate.getTime()-7*86400000))&&lws<mon&&(completions[lws]||{})[id])lastW++;
+    }
+    const diff=thisW-lastW;
+    const cls=diff>0?'up':diff<0?'dn':'eq';
+    const arr=diff>0?'↑':diff<0?'↓':'→';
+    weekCmpHtml=`<div class="hd-week-cmp"><span class="hd-wc-lbl">今週</span><span class="hd-wc-val ${cls}">${thisW}回</span><span class="hd-wc-arr">${arr}</span><span class="hd-wc-lbl">先週</span><span class="hd-wc-val eq">${lastW}回</span></div>`;
+  }
+  return `<div class="hd-inner">${whySec}<div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}</div>${weekCmpHtml}${noteSec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
