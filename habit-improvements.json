@@ -1272,6 +1272,48 @@
         "deployedAt": "2026-07-02T04:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 76,
+      "version": "v2.76",
+      "timestamp": "2026-07-02T05:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "ウィジェット表示プリセット（ミニマル/スタンダード/フル）",
+          "description": "ウィジェット設定モーダルの上部に3つのプリセットボタンを追加。⚡ミニマルはペース・グラフ・ストリークの3つのみ表示。📊スタンダードは11の主要ウィジェットを表示。🌟フルは全21ウィジェットを表示。applyWidgetPreset()がrh_widgetsを一括更新し、_renderWsetList()/render()/applyWidgetViz()を連鎖呼び出し。applyWidgetViz()をdisplay:noneだけでなく表示復元（''）にも対応するよう修正し、プリセット適用でウィジェットが正しく表示・非表示される。ウィジェット設定の操作を「全部ON/OFFした後に個別調整」から「プリセット選択→必要に応じて微調整」に改善。",
+          "files": ["habit.html"],
+          "details": [
+            ".wset-presets: flex row コンテナ（gap 6px, margin-bottom 14px）",
+            ".wset-preset-btn: 等幅ボタン（flex:1）、ダーク/ライト/Ocean テーマ対応",
+            "applyWidgetPreset(preset): minimal/standard/full の3パターンをLocalStorageに書き込み",
+            "minimal preset: w_pace, w_chart, w_streak の3つのみON",
+            "standard preset: pace/chart/streak/ranking/month/motto/ach/ms/intention/mood/highlight の11個をON",
+            "full preset: WIDGET_DEFS 全21個をON",
+            "applyWidgetViz() を拡張: v[key]===false なら'none'、それ以外は''（表示復元）"
+          ]
+        },
+        {
+          "type": "animation",
+          "title": "習慣チェック時の絵文字フローティングアニメーション",
+          "description": "習慣をチェックしたとき、チェックボックス位置から習慣の絵文字（設定なし時は✨）がふわりと浮かび上がるアニメーションを追加。Cycle 18のパーティクルバーストと同時に発火し、より視覚的な達成感を演出。spawnEmojiFloat(x, y, emoji)が.emoji-float-elを生成・bodyに追加し800ms後に自動削除。CSSのemojiFloatキーフレームでscale 0→1.4→1、translateY 0→-72pxのアーク軌跡とフェードアウトを実現。固定位置（position:fixed, z-index:550）でスクロールに影響されない。",
+          "files": ["habit.html"],
+          "details": [
+            "@keyframes emojiFloat: 0%/40%/100% でscale・translateY・opacityを変化（cubic-bezier .2,.8,.3,1）",
+            ".emoji-float-el: position:fixed, pointer-events:none, z-index:550, font-size:22px",
+            "spawnEmojiFloat(x, y, emoji): div生成・left/top設定・body追加・800ms後削除",
+            "toggle()内 spawnBurst()呼び出し直後にspawnEmojiFloat()を追加",
+            "習慣の emoji プロパティを使用し、未設定の場合は✨をデフォルト絵文字として使用",
+            "カウンター型習慣（incrCtr経由）とスキップ済み習慣には発火しない設計"
+          ]
+        }
+      ],
+      "notes": "Cycle 76は「UI操作効率化」と「チェックインの達成感演出」の2軸改善。ウィジェットプリセットはCycle 44のウィジェット表示設定を大幅に使いやすく改善。21個のウィジェットを1個ずつON/OFFする手間を省き、用途に合わせたクイック設定を実現。絵文字フロートはCycle 18のパーティクルバーストに重なる形で習慣固有のビジュアルフィードバックを追加。各習慣に設定した絵文字がチェック時に飛び上がることで、どの習慣を達成したかを感覚的に確認でき、習慣継続のモチベーション向上に貢献。両改善ともLocalStorage構造変更なし・後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T05:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

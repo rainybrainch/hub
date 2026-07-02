@@ -1348,6 +1348,16 @@
     body.light .journal-close{background:rgba(0,0,0,.06);color:#1a1a2e}
     body.light .journal-close:hover{background:rgba(0,0,0,.1)}
     body.light .journal-handle{background:rgba(0,0,0,.12)}
+
+    /* Cycle 76: widget display presets */
+    .wset-presets{display:flex;gap:6px;margin-bottom:14px}
+    .wset-preset-btn{flex:1;padding:8px 4px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
+    .wset-preset-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
+    body.light .wset-preset-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .wset-preset-btn:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3);background:rgba(0,0,0,.04)}
+    /* Cycle 76: emoji float on habit check */
+    @keyframes emojiFloat{0%{transform:translateY(0) scale(0);opacity:1}40%{transform:translateY(-20px) scale(1.4);opacity:1}100%{transform:translateY(-72px) scale(1);opacity:0}}
+    .emoji-float-el{position:fixed;pointer-events:none;z-index:550;font-size:22px;line-height:1;animation:emojiFloat .75s cubic-bezier(.2,.8,.3,1) forwards}
   </style>
 </head>
 <body>
@@ -1732,6 +1742,11 @@
 <div class="wset-ovl" id="wset-ovl" onclick="if(event.target===this)closeWidgetSettings()">
   <div class="wset-modal">
     <div class="wset-ttl">⚙️ ウィジェット表示設定</div>
+    <div class="wset-presets">
+      <button class="wset-preset-btn" onclick="applyWidgetPreset('minimal')">⚡ ミニマル</button>
+      <button class="wset-preset-btn" onclick="applyWidgetPreset('standard')">📊 スタンダード</button>
+      <button class="wset-preset-btn" onclick="applyWidgetPreset('full')">🌟 フル</button>
+    </div>
     <div class="wset-list" id="wset-list"></div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
   </div>
@@ -3097,7 +3112,7 @@ function toggle(id,evt){
     if(prevDone===0)showFirstCheckToast();
     playTick();vib(50);checkHabitMilestone(id);triggerCombo();
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
-    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
+    if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);spawnEmojiFloat(r.left+r.width/2,r.top,_hh&&_hh.emoji?_hh.emoji:'✨');}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
   }else{_showUncheckSnackbar(id,prevTs);} // Cycle 67: undo-check snackbar
   saveC();
@@ -4442,7 +4457,7 @@ function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
 function applyWidgetViz(){
   const v=getWidgetViz();
-  WIDGET_DEFS.forEach(w=>{if(v[w.key]===false){const el=document.getElementById(w.id);if(el)el.style.display='none';}});
+  WIDGET_DEFS.forEach(w=>{const el=document.getElementById(w.id);if(el)el.style.display=v[w.key]===false?'none':'';});
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
@@ -4462,6 +4477,28 @@ function toggleWidgetViz(key){
   v[key]=!isWidgetOn(key);
   localStorage.setItem('rh_widgets',JSON.stringify(v));
   _renderWsetList();applyWidgetViz();
+}
+// Cycle 76: widget display presets
+function applyWidgetPreset(preset){
+  const v={};
+  if(preset==='minimal'){
+    const keep=new Set(['w_pace','w_chart','w_streak']);
+    WIDGET_DEFS.forEach(w=>{v[w.key]=keep.has(w.key);});
+  }else if(preset==='standard'){
+    const show=new Set(['w_pace','w_chart','w_streak','w_ranking','w_month','w_motto','w_ach','w_ms','w_intention','w_mood','w_highlight']);
+    WIDGET_DEFS.forEach(w=>{v[w.key]=show.has(w.key);});
+  }else{WIDGET_DEFS.forEach(w=>{v[w.key]=true;});}
+  localStorage.setItem('rh_widgets',JSON.stringify(v));
+  _renderWsetList();render();applyWidgetViz();
+}
+// Cycle 76: emoji float animation from checked habit
+function spawnEmojiFloat(x,y,emoji){
+  const el=document.createElement('div');
+  el.className='emoji-float-el';
+  el.textContent=emoji||'✨';
+  el.style.left=(x-12)+'px';el.style.top=(y-12)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),800);
 }
 
 // ── Cycle 63: focus mode ──
