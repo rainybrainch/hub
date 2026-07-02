@@ -2356,6 +2356,29 @@
         "deployedAt": "2026-07-02T08:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 123,
+      "version": "v2.123",
+      "timestamp": "2026-07-02T09:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "集中モード（Vキー・🎯ボタン）追加 — 統計・ウィジェットを全非表示",
+          "description": "ヘッダーに「🎯」ボタン（id: focus-mode-btn）を追加し、クリックまたはVキーで body.focus-mode クラスをトグルする集中モードを実装。集中モードでは stats / chart-box / pace-box / today-grade-box / streak-row / insight-box / donut-box / cat-summary-box / radar-box / tag-stat-box / hmc-box / intention-box / dow-box / trend-box / year-box / calcal-box / tod-box / timeline-box / mood-box / mood-stats-box / highlight-box / tmrw-box / ms-widget / challenge-box / motto-box / ranking-box / month-box / weekly-box / ach-box / mrc-box / mwb / wm-box / score-hist-box / week-dotsをすべてdisplay:none!importantで非表示にし、習慣リストのみにフォーカス。コンテンツ上部に「🎯 集中モード中 — 習慣チェックに集中しましょう」バナー（id: focus-mode-bar）を表示。解除ボタンまたはVキー再押下で通常表示に戻る。状態はlocalStorage('rh_focus_mode')に'1'/'0'で永続保存・ページ再読み込み後も復元。集中モードボタンはアクティブ時にスカイブルーハイライト。キーボードショートカットヘルプモーダル（?キー）にもVキーの説明を追記。PrintCSSには影響なし・後方完全互換。"
+        },
+        {
+          "type": "feature",
+          "title": "アプリ利用連続日数バッジ（📱 N日）をストリーク行に追加",
+          "description": "アプリを毎日開いた連続日数を追跡し、streak-rowに「📱 N日」バッジ（.checkin-badge、紫色系、id: checkin-badge）として表示する機能を追加。_updateCheckinStreak()関数が初期化時に1回実行し、localStorage('rh_ci_last')に最終アクセス日、'rh_ci_streak'に連続日数を保存。前日が最終アクセス日なら連続日数を+1、それ以外は1にリセット。2日以上連続の場合のみバッジを表示（1日は「連続」ではないので非表示）。習慣ストリーク（全体連続達成）とは独立した「アプリ訪問連続記録」であり、毎日アプリを開いてチェックする習慣自体を称える動機付け機能。speed-badge（Cycle 114）の直後にstreak-rowに配置。LocalStorage追加: rh_ci_last・rh_ci_streak（既存キーとの競合なし）・後方完全互換。"
+        }
+      ],
+      "notes": "Cycle 123は「集中力の維持」と「アプリ習慣化の奨励」の2軸改善。集中モードはCycle 13のコンパクトビュー（カードサイズ縮小）・Cycle 74の完了済み非表示とは異なり、分析ウィジェット群を一括非表示にして「今日やるべきことだけ」にUIを絞る。特に習慣数が多く画面が情報過多になりがちなユーザーが、朝の習慣チェック時にさっと切り替えられる設計。アプリ連続利用バッジはBJ Fogg「行動ラボ」やDuolingoの知見から、「アプリを毎日開く習慣」自体を追跡して称えるメタ習慣機能。既存の個別習慣ストリークとは概念が異なり、どの習慣を持っているかに関わらず毎日アクセスを維持する動機付けになる。LocalStorage変更: rh_focus_mode（'0'/'1'）・rh_ci_last（日付文字列）・rh_ci_streak（数値文字列）追加のみで後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T09:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

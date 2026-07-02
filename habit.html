@@ -1304,6 +1304,13 @@
     .hd-6m-lbl{font-size:9px;color:var(--muted);flex-shrink:0}
     .hd-6m-pct{font-size:9px;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
     body.light .hd-6m-bar-wrap{background:rgba(0,0,0,.06)}
+    /* Cycle 123: focus mode — hide all stat/widget sections, show only habit list */
+    body.focus-mode .stats,body.focus-mode .chart-box,body.focus-mode .pace-box,body.focus-mode .today-grade-box,body.focus-mode .streak-row,body.focus-mode .insight-box,body.focus-mode .donut-box,body.focus-mode .cat-summary-box,body.focus-mode .radar-box,body.focus-mode .tag-stat-box,body.focus-mode .hmc-box,body.focus-mode .intention-box,body.focus-mode .dow-box,body.focus-mode .trend-box,body.focus-mode .year-box,body.focus-mode .calcal-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .tmrw-box,body.focus-mode .ms-widget,body.focus-mode .challenge-box,body.focus-mode .motto-box,body.focus-mode .ranking-box,body.focus-mode .month-box,body.focus-mode .weekly-box,body.focus-mode .ach-box,body.focus-mode .mrc-box,body.focus-mode .mwb,body.focus-mode .wm-box,body.focus-mode .score-hist-box,body.focus-mode .week-dots{display:none!important}
+    body.focus-mode #focus-mode-bar{display:flex!important}
+    #focus-mode-bar{display:none;align-items:center;justify-content:center;padding:5px 0 10px;font-size:11px;color:var(--sky);gap:8px;letter-spacing:.06em;font-weight:700}
+    /* Cycle 123: app check-in streak badge */
+    .checkin-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(155,109,214,.1);border:1px solid rgba(155,109,214,.3);border-radius:14px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--purple);flex-shrink:0}
+    body.light .checkin-badge{background:rgba(155,109,214,.08);border-color:rgba(155,109,214,.35)}
 
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
@@ -1830,6 +1837,7 @@
   <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="音量切替（🔇/🔈/🔊/📢）"></button>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
+  <button class="hdr-btn" id="focus-mode-btn" onclick="toggleFocusMode()" title="集中モード（習慣リストのみ表示）">🎯</button>
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
   <button class="hdr-btn" id="dayoff-btn" onclick="toggleDayOff()" title="今日をお休みデーに設定（ストリーク維持）">🌴</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
@@ -1858,6 +1866,8 @@
 </div>
 
 <div class="wrap">
+  <!-- Cycle 123: focus mode indicator bar -->
+  <div id="focus-mode-bar">🎯 集中モード中 — 習慣チェックに集中しましょう <button onclick="toggleFocusMode()" style="background:rgba(91,200,232,.2);border:1px solid rgba(91,200,232,.4);color:var(--sky);border-radius:8px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit">解除</button></div>
   <!-- Cycle 108: monthly welcome banner -->
   <div class="mwb" id="mwb" style="display:none">
     <button class="mwb-x" onclick="closeMWB()">✕</button>
@@ -1993,6 +2003,7 @@
     <span class="perfect-month-badge" id="perfect-month-badge" style="display:none"></span>
     <span class="hab-on-streak" id="hab-on-streak" style="display:none"></span>
     <span class="speed-badge" id="speed-badge" style="display:none"></span>
+    <span class="checkin-badge" id="checkin-badge" style="display:none"></span>
   </div>
 
   <!-- Cycle 87: weekly completion dots -->
@@ -2315,6 +2326,7 @@
       <tr><td><kbd class="kbdkey">H</kbd></td><td class="kbd-desc">過去日付の習慣履歴を閲覧</td></tr>
       <tr><td><kbd class="kbdkey">R</kbd></td><td class="kbd-desc">ランダムに未完了習慣を選んでハイライト</td></tr>
       <tr><td><kbd class="kbdkey">W</kbd></td><td class="kbd-desc">スマートソート（緊急度・ストリーク危険度）切替</td></tr>
+      <tr><td><kbd class="kbdkey">V</kbd></td><td class="kbd-desc">集中モード切替（統計を非表示、習慣リストに集中）</td></tr>
       <tr><td><kbd class="kbdkey">[</kbd> / <kbd class="kbdkey">]</kbd></td><td class="kbd-desc">カテゴリータブを前後に切り替え</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">↑</kbd> <kbd class="kbdkey">↓</kbd></td><td class="kbd-desc">習慣リストを上下に移動（Enterでトグル）</td></tr>
@@ -5677,6 +5689,8 @@ initTheme();
 initFontSize();
 updateSoundBtn();
 initCompactView();
+_applyFocusMode(); // Cycle 123: restore focus mode state
+_updateCheckinStreak(); // Cycle 123: update app check-in streak badge
 initEmojiPresets();
 initTemplates();
 initIntention();
@@ -5856,6 +5870,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='h'||e.key==='H')openHistoryBrowser();
   else if(e.key==='r'||e.key==='R')pickRandomHabit();
   else if(e.key==='w'||e.key==='W')toggleSmartSort();
+  else if(e.key==='v'||e.key==='V')toggleFocusMode();
   // Cycle 111: [ / ] to cycle category tabs
   else if(e.key==='['||e.key===']'){
     const _tabOrder=['all','学習','運動','創作','自己改善','important'];
@@ -6158,6 +6173,31 @@ function renderTodayGrade(){
   el.innerHTML=`<div class="tg-grade ${gradeClass}">${grade}</div><div class="tg-info"><div class="tg-label">${msgs[grade]}</div><div class="tg-sub">達成率 ${pct}%</div></div><div class="tg-ratio">${done}/${total}</div>`;
   el.style.borderColor=done===total?'rgba(76,175,125,.35)':'';
   el.style.display='flex';
+}
+
+// ── Cycle 123: focus mode (zen mode) ──
+let _focusMode=localStorage.getItem('rh_focus_mode')==='1';
+function _applyFocusMode(){
+  document.body.classList.toggle('focus-mode',_focusMode);
+  const btn=document.getElementById('focus-mode-btn');
+  if(btn){btn.style.background=_focusMode?'rgba(91,200,232,.15)':'';btn.style.color=_focusMode?'var(--sky)':'';}
+}
+function toggleFocusMode(){
+  _focusMode=!_focusMode;
+  localStorage.setItem('rh_focus_mode',_focusMode?'1':'0');
+  _applyFocusMode();
+}
+// ── Cycle 123: app check-in streak badge ──
+function _updateCheckinStreak(){
+  const el=document.getElementById('checkin-badge');if(!el)return;
+  const td=today();
+  const last=localStorage.getItem('rh_ci_last');
+  let streak=parseInt(localStorage.getItem('rh_ci_streak')||'0',10);
+  if(last===td){/* same day, just show */}
+  else if(last===dateAgo(1)){streak++;localStorage.setItem('rh_ci_streak',streak);localStorage.setItem('rh_ci_last',td);}
+  else{streak=1;localStorage.setItem('rh_ci_streak','1');localStorage.setItem('rh_ci_last',td);}
+  if(streak>=2){el.textContent=`📱 ${streak}日`;el.title=`${streak}日連続でアプリを開いています`;el.style.display='';}
+  else el.style.display='none';
 }
 
 // ── Cycle 44: widget visibility settings ──
