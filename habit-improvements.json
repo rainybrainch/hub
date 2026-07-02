@@ -1146,6 +1146,47 @@
         "deployedAt": "2026-07-02T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 72,
+      "timestamp": "2026-07-02T01:00:00Z",
+      "version": "v2.72",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣コリレーション分析ウィジェット",
+          "description": "よく一緒に達成される習慣ペアを自動分析し、TOP3を相関バーで表示する新ウィジェット。習慣が2個以上かつ記録が14日以上ある場合に有効化。各ペアの共同達成率（%）を視覚的なバーとパーセンテージ表示で確認できる。ウィジェット表示設定でON/OFFも切り替え可能。",
+          "files": ["habit.html"],
+          "details": [
+            "renderHabitCorr(): 全習慣ペアの共同達成率を計算し70%以上のペアを抽出",
+            ".corr-box / .corr-row / .corr-bar-fill: カード・行・アニメーションバーのCSS",
+            "habit-corr-box: ダッシュボードに追加された相関ウィジェットのHTML要素",
+            "WIDGET_DEFS に w_corr キーを追加（ウィジェット表示管理対応）",
+            "focus-mode で自動非表示（.insight-card と同様の処理）",
+            "共同達成7日以上かつ70%以上の相関のみ表示してノイズを排除"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "パーフェクトデイバッジ → 過去の完璧な日ポップアップ",
+          "description": "ダッシュボードの✨パーフェクトデイバッジをクリックすると、過去90日分の完璧な日（全習慣達成日）を M/D（曜日）形式で一覧表示するポップアップが開く。最大15件表示、それ以上は「他N日」と表示。バッジ外クリックで自動クローズ。",
+          "files": ["habit.html"],
+          "details": [
+            "togglePerfHistory(e): バッジクリックでポップアップ開閉を切り替え",
+            "_renderPerfPop(pop): 過去90日を走査し完璧な日をリスト生成",
+            "_perfHistOutside(e): ポップアップ外クリックで自動クローズ",
+            ".perf-wrap / .perf-hist-pop / .perf-hist-item: ポップアップ表示のCSS",
+            "perf-badge を .perf-wrap でラップし onclick=togglePerfHistory(event) を追加",
+            "アニメーション: opacity + translateY + scale の cubic-bezier トランジション"
+          ]
+        }
+      ],
+      "notes": "Cycle 72ではデータの関係性発見と過去の成功体験の参照という2つの新機能を追加。習慣コリレーションはCycle 18の曜日別分析・Cycle 70のインサイトカードを発展させ、習慣間の相互強化パターンを可視化。「運動した日は早起きもできている」などのパターン発見をサポートし、良いループを意識的に作るきっかけを提供。パーフェクトデイポップアップはCycle 70のパーフェクトデイバッジを強化し、累積達成数だけでなく個々の達成日を振り返れるようにすることでモチベーション維持に貢献。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

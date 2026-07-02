@@ -1124,7 +1124,7 @@
     body.focus-mode .intention-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,
     body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .pace-box,
     body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row,body.focus-mode .schedule-box,
-    body.focus-mode .insight-card{display:none!important}
+    body.focus-mode .insight-card,body.focus-mode .corr-box{display:none!important}
     .hdr-btn.focus-on{color:var(--sky)!important}
     /* Cycle 63: keyboard arrow navigation focus ring */
     .habit.kfocus{outline:2px solid var(--sky);outline-offset:2px;box-shadow:0 0 0 4px rgba(91,200,232,.15)!important}
@@ -1229,6 +1229,31 @@
     /* Cycle 70: perfect days badge */
     .perf-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(91,200,232,.12),rgba(91,200,232,.06));border:1px solid rgba(91,200,232,.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--sky)}
     body.light .perf-badge{background:linear-gradient(135deg,rgba(14,120,160,.1),rgba(14,120,160,.05));border-color:rgba(14,120,160,.3);color:#0e78a0}
+
+    /* Cycle 72: habit correlation widget */
+    .corr-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .corr-ttl{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .corr-row{padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid rgba(255,255,255,.04)}
+    .corr-row:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+    .corr-habits{font-size:13px;font-weight:700;margin-bottom:4px}
+    .corr-meta{display:flex;align-items:center;gap:7px}
+    .corr-bar-wrap{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+    .corr-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--sky),var(--green));transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+    .corr-pct{font-size:11px;font-weight:700;color:var(--sky);flex-shrink:0;font-variant-numeric:tabular-nums}
+    .corr-days{font-size:10px;color:var(--muted);flex-shrink:0}
+    body.light .corr-box{border-color:rgba(0,0,0,.08)}
+    body.light .corr-row{border-bottom-color:rgba(0,0,0,.05)}
+
+    /* Cycle 72: perfect day history popup */
+    .perf-wrap{position:relative;display:inline-flex;align-items:center}
+    .perf-badge{cursor:pointer!important}
+    .perf-hist-pop{position:absolute;top:calc(100% + 8px);left:0;background:var(--dark2);border:1px solid rgba(91,200,232,.2);border-radius:14px;padding:12px 14px;z-index:610;width:220px;box-shadow:0 12px 40px rgba(0,0,0,.55);opacity:0;transform:translateY(-6px) scale(.96);pointer-events:none;transition:opacity .18s,transform .2s cubic-bezier(.34,1.56,.64,1)}
+    .perf-hist-pop.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .perf-hist-ttl{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--sky);margin-bottom:8px;text-transform:uppercase}
+    .perf-hist-list{display:flex;flex-direction:column;gap:3px;max-height:160px;overflow-y:auto}
+    .perf-hist-item{font-size:12px;color:var(--white);padding:4px 6px;border-radius:7px;background:rgba(91,200,232,.06)}
+    body.light .perf-hist-pop{background:#fff;border-color:rgba(14,120,160,.2);box-shadow:0 12px 40px rgba(0,0,0,.15)}
+    body.light .perf-hist-item{color:var(--dark);background:rgba(14,120,160,.06)}
 
     /* Cycle 70: personal insights card */
     .insight-card{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;margin-bottom:16px;overflow:hidden;transition:background .25s,border-color .25s}
@@ -1404,13 +1429,16 @@
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
     <span class="score-badge" id="score-badge" style="display:none"></span>
-    <span class="perf-badge" id="perf-badge" style="display:none" title="過去90日間の全習慣達成日数">✨ 0日完璧</span>
+    <span class="perf-wrap"><span class="perf-badge" id="perf-badge" style="display:none" onclick="togglePerfHistory(event)" title="クリックで過去の完璧な日を確認">✨ 0日完璧</span><div class="perf-hist-pop" id="perf-hist-pop"></div></span>
     <span class="login-streak-badge" id="login-streak-badge" style="display:none" title="連続でアプリを開いた日数">📱 1日連続</span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
 
   <div class="ranking-box" id="ranking-box" style="display:none"></div>
+
+  <!-- Cycle 72: habit correlation widget -->
+  <div class="corr-box" id="habit-corr-box" style="display:none"></div>
 
   <!-- Cycle 35: today's challenge widget -->
   <div class="challenge-box" id="challenge-box" style="display:none"></div>
@@ -2895,6 +2923,7 @@ function render(){
   renderYearCalendar();
   renderMonthStats();
   renderWeeklyRanking();
+  renderHabitCorr(); // Cycle 72
   renderMotto();
   renderAchievements();
   renderMilestoneWidget();
@@ -4246,6 +4275,7 @@ const WIDGET_DEFS=[
   {key:'w_streak', name:'🔥 ストリークバッジ',        id:'streak-row'},
   {key:'w_month',  name:'📅 月次サマリー',            id:'month-box'},
   {key:'w_ranking',name:'🏅 週間ランキング',          id:'ranking-box'},
+  {key:'w_corr',   name:'🔗 習慣コリレーション',      id:'habit-corr-box'},
   {key:'w_challenge',name:'🎯 今日のチャレンジ',      id:'challenge-box'},
   {key:'w_motto',  name:'💬 モチベーションメッセージ',id:'motto-box'},
   {key:'w_ach',    name:'🏆 実績バッジ',              id:'ach-box'},
@@ -4680,6 +4710,90 @@ function renderInsightCard(){
   el.style.display='';
   const rr=document.getElementById('insight-rows');
   if(rr)rr.innerHTML=ins.map(i=>`<div class="insight-row"><span class="insight-ico">${i.ico}</span><span class="insight-txt">${i.txt}</span></div>`).join('');
+}
+
+// ── Cycle 72: habit correlation analysis ──
+function renderHabitCorr(){
+  const box=document.getElementById('habit-corr-box');
+  if(!box)return;
+  const actives=habits.filter(h=>!h.archived&&!h.paused);
+  if(actives.length<2){box.style.display='none';return;}
+  const dates=Object.keys(completions).sort();
+  if(dates.length<14){box.style.display='none';return;}
+  const pairs=[];
+  for(let i=0;i<actives.length;i++){
+    for(let j=i+1;j<actives.length;j++){
+      const a=actives[i],b=actives[j];
+      let co=0,ac=0,bc=0;
+      dates.forEach(d=>{
+        const dc=completions[d]||{};
+        const ad=!!dc[a.id],bd=!!dc[b.id];
+        if(ad)ac++;if(bd)bc++;if(ad&&bd)co++;
+      });
+      const mn=Math.min(ac,bc);
+      if(co>=7&&mn>0){
+        const pct=Math.round(co/mn*100);
+        if(pct>=70)pairs.push({a,b,co,pct});
+      }
+    }
+  }
+  pairs.sort((x,y)=>y.pct-x.pct);
+  const top=pairs.slice(0,3);
+  if(!top.length){box.style.display='none';return;}
+  box.style.display='';
+  box.innerHTML='<div class="corr-ttl">🔗 よく一緒に達成するペア</div>'+
+    top.map(p=>`<div class="corr-row">
+      <div class="corr-habits">${p.a.emoji||''}${esc(p.a.name)} × ${p.b.emoji||''}${esc(p.b.name)}</div>
+      <div class="corr-meta">
+        <span class="corr-bar-wrap"><span class="corr-bar-fill" style="width:${p.pct}%"></span></span>
+        <span class="corr-pct">${p.pct}%</span>
+        <span class="corr-days">(${p.co}日)</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── Cycle 72: perfect day history popup ──
+let _perfHistOpen=false;
+function togglePerfHistory(e){
+  e&&e.stopPropagation();
+  _perfHistOpen=!_perfHistOpen;
+  const pop=document.getElementById('perf-hist-pop');
+  if(!pop)return;
+  if(_perfHistOpen){
+    _renderPerfPop(pop);
+    pop.classList.add('open');
+    setTimeout(()=>document.addEventListener('click',_perfHistOutside),0);
+  }else{
+    pop.classList.remove('open');
+    document.removeEventListener('click',_perfHistOutside);
+  }
+}
+function _perfHistOutside(e){
+  const wrap=document.querySelector('.perf-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    _perfHistOpen=false;
+    document.getElementById('perf-hist-pop')?.classList.remove('open');
+    document.removeEventListener('click',_perfHistOutside);
+  }
+}
+function _renderPerfPop(pop){
+  const DOW=['日','月','火','水','木','金','土'];
+  const perfDays=[];
+  for(let i=1;i<=90;i++){
+    const d=dateAgo(i);
+    if(dayRate(d)>=1){
+      const dc=completions[d]||{};
+      if(Object.values(dc).some(v=>!!v)||isDayOff(d)){
+        const dt=new Date(d+'T00:00:00');
+        perfDays.push({d,label:`${dt.getMonth()+1}/${dt.getDate()} (${DOW[dt.getDay()]})`});
+      }
+    }
+  }
+  if(!perfDays.length){
+    pop.innerHTML='<div class="perf-hist-ttl">✨ 完璧な日</div><div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">まだ記録がありません</div>';
+    return;
+  }
+  pop.innerHTML=`<div class="perf-hist-ttl">✨ 完璧な日 (${perfDays.length}日)</div><div class="perf-hist-list">${perfDays.slice(0,15).map(p=>`<div class="perf-hist-item">✅ ${p.label}</div>`).join('')}${perfDays.length>15?`<div style="font-size:10px;color:var(--muted);padding:4px 6px">他 ${perfDays.length-15} 日</div>`:''}</div>`;
 }
 
 function _renderStatsOvl(){
