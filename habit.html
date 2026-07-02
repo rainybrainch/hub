@@ -1279,6 +1279,31 @@
     .wm-perfect-footer strong{color:var(--gold)}
     body.light .wm-perfect-footer{border-top-color:rgba(0,0,0,.06);color:rgba(0,0,0,.4)}
     body.light .wm-perfect-footer strong{color:var(--gold-d)}
+    /* Cycle 122: today's live grade widget */
+    .today-grade-box{display:flex;align-items:center;gap:14px;padding:11px 16px;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;margin-bottom:16px;transition:background .25s,border-color .3s}
+    .tg-grade{font-family:"Dela Gothic One",sans-serif;font-size:34px;line-height:1;min-width:42px;text-align:center;transition:color .25s}
+    .tg-grade.tg-s{color:var(--gold);text-shadow:0 0 14px rgba(245,200,66,.55)}
+    .tg-grade.tg-a{color:var(--green)}
+    .tg-grade.tg-b{color:var(--sky)}
+    .tg-grade.tg-c{color:var(--muted)}
+    .tg-grade.tg-d{color:#FF9800}
+    .tg-grade.tg-f{color:var(--red)}
+    .tg-info{flex:1;min-width:0}
+    .tg-label{font-size:13px;font-weight:700;color:var(--text);line-height:1.4}
+    .tg-sub{font-size:11px;color:var(--muted);margin-top:2px}
+    .tg-ratio{font-family:"Dela Gothic One",sans-serif;font-size:15px;color:var(--muted);flex-shrink:0}
+    body.light .today-grade-box{border-color:rgba(0,0,0,.08)}
+    body.oled .today-grade-box{background:#000}
+    /* Cycle 122: 6-month completion rate bars in detail panel */
+    .hd-6m-box{margin:10px 0 4px}
+    .hd-6m-ttl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+    .hd-6m-bars{display:flex;gap:5px;align-items:flex-end;height:56px}
+    .hd-6m-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+    .hd-6m-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;display:flex;align-items:flex-end;min-height:4px}
+    .hd-6m-fill{width:100%;border-radius:2px;transition:height .5s cubic-bezier(.34,1.56,.64,1);min-height:2px}
+    .hd-6m-lbl{font-size:9px;color:var(--muted);flex-shrink:0}
+    .hd-6m-pct{font-size:9px;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
+    body.light .hd-6m-bar-wrap{background:rgba(0,0,0,.06)}
 
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
@@ -1628,7 +1653,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.check-snackbar,.restart-toast,.banner,.milestone-toast,.shield-toast,.combo-toast,.anniversary-toast,.habit-pr-toast,.sg-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.pin-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.batch-skip-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box,.mrc-box,.mwb{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.calcal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.today-grade-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.radar-box,.tmrw-box,.tag-stat-box,.hmc-box,.mrc-box,.mwb{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn,.golden-badge{display:none!important}
@@ -1895,6 +1920,8 @@
 
   <!-- Cycle 36: today's pace indicator -->
   <div class="pace-box" id="pace-box" style="display:none"></div>
+  <!-- Cycle 122: today's live grade widget -->
+  <div class="today-grade-box" id="today-grade-box" style="display:none"></div>
 
   <div class="chart-box">
     <div class="chart-hdr">
@@ -3879,6 +3906,7 @@ function render(){
   renderRemMins(); // Cycle 94: remaining time badge
   renderDoneMins(); // Cycle 96: today's achieved-duration badge
   renderInsightBox(); // Cycle 96: weekly data insights widget
+  renderTodayGrade(); // Cycle 122: today's live grade widget
   updateHdrProgStrip(); // Cycle 103: header progress strip
   updateTabCounts(); // Cycle 111: category tab completion count badges
 }
@@ -5287,7 +5315,10 @@ function _habitDetailHtml(id){
   const _sparkWeeks=[];
   for(let w=3;w>=0;w--){let _wd=0,_ws=0;for(let d=0;d<7;d++){const _ds=dateAgo(w*7+d);if(hObj&&!isScheduled(hObj,_ds))continue;_ws++;if((completions[_ds]||{})[id])_wd++;}_sparkWeeks.push({rate:_ws>0?Math.round(_wd/_ws*100):null,lbl:w===0?'今週':`-${w}週`});}
   const _sparkHtml=`<div class="hd-spark-box"><div class="hd-spark-ttl">📈 週別達成率（過去4週）</div><div class="hd-spark-bars">${_sparkWeeks.map(b=>{if(b.rate===null)return`<div class="hd-spark-col"><div class="hd-spark-bar-wrap"></div><div class="hd-spark-lbl">${b.lbl}</div><div class="hd-spark-pct">-</div></div>`;const _c=b.rate>=80?'var(--green)':b.rate>=50?'var(--gold)':'var(--red)';return`<div class="hd-spark-col"><div class="hd-spark-bar-wrap"><div class="hd-spark-fill" style="height:${b.rate}%;background:${_c}"></div></div><div class="hd-spark-lbl">${b.lbl}</div><div class="hd-spark-pct">${b.rate}%</div></div>`;}).join('')}</div></div>`;
-  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${bestWeekStat}${avgTimeStat}</div>${healthSec}${_sparkHtml}${todHtml}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
+  // Cycle 122: per-habit 6-month completion rate mini bars
+  const _6mBars=(()=>{const now6=new Date();const bars=[];for(let m=5;m>=0;m--){const d6=new Date(now6.getFullYear(),now6.getMonth()-m,1);const y6=d6.getFullYear();const mo6=d6.getMonth();const dim=new Date(y6,mo6+1,0).getDate();let done6=0,sch6=0;for(let day=1;day<=dim;day++){const ds=`${y6}-${String(mo6+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;if(ds>dateAgo(0))break;if(hObj&&!isScheduled(hObj,ds))continue;sch6++;if((completions[ds]||{})[id])done6++;}bars.push(sch6>=3?{lbl:`${mo6+1}月`,rate:Math.round(done6/sch6*100)}:{lbl:`${mo6+1}月`,rate:null});}return bars;})();
+  const _6mHtml=_6mBars.some(b=>b.rate!==null)?`<div class="hd-6m-box"><div class="hd-6m-ttl">📅 月別達成率（直近6か月）</div><div class="hd-6m-bars">${_6mBars.map(b=>b.rate===null?`<div class="hd-6m-col"><div class="hd-6m-bar-wrap"></div><div class="hd-6m-lbl">${b.lbl}</div><div class="hd-6m-pct">-</div></div>`:`<div class="hd-6m-col"><div class="hd-6m-bar-wrap"><div class="hd-6m-fill" style="height:${b.rate}%;background:${b.rate>=80?'var(--green)':b.rate>=50?'var(--gold)':'var(--red)'}"></div></div><div class="hd-6m-lbl">${b.lbl}</div><div class="hd-6m-pct">${b.rate}%</div></div>`).join('')}</div></div>`:'';
+  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${bestWeekStat}${avgTimeStat}</div>${healthSec}${_sparkHtml}${_6mHtml}${todHtml}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
@@ -6109,9 +6140,30 @@ function renderInsightBox(){
   el.style.display='';
 }
 
+// ── Cycle 122: today's live grade widget ──
+function renderTodayGrade(){
+  const el=document.getElementById('today-grade-box');if(!el)return;
+  if(!isWidgetOn('w_todaygrade')){el.style.display='none';return;}
+  const td=today();
+  const dc=completions[td]||{};
+  const skipIds=_readDayJSON(SKK+td,[]);
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td)&&!skipIds.includes(h.id));
+  if(!active.length){el.style.display='none';return;}
+  const done=active.filter(h=>dc[h.id]).length;
+  const total=active.length;
+  const pct=Math.round(done/total*100);
+  const grade=pct>=100?'S':pct>=85?'A':pct>=70?'B':pct>=55?'C':pct>=40?'D':'F';
+  const gradeClass='tg-'+grade.toLowerCase();
+  const msgs={S:'パーフェクト！全習慣制覇！',A:'素晴らしい！あと少し！',B:'良いペース！続けよう！',C:'まだ間に合う！頑張れ！',D:'もう一踏ん張り！',F:'今日はここから始めよう！'};
+  el.innerHTML=`<div class="tg-grade ${gradeClass}">${grade}</div><div class="tg-info"><div class="tg-label">${msgs[grade]}</div><div class="tg-sub">達成率 ${pct}%</div></div><div class="tg-ratio">${done}/${total}</div>`;
+  el.style.borderColor=done===total?'rgba(76,175,125,.35)':'';
+  el.style.display='flex';
+}
+
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
+  {key:'w_todaygrade',name:'🎓 今日のグレード',       id:'today-grade-box'},
   {key:'w_pace',   name:'⏱ ペース指標',             id:'pace-box'},
   {key:'w_chart',  name:'📊 週間/月間チャート',      id:'chart-box'},
   {key:'w_weekly', name:'📓 週次振り返りメモ',        id:'weekly-box'},
