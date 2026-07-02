@@ -1620,8 +1620,23 @@
     .wreport-best{background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:14px}
     .wreport-best-lbl{font-size:10px;color:var(--muted);margin-bottom:2px}
     .wreport-best-name{font-size:15px;font-weight:700;color:var(--fg)}
-    .wreport-msg{text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+    .wreport-msg{text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
     .wreport-close{width:100%;padding:11px;border:none;border-radius:10px;background:var(--accent);color:white;font-weight:700;cursor:pointer;font-size:14px}
+    /* ── Cycle 116: per-habit breakdown + Markdown copy ── */
+    .wreport-habits{margin-bottom:12px;max-height:150px;overflow-y:auto;border-radius:8px;border:1px solid rgba(255,255,255,.07)}
+    .wreport-habit-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+    .wreport-habit-row:last-child{border-bottom:none}
+    .wreport-habit-nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg)}
+    .wreport-habit-bar{width:52px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;flex-shrink:0}
+    .wreport-habit-bar-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
+    .wreport-habit-pct{font-size:11px;color:var(--green);font-weight:700;flex-shrink:0;min-width:28px;text-align:right}
+    .wreport-habit-pct.miss{color:var(--red)}
+    .wreport-copy-btn{width:100%;padding:9px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:rgba(255,255,255,.06);color:var(--fg);font-weight:700;cursor:pointer;font-size:12px;margin-bottom:10px;transition:background .15s;font-family:"Zen Maru Gothic",sans-serif}
+    .wreport-copy-btn:hover{background:rgba(255,255,255,.12)}
+    body.light .wreport-habits{border-color:rgba(0,0,0,.08)}
+    body.light .wreport-habit-row{border-bottom-color:rgba(0,0,0,.06)}
+    body.light .wreport-habit-bar{background:rgba(0,0,0,.06)}
+    body.light .wreport-copy-btn{border-color:rgba(0,0,0,.12);background:rgba(0,0,0,.04)}
     /* Cycle 70: habit important flag */
     .habit.important{background-image:linear-gradient(90deg,rgba(245,200,66,.06) 0,transparent 30%)!important}
     .imp-badge{font-size:10px;padding:1px 5px;border-radius:5px;background:rgba(245,200,66,.18);color:#F5C842;font-weight:700;margin-left:3px;vertical-align:middle}
@@ -2232,6 +2247,10 @@
       <div class="wreport-best-name" id="wreport-best-name"></div>
     </div>
     <div class="wreport-msg" id="wreport-msg"></div>
+    <!-- Cycle 116: per-habit breakdown -->
+    <div class="wreport-habits" id="wreport-habits" style="display:none"></div>
+    <!-- Cycle 116: Markdown copy button -->
+    <button class="wreport-copy-btn" onclick="copyWReport()">📋 Markdownでコピー</button>
     <button class="wreport-close" onclick="closeWReport()">閉じる（ESCでも）</button>
   </div>
 </div>
@@ -4502,6 +4521,13 @@ function showBanner(){
   vib([80,40,80,40,180]);
   setTimeout(()=>b.classList.remove('show'),3500);
 }
+// ── Cycle 116: general snack toast helper ──
+function showSnack(msg){
+  const t=document.getElementById('milestone-toast');
+  if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
 
 function launchConfetti(){
   const canvas=document.getElementById('cfv');
@@ -5252,6 +5278,26 @@ function _fillWReport(){
     const perfect=days.filter(ds=>{const act=active.filter(h=>isScheduled(h,ds));return act.length>0&&act.every(h=>!!(completions[ds]||{})[h.id]);}).length;
     statsEl.innerHTML=`<div class="wreport-stat-card"><div class="wreport-stat-lbl">達成習慣数</div><div class="wreport-stat-val">${totalDone}</div></div><div class="wreport-stat-card"><div class="wreport-stat-lbl">達成率</div><div class="wreport-stat-val">${rate}%</div></div><div class="wreport-stat-card"><div class="wreport-stat-lbl">完全達成日</div><div class="wreport-stat-val">${perfect}日</div></div><div class="wreport-stat-card"><div class="wreport-stat-lbl">最長ストリーク</div><div class="wreport-stat-val">${bestStreak>0?'🔥'+bestStreak:'-'}</div></div>`;
   }
+  // ── Cycle 116: per-habit breakdown ──
+  const habEl=document.getElementById('wreport-habits');
+  if(habEl){
+    const rows=active.filter(h=>(byHabit[h.id]||{}).possible>0).sort((a,b)=>{
+      const ra=(byHabit[a.id].done/byHabit[a.id].possible)||0;
+      const rb=(byHabit[b.id].done/byHabit[b.id].possible)||0;
+      return rb-ra;
+    });
+    if(rows.length){
+      habEl.style.display='';
+      habEl.innerHTML=rows.map(h=>{
+        const{done,possible}=byHabit[h.id];
+        const pct=Math.round(done/possible*100);
+        const nm=(h.emoji?h.emoji+' ':'')+esc(h.name.length>14?h.name.slice(0,14)+'…':h.name);
+        return `<div class="wreport-habit-row"><span class="wreport-habit-nm">${nm}</span><div class="wreport-habit-bar"><div class="wreport-habit-bar-fill" style="width:${pct}%"></div></div><span class="wreport-habit-pct${pct<50?' miss':''}">${pct}%</span></div>`;
+      }).join('');
+    } else habEl.style.display='none';
+  }
+  // Cache for Markdown copy
+  window._wrCache={week:`${fmt(lastMon)} 〜 ${fmt(lastSun)}`,rate,grade,gradeLabel,totalDone,totalPossible,byHabit,active};
 }
 function _checkAutoWReport(){
   const now=new Date();
@@ -5260,6 +5306,32 @@ function _checkAutoWReport(){
   if(localStorage.getItem(key))return;
   localStorage.setItem(key,'1');
   setTimeout(()=>openWReport(),1500);
+}
+// ── Cycle 116: copy weekly report as Markdown ──
+function copyWReport(){
+  const c=window._wrCache;
+  if(!c){showSnack('先にレポートを開いてください');return;}
+  const lines=[
+    `# 📈 週次パフォーマンスレポート`,
+    `**期間:** ${c.week}`,
+    `**グレード:** ${c.grade} - ${c.gradeLabel}`,
+    `**達成率:** ${c.rate}%（${c.totalDone} / ${c.totalPossible}）`,
+    '',
+    '| 習慣 | 達成 | 可能 | 達成率 |',
+    '|------|------|------|--------|',
+  ];
+  c.active.filter(h=>(c.byHabit[h.id]||{}).possible>0).sort((a,b)=>{
+    const ra=(c.byHabit[a.id].done/c.byHabit[a.id].possible)||0;
+    const rb=(c.byHabit[b.id].done/c.byHabit[b.id].possible)||0;
+    return rb-ra;
+  }).forEach(h=>{
+    const{done,possible}=c.byHabit[h.id];
+    const pct=Math.round(done/possible*100);
+    const nm=(h.emoji?h.emoji+' ':'')+h.name;
+    lines.push(`| ${nm} | ${done} | ${possible} | ${pct}% |`);
+  });
+  lines.push('','#習慣トラッカー');
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>showSnack('📋 Markdownをコピーしました')).catch(()=>showSnack('コピーに失敗しました'));
 }
 
 // ── Cycle 80: auto-resume paused habits ──
