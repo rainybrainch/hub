@@ -3707,7 +3707,13 @@ function renderPaceBox(){
   let etaHtml='';
   if(remMins>0){const ed=new Date(now.getTime()+remMins*60000);etaHtml=`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--sky);font-size:14px">${String(ed.getHours()).padStart(2,'0')}:${String(ed.getMinutes()).padStart(2,'0')}</span><span class="pace-lbl">完了予測</span></div>`;}
   const estHtml=remEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--muted)">${remEstStr}</span><span class="pace-lbl">残り推定</span></div>${etaHtml}`:'';
-  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${estHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
+  // Cycle 121: today's invested time + completed count display
+  const completedCount=active.filter(h=>dc[h.id]).length;
+  const doneMins=active.filter(h=>dc[h.id]&&(h.duration||0)>=1).reduce((s,h)=>s+(h.duration||0),0);
+  const doneEstStr=doneMins>0?(doneMins>=60?`${Math.floor(doneMins/60)}h${doneMins%60>0?String(doneMins%60).padStart(2,'0')+'m':''}`:doneMins+'m'):'';
+  const doneHtml=doneEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--green)">${doneEstStr}</span><span class="pace-lbl">達成時間</span></div>`:'';
+  const doneCountHtml=completedCount>0&&remaining>0?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--green);font-size:14px">${completedCount}件</span><span class="pace-lbl">完了済み</span></div>`:'';
+  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${doneCountHtml}${estHtml}${doneHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
 }
 
 // ── Cycle 48: weekly habit matrix widget ──
