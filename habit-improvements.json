@@ -2475,6 +2475,33 @@
                 "deployedAt": "2026-07-02T13:00:00Z",
                 "status": "success"
             }
+        },
+        {
+            "cycle": 128,
+            "timestamp": "2026-07-02T14:00:00Z",
+            "version": "v2.128",
+            "changes": [
+                "ストリーク危機アラートバナー: ストリーク3日以上の習慣が今日未達成の場合、リスト上部に赤いパルスアニメーションバナーを表示。タップで該当習慣にスクロール＆赤枠ハイライト。",
+                "達成率順ソートボタン（📊 達成率順）: ソート行に新ボタン追加。過去7日間の達成率が高い習慣順に並び替え。LocalStorage（rh_sort_rate）で状態保持。"
+            ],
+            "details": [
+                {
+                    "type": "feature",
+                    "title": "ストリーク危機アラートバナー（.streak-crisis）を追加",
+                    "description": "ストリーク3日以上の未完了かつスケジュール済み習慣がある場合、habit listの上部（#streak-crisisバナー）に赤いパルスアニメーションバナーを表示。複数の候補があればストリークが最長の習慣を選出。「⚠️ 🔥 N日ストリークが危機！ [習慣名] をまだ達成していません」と表示。タップ（scrollToStreakCrisis()）で該当カードに滑らかスクロール＆1.8秒間赤いoutlineハイライト。習慣の達成または日オフ時はバナーを自動非表示。renderStreakCrisis()がrender()末尾で毎回呼ばれ常に最新状態を反映。.streak-crisisは@keyframes sc-pulseで2.4秒周期のbox-shadowパルスアニメーション付き。_streakCrisisId変数でターゲット習慣IDを保持。各習慣カードのwrap要素にid=\"hc-{id}\"を追加してスクロールターゲットとして使用。LocalStorage変更なし・後方完全互換。"
+                },
+                {
+                    "type": "feature",
+                    "title": "達成率順ソートボタン（📊 達成率順）をソート行に追加",
+                    "description": "ソート行に「📊 達成率順」ボタン（id: sort-rate-btn）を追加。クリックで_sortByRate変数をトグルし、LocalStorage（rh_sort_rate）に保存。有効時はボタンに.sort-rate-onクラス（緑色スタイル）が付与。ソート時はrenderList()内でhabit7Days(id).filter(Boolean).length（7日間の達成数）が多い順に並び替え。無効・一時停止・当日スケジュール外の習慣は末尾に配置。スマートソート（_smartSort）・未完了優先ソート（sortUndone）・重要優先（sortImportant）と独立した新軸のソートで、それらとの競合なし（_sortByRateが最優先）。初期化時にLocalStorageからstateを復元。Cycle 112のスマートソートとは異なり「累積達成率が高い習慣」を上位表示することで、得意な習慣を先に処理してモチベーション維持を助ける。LocalStorage変更：rh_sort_rate（1または空文字）のみ追加・後方完全互換。"
+                }
+            ],
+            "notes": "Cycle 128は「ストリーク保護の能動的アラート」と「達成順ソートによるモチベーション設計」の2軸。ストリーク危機アラートはCycle 71の連続ミスバッジ（⚠️N日）が「事後通知」なのに対し、「今日まだ間に合う」タイミングでの先手アラート。最長ストリーク習慣が選ばれるので「最も守りたいもの」を最初に気づかせる。達成率順ソートはCycle 93の「要改善を上に（低達成率が上位）」の逆で、「得意なものから処理してスモールウィンを積み上げる」戦略。BJ Fogg「タイニーハビット」の"成功を先に積み重ねる"アプローチと同じ心理設計。どちらもLocalStorage破壊なし・既存機能に干渉しない完全後方互換実装。",
+            "deploy": {
+                "branch": "main",
+                "deployedAt": "2026-07-02T14:00:00Z",
+                "status": "success"
+            }
         }
     ]
 }

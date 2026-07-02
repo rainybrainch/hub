@@ -1881,6 +1881,19 @@
     .mwb-prog-fill.goal-met{background:var(--green)}
     .mwb-prog-pct{font-size:11px;font-weight:700;color:var(--sky);min-width:28px;text-align:right}
     .mwb-prog-pct.goal-met{color:var(--green)}
+    /* Cycle 128: streak crisis alert banner */
+    .streak-crisis{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(232,53,74,.13),rgba(245,200,66,.08));border:1px solid rgba(232,53,74,.28);border-radius:12px;padding:9px 14px;margin-bottom:10px;cursor:pointer;transition:background .2s,transform .15s;user-select:none;animation:sc-pulse 2.4s ease-in-out infinite}
+    .streak-crisis:hover{background:linear-gradient(135deg,rgba(232,53,74,.2),rgba(245,200,66,.12));transform:translateY(-1px)}
+    @keyframes sc-pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,53,74,.18)}50%{box-shadow:0 0 0 5px rgba(232,53,74,0)}}
+    .sc-icon{font-size:15px;flex-shrink:0}
+    .sc-text{flex:1;font-size:12px;font-weight:700;color:var(--red);line-height:1.4}
+    .sc-name{color:var(--white);font-weight:700}
+    body.light .sc-name{color:#1a1a2e}
+    .sc-arrow{color:var(--muted);font-size:11px;flex-shrink:0}
+    body.light .streak-crisis{background:linear-gradient(135deg,rgba(232,53,74,.08),rgba(245,200,66,.05));border-color:rgba(232,53,74,.22)}
+    body.light .sc-text{color:#c0392b}
+    /* Cycle 128: sort by rate button */
+    .sort-rate-on{background:rgba(76,175,125,.18)!important;color:var(--green)!important;border-color:rgba(76,175,125,.35)!important}
   </style>
 </head>
 <body>
@@ -2189,6 +2202,7 @@
     <button class="sort-btn" id="sort-prio-btn" onclick="toggleSortImportant()" style="margin-left:8px" title="重要フラグ付き習慣を先頭に表示">⭐ 重要優先</button>
     <button class="sort-btn" id="smart-sort-btn" onclick="toggleSmartSort()" style="margin-left:8px" title="緊急度・ストリーク危険度で自動ソート（Wキー）">⚡ おすすめ</button>
     <button class="sort-btn" id="grid-view-btn" onclick="toggleGridView()" style="margin-left:8px" title="2列グリッド表示切替">▦ グリッド</button>
+    <button class="sort-btn" id="sort-rate-btn" onclick="toggleSortByRate()" style="margin-left:8px" title="7日間の達成率が高い順に並び替え">📊 達成率順</button>
     <span class="rem-mins" id="rem-mins" style="display:none;margin-left:8px"></span>
     <span class="done-mins" id="done-mins" style="display:none;margin-left:8px"></span>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
@@ -2203,6 +2217,8 @@
   </div>
   <!-- Cycle 89: tag quick-filter bar -->
   <div id="tag-bar-wrap"></div>
+  <!-- Cycle 128: streak crisis alert banner -->
+  <div id="streak-crisis" class="streak-crisis" style="display:none" onclick="scrollToStreakCrisis()"></div>
   <div id="list"></div>
   <!-- Cycle 88: tomorrow schedule preview -->
   <div class="tmrw-box" id="tmrw-box" style="display:none">
@@ -2522,7 +2538,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false, _champId = null, _weekMvpId = null;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false, _champId = null, _weekMvpId = null, _sortByRate = false;
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
 let _selSG=0; // Cycle 104: streak goal selection
@@ -3588,7 +3604,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 109: N-day challenge badge
   let ncBadge='';
   if(h.challengeDays>0){const _cd=h.challengeDays;const _done=hs>=_cd;ncBadge=`<span class="nc-badge${_done?' nc-done':''}" title="N日チャレンジ目標: ${_cd}日連続">${_done?'🏆 '+_cd+'日達成':'🎯 '+hs+'/'+_cd+'日'}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${champBadge}${mvpBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}" id="hc-${h.id}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${champBadge}${mvpBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3684,7 +3700,13 @@ function renderList(){
     const rawCh=list.filter(h=>h.category===cat);
     if(!rawCh.length)continue;
     let ch;
-    if(_smartSort)ch=[...rawCh].sort((a,b)=>_smartScore(b,td,dc)-_smartScore(a,td,dc));
+    if(_sortByRate)ch=[...rawCh].sort((a,b)=>{
+      const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
+      if(aOff!==bOff)return aOff?1:-1;
+      const ra=habit7Days(a.id).filter(Boolean).length,rb=habit7Days(b.id).filter(Boolean).length;
+      return rb-ra;
+    });
+    else if(_smartSort)ch=[...rawCh].sort((a,b)=>_smartScore(b,td,dc)-_smartScore(a,td,dc));
     else if(sortUndone===1)ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       if(aOff!==bOff)return aOff?1:-1;
@@ -4048,6 +4070,7 @@ function render(){
   updateTabCounts(); // Cycle 111: category tab completion count badges
   updateFabRing(); // Cycle 125: FAB progress ring
   updateWeekCountBadge(); // Cycle 126: this-week total count badge
+  renderStreakCrisis(); // Cycle 128: streak crisis alert banner
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -5846,6 +5869,8 @@ initAccent();
 (()=>{const sm=parseInt(localStorage.getItem('rh_sort_mode')||'0');if(sm>0&&sm<3){sortUndone=sm;const b=document.getElementById('sort-undone-btn');if(b){b.classList.add('active');b.textContent=sm===2?'📉 要改善を上に':'⬆ 未完了を上に';}}const si=localStorage.getItem('rh_sort_imp');if(si==='1'){sortImportant=true;const b=document.getElementById('sort-prio-btn');if(b)b.classList.add('active');}})();
 // Cycle 112: restore smart sort state
 (()=>{if(localStorage.getItem('rh_smart_sort')==='1'){_smartSort=true;const b=document.getElementById('smart-sort-btn');if(b)b.classList.add('smart-on');}})();
+// Cycle 128: restore sort-by-rate state
+(()=>{if(localStorage.getItem('rh_sort_rate')==='1'){_sortByRate=true;const b=document.getElementById('sort-rate-btn');if(b)b.classList.add('sort-rate-on');}})();
 toggleTough(false); // Cycle 47: init tough buttons
 toggleImportant(false); // Cycle 70: init important buttons
 render();
@@ -6438,6 +6463,42 @@ function updateWeekCountBadge(){
   el.textContent=`📅 今週 ${total}件`;
 }
 
+// ── Cycle 128: streak crisis alert ──
+let _streakCrisisId=null;
+function renderStreakCrisis(){
+  const el=document.getElementById('streak-crisis');if(!el)return;
+  const td=today();
+  if(isDayOff(td)){el.style.display='none';_streakCrisisId=null;return;}
+  const dc=completions[td]||{};
+  // find highest-streak active habit that's scheduled today and not yet done
+  const candidates=habits.filter(h=>{
+    if(h.archived||h.paused||!isScheduled(h,td))return false;
+    const skp=(JSON.parse(localStorage.getItem('rh_skip_'+td)||'[]')).includes(h.id);
+    if(dc[h.id]||skp)return false;
+    return habitStreak(h.id)>=3;
+  });
+  if(!candidates.length){el.style.display='none';_streakCrisisId=null;return;}
+  candidates.sort((a,b)=>habitStreak(b.id)-habitStreak(a.id));
+  const top=candidates[0];
+  const st=habitStreak(top.id);
+  _streakCrisisId=top.id;
+  const em=top.emoji?top.emoji+' ':'';
+  el.style.display='flex';
+  el.innerHTML=`<span class="sc-icon">⚠️</span><span class="sc-text">🔥 ${st}日ストリークが危機！ <span class="sc-name">${em}${top.name}</span> をまだ達成していません</span><span class="sc-arrow">▶ タップで移動</span>`;
+}
+function scrollToStreakCrisis(){
+  if(!_streakCrisisId)return;
+  const card=document.getElementById('hc-'+_streakCrisisId);
+  if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.style.outline='2px solid var(--red)';setTimeout(()=>card.style.outline='',1800);}
+}
+// ── Cycle 128: sort by 7-day completion rate ──
+function toggleSortByRate(){
+  _sortByRate=!_sortByRate;
+  localStorage.setItem('rh_sort_rate',_sortByRate?'1':'');
+  const btn=document.getElementById('sort-rate-btn');
+  if(btn)btn.classList.toggle('sort-rate-on',_sortByRate);
+  render();
+}
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
