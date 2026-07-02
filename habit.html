@@ -1247,6 +1247,28 @@
     body.light .insight-txt{color:var(--dark)}
     body.light .insight-row{border-bottom-color:rgba(0,0,0,.05)}
     body.compact .insight-card{display:none}
+
+    /* Cycle 71: anniversary toast */
+    .ann-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(155,109,214,.92),rgba(91,200,232,.82));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:9px 22px;border-radius:30px;box-shadow:0 8px 28px rgba(155,109,214,.45);z-index:443;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
+    .ann-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Cycle 71: score history popup */
+    .score-wrap{position:relative;display:inline-flex;align-items:center}
+    .score-badge{cursor:pointer!important}
+    .score-hist-pop{position:absolute;top:calc(100% + 8px);right:0;background:var(--dark2);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 14px;z-index:610;width:210px;box-shadow:0 12px 40px rgba(0,0,0,.55);opacity:0;transform:translateY(-6px) scale(.96);pointer-events:none;transition:opacity .18s,transform .2s cubic-bezier(.34,1.56,.64,1)}
+    .score-hist-pop.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .sh-ttl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .sh-bars{display:flex;gap:4px;align-items:flex-end;height:50px}
+    .sh-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .sh-bar-wrap{flex:1;width:100%;background:rgba(255,255,255,.06);border-radius:3px;position:relative;overflow:hidden;min-height:38px}
+    .sh-bar-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,var(--gold),var(--gold-d));border-radius:3px;transition:height .45s cubic-bezier(.34,1.56,.64,1)}
+    .sh-bar-fill.today{background:linear-gradient(180deg,var(--sky),#2a8eb0)}
+    .sh-day-lbl{font-size:8px;color:var(--muted);font-weight:700}
+    .sh-day-lbl.today{color:var(--sky)}
+    .sh-scores-row{display:flex;gap:4px;margin-top:4px}
+    .sh-score-val{flex:1;text-align:center;font-size:8px;font-family:"Dela Gothic One",sans-serif;color:var(--muted)}
+    .sh-score-val.today{color:var(--sky)}
+    body.light .score-hist-pop{background:#fff;border-color:rgba(0,0,0,.1);box-shadow:0 12px 40px rgba(0,0,0,.15)}
   </style>
 </head>
 <body>
@@ -1274,6 +1296,8 @@
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
+<!-- Cycle 71: anniversary notification toast -->
+<div class="ann-toast" id="ann-toast"></div>
 <div class="combo-toast" id="combo-toast"></div>
 <div class="next-habit-toast" id="next-habit-toast"></div>
 <!-- Cycle 69: first check of day toast -->
@@ -1391,7 +1415,7 @@
     <span class="streak-cal-wrap"><span class="streak-badge" id="streak-badge" onclick="toggleStreakCal()" title="過去30日のカレンダーを表示">🔥 0日連続達成中</span><div class="streak-cal-pop" id="streak-cal-pop"></div></span>
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
     <span class="grade-badge" id="grade-badge" style="display:none"></span>
-    <span class="score-badge" id="score-badge" style="display:none"></span>
+    <span class="score-wrap"><span class="score-badge" id="score-badge" style="display:none" onclick="toggleScoreHistory(event)" title="クリックで過去7日スコア履歴を表示"></span><div class="score-hist-pop" id="score-hist-pop"></div></span>
     <span class="perf-badge" id="perf-badge" style="display:none" title="過去90日間の全習慣達成日数">✨ 0日完璧</span>
   </div>
 
@@ -2969,6 +2993,73 @@ function renderScoreBadge(){
   _lastScore=score;
 }
 
+// ── Cycle 71: score history popup ──
+let _scoreHistOpen=false;
+function toggleScoreHistory(e){
+  if(e)e.stopPropagation();
+  const el=document.getElementById('score-hist-pop');if(!el)return;
+  _scoreHistOpen=!_scoreHistOpen;
+  if(_scoreHistOpen){_renderScoreHistory(el);el.classList.add('open');}
+  else el.classList.remove('open');
+}
+function _renderScoreHistory(el){
+  const DAY_LABELS=['日','月','火','水','木','金','土'];
+  const scores=[];let maxScore=1;
+  for(let i=6;i>=0;i--){
+    const ds=dateAgo(i);
+    const s=parseInt(localStorage.getItem('rh_daily_score_'+ds)||'0');
+    scores.push({s,isToday:i===0,lbl:DAY_LABELS[new Date(ds).getDay()]});
+    if(s>maxScore)maxScore=s;
+  }
+  const hiScore=parseInt(localStorage.getItem('rh_hi_score')||'0');
+  const barsHtml=scores.map(d=>{
+    const h=maxScore>0?Math.round(d.s/maxScore*100):0;
+    return`<div class="sh-col"><div class="sh-bar-wrap"><div class="sh-bar-fill${d.isToday?' today':''}" style="height:${h}%"></div></div><span class="sh-day-lbl${d.isToday?' today':''}">${d.lbl}</span></div>`;
+  }).join('');
+  const scoresRow=scores.map(d=>`<span class="sh-score-val${d.isToday?' today':''}">${d.s||''}</span>`).join('');
+  el.innerHTML=`<div class="sh-ttl">🏅 スコア履歴（自己ベスト: ${hiScore}pt）</div><div class="sh-bars">${barsHtml}</div><div class="sh-scores-row">${scoresRow}</div>`;
+}
+document.addEventListener('click',function(e){
+  if(!_scoreHistOpen)return;
+  const wrap=document.querySelector('.score-wrap');
+  if(wrap&&!wrap.contains(e.target)){_scoreHistOpen=false;document.getElementById('score-hist-pop')?.classList.remove('open');}
+});
+
+// ── Cycle 71: anniversary notifications ──
+const ANNIVERSARY_DAYS=[30,60,90,180,365];
+let _annShownSet=null;
+function _getAnnShown(){
+  if(_annShownSet)return _annShownSet;
+  try{_annShownSet=new Set(JSON.parse(localStorage.getItem('rh_ann_'+today())||'[]'));}
+  catch{_annShownSet=new Set();}
+  return _annShownSet;
+}
+function checkAnniversaries(){
+  const shown=_getAnnShown();
+  const pending=[];
+  habits.filter(h=>!h.archived&&!h.paused&&h.createdAt).forEach(h=>{
+    const elapsed=Math.floor((Date.now()-new Date(h.createdAt))/86400000);
+    ANNIVERSARY_DAYS.forEach(d=>{
+      const key=h.id+'_'+d;
+      if(elapsed===d&&!shown.has(key))pending.push({h,d,key});
+    });
+  });
+  if(!pending.length)return;
+  pending.forEach(p=>shown.add(p.key));
+  localStorage.setItem('rh_ann_'+today(),JSON.stringify([...shown]));
+  function showNext(idx){
+    if(idx>=pending.length)return;
+    const{h,d}=pending[idx];
+    const em=h.emoji?h.emoji+' ':'';
+    const t=document.getElementById('ann-toast');
+    if(!t)return;
+    t.textContent=`🎂 ${em}${h.name} ${d}日目おめでとう！`;
+    t.classList.add('show');
+    setTimeout(()=>{t.classList.remove('show');setTimeout(()=>showNext(idx+1),500);},3200);
+  }
+  setTimeout(()=>showNext(0),1800);
+}
+
 // ── Cycle 61: Drag-and-drop habit reorder ──
 let _dragId=null;
 function onHabitDragStart(id,e){
@@ -3910,6 +4001,7 @@ initFocusMode();
 toggleTough(false); // Cycle 47: init tough buttons
 render();
 document.body.classList.add('loaded');
+checkAnniversaries(); // Cycle 71: anniversary notifications
 setInterval(renderPaceBox,60000);
 setInterval(_updateRecTimeBadges,60000); // Cycle 68
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
