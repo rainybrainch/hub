@@ -812,6 +812,9 @@
     body.light .color-swatch.sel{border-color:#1a1a2e!important}
     .color-swatch-none{background:rgba(255,255,255,.08);border:2px dashed rgba(255,255,255,.2)!important;font-size:11px;color:var(--muted)}
     body.light .color-swatch-none{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.15)!important;color:rgba(0,0,0,.4)}
+    /* Cycle 117: custom color left border accent */
+    .habit.custom-color{border-left:3px solid var(--hcol);padding-left:13px}
+    body.compact .habit.custom-color{padding-left:9px}
     .habit.custom-color .h-dot.done{background:var(--hcol)!important;box-shadow:0 0 4px var(--hcol)}
     body.light .habit.custom-color .h-dot.done{background:var(--hcol)!important}
 
@@ -1455,6 +1458,10 @@
     .diary-habit-pill{font-size:11px;padding:2px 8px;background:rgba(255,255,255,.06);border-radius:20px;color:var(--muted)}
     .diary-habit-pill.done{background:rgba(76,175,125,.15);color:var(--green)}
     .diary-empty{color:var(--muted);font-size:12px;font-style:italic}
+    /* Cycle 117: diary intention notes and highlights */
+    .diary-notes{margin-top:7px;display:flex;flex-direction:column;gap:4px}
+    .diary-intent{font-size:11px;color:#8ab4f8;background:rgba(138,180,248,.08);border-radius:8px;padding:4px 9px;line-height:1.4}
+    .diary-hl{font-size:11px;color:var(--gold);background:rgba(245,200,66,.08);border-radius:8px;padding:4px 9px;line-height:1.4}
     /* Cycle 84: habit tag feature */
     .tag-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
     .tag-row-lbl{font-size:12px;color:var(--muted);white-space:nowrap}
@@ -6649,7 +6656,10 @@ function openDiaryView(){
     const pillsHtml=doneHabits.length
       ?doneHabits.map(h=>`<span class="diary-habit-pill done">${h.emoji?h.emoji+' ':''}${esc(h.name)}</span>`).join('')
       :`<span class="diary-empty">記録なし</span>`;
-    html+=`<div class="diary-day"><div class="diary-day-hdr"><span class="diary-day-date">${dateDisp}</span>${rateHtml}${moodHtml}</div><div class="diary-habits">${pillsHtml}</div></div>`;
+    const intent=localStorage.getItem('rh_intent_'+ds)||'';
+    const hl=localStorage.getItem('rh_hl_'+ds)||'';
+    const notesHtml=(intent||hl)?`<div class="diary-notes">${intent?`<div class="diary-intent">💡 ${esc(intent)}</div>`:''}${hl?`<div class="diary-hl">⭐ ${esc(hl)}</div>`:''}</div>`:'';
+    html+=`<div class="diary-day"><div class="diary-day-hdr"><span class="diary-day-date">${dateDisp}</span>${rateHtml}${moodHtml}</div><div class="diary-habits">${pillsHtml}</div>${notesHtml}</div>`;
   }
   document.getElementById('diary-content').innerHTML=html;
   document.getElementById('diary-ovl').classList.add('open');
