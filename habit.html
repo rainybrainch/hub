@@ -1235,6 +1235,19 @@
     @keyframes eveningRisk{0%,100%{box-shadow:0 0 0 0 rgba(255,167,38,0)}50%{box-shadow:0 0 0 3px rgba(255,167,38,.3)}}
     .habit.evening-risk:not(.done):not(.paused):not(.skipped-today){animation:eveningRisk 2.5s ease-in-out infinite}
 
+    /* Cycle 114: full-completion speedrun badge */
+    .speed-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,rgba(91,200,232,.12),rgba(155,109,214,.08));border:1px solid rgba(91,200,232,.25);border-radius:14px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--sky);flex-shrink:0;transition:all .25s;cursor:default}
+    .speed-badge.pr{border-color:rgba(245,200,66,.45);background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(91,200,232,.08));color:var(--gold)}
+    body.light .speed-badge{background:linear-gradient(135deg,rgba(91,200,232,.1),rgba(155,109,214,.06));border-color:rgba(91,200,232,.3)}
+    body.light .speed-badge.pr{border-color:rgba(245,200,66,.5);background:linear-gradient(135deg,rgba(245,200,66,.15),rgba(91,200,232,.08))}
+    /* Cycle 114: FAB long-press category quick-add palette */
+    .fab-palette{position:fixed;bottom:92px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:201;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .2s,transform .2s cubic-bezier(.34,1.56,.64,1)}
+    .fab-palette.open{opacity:1;pointer-events:auto;transform:translateY(0)}
+    .fab-palette-btn{padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:rgba(22,27,34,.95);color:#fff;font-family:"Zen Maru Gothic",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.4);align-self:flex-end}
+    .fab-palette-btn:hover{border-color:rgba(245,200,66,.5);background:rgba(245,200,66,.12);color:var(--gold)}
+    body.light .fab-palette-btn{background:rgba(255,255,255,.97);color:#1a1a2e;border-color:rgba(0,0,0,.15);box-shadow:0 2px 12px rgba(0,0,0,.12)}
+    body.light .fab-palette-btn:hover{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.5)}
+
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
     body.light .score-badge{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(255,123,92,.15));border-color:rgba(245,200,66,.4)}
@@ -1857,6 +1870,7 @@
     <span class="perfect-week-badge" id="perfect-week-badge" style="display:none"></span>
     <span class="perfect-month-badge" id="perfect-month-badge" style="display:none"></span>
     <span class="hab-on-streak" id="hab-on-streak" style="display:none"></span>
+    <span class="speed-badge" id="speed-badge" style="display:none"></span>
   </div>
 
   <!-- Cycle 87: weekly completion dots -->
@@ -2000,6 +2014,13 @@
 </div>
 
 <button class="scroll-top" id="scroll-top" onclick="scrollToTop()" aria-label="ページ上部へ">↑</button>
+<!-- Cycle 114: FAB long-press quick-add palette -->
+<div class="fab-palette" id="fab-palette">
+  <button class="fab-palette-btn" onclick="openModalWithCat('学習');closeFabPalette()">📚 学習</button>
+  <button class="fab-palette-btn" onclick="openModalWithCat('運動');closeFabPalette()">💪 運動</button>
+  <button class="fab-palette-btn" onclick="openModalWithCat('創作');closeFabPalette()">🎨 創作</button>
+  <button class="fab-palette-btn" onclick="openModalWithCat('自己改善');closeFabPalette()">⭐ 自己改善</button>
+</div>
 <button class="fab" onclick="openModal()" aria-label="習慣を追加">＋<span class="fab-badge zero" id="fab-badge"></span></button>
 
 <div class="overlay" id="overlay" onclick="bgClose(event)">
@@ -2976,6 +2997,8 @@ function renderStats(){
   renderPerfectWeekBadge();
   // Cycle 81: perfect month days badge
   updatePerfectMonthBadge();
+  // Cycle 114: speedrun badge
+  renderSpeedBadge();
 }
 
 // Cycle 81: count days this month where all habits were completed
@@ -3779,6 +3802,13 @@ function toggle(id,evt){
   if(!wasCompleted&&_hh)_checkStreakGoal(id,_hh);
   // Cycle 109: N-day challenge check
   if(!wasCompleted&&_hh&&_hh.challengeDays>0)_checkNChallenge(id,_hh);
+  // Cycle 114: speedrun tracking — record first check and full-completion time
+  const _srFKey='rh_sr_first_'+td;
+  if(!wasCompleted&&!localStorage.getItem(_srFKey))localStorage.setItem(_srFKey,new Date().toISOString());
+  if(todayRate()===100&&!localStorage.getItem('rh_sr_'+td)){
+    const _fts=localStorage.getItem(_srFKey);
+    if(_fts){const _sm=Math.round((new Date()-new Date(_fts))/60000);if(_sm>=0&&_sm<480){localStorage.setItem('rh_sr_'+td,String(_sm));const _pb=parseInt(localStorage.getItem('rh_sr_pb')||'9999');if(_sm<_pb)localStorage.setItem('rh_sr_pb',String(_sm));}}
+  }
   // cycle 2: celebration check
   if(todayRate()===100&&!celebrated){
     celebrated=true;
@@ -6649,6 +6679,45 @@ function checkMonthlySummary(){
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),5000);
 }
+
+// ── Cycle 114: full-completion speedrun badge ──
+function renderSpeedBadge(){
+  const el=document.getElementById('speed-badge');if(!el)return;
+  const td=today();
+  const m=parseInt(localStorage.getItem('rh_sr_'+td)||'');
+  if(isNaN(m)){el.style.display='none';return;}
+  const pb=parseInt(localStorage.getItem('rh_sr_pb')||'9999');
+  const isPR=m<=pb;
+  el.style.display='';
+  el.textContent=isPR?`⚡ 全完了 ${m}分 🎯PR!`:`⚡ 全完了 ${m}分`;
+  el.className='speed-badge'+(isPR?' pr':'');
+  el.title=`今日の全習慣達成タイム: ${m}分${isPR?' (自己最速!)':''}`;
+}
+
+// ── Cycle 114: FAB long-press category quick-add palette ──
+(function(){
+  const fab=document.querySelector('.fab');
+  if(!fab)return;
+  let _lpt=null;
+  function show(){
+    vib(40);
+    document.getElementById('fab-palette')?.classList.add('open');
+    setTimeout(()=>document.addEventListener('click',_outside,{once:true,capture:true}),0);
+  }
+  function closeFabPalette(){document.getElementById('fab-palette')?.classList.remove('open');}
+  window.closeFabPalette=closeFabPalette;
+  function _outside(e){
+    const pal=document.getElementById('fab-palette');
+    if(pal&&pal.contains(e.target))return;
+    closeFabPalette();
+  }
+  fab.addEventListener('touchstart',()=>{_lpt=setTimeout(()=>{_lpt=null;show();},500);},{passive:true});
+  fab.addEventListener('touchend',()=>{if(_lpt){clearTimeout(_lpt);_lpt=null;}},{passive:true});
+  fab.addEventListener('touchmove',()=>{if(_lpt){clearTimeout(_lpt);_lpt=null;}},{passive:true});
+  fab.addEventListener('mousedown',e=>{if(e.button!==0)return;_lpt=setTimeout(()=>{_lpt=null;show();},500);});
+  fab.addEventListener('mouseup',()=>{if(_lpt){clearTimeout(_lpt);_lpt=null;}});
+  fab.addEventListener('mouseleave',()=>{if(_lpt){clearTimeout(_lpt);_lpt=null;}});
+})();
 </script>
 
 <!-- Cycle 62: monthly calendar modal -->

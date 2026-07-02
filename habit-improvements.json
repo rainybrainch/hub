@@ -2154,6 +2154,29 @@
         "deployedAt": "2026-07-01T07:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 114,
+      "version": "v2.114",
+      "timestamp": "2026-07-02T00:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "全習慣達成スピードランバッジ（⚡ 全完了 N分）",
+          "description": "その日に最初の習慣をチェックした時刻から全習慣完了までの所要時間を計測し、ストリーク行に⚡バッジで表示。toggle()内でlocalStorageキー rh_sr_first_YYYY-MM-DD（初回チェック時刻）とrh_sr_YYYY-MM-DD（完了所要時間）を記録。自己最速タイム(rh_sr_pb)を更新した場合は「⚡ 全完了 N分 🎯PR!」と表示し、バッジが金色ハイライト（.speed-badge.pr）に変わる。renderSpeedBadge()関数がrenderStats()から毎回呼ばれ、当日完了前は非表示。"
+        },
+        {
+          "type": "ux",
+          "title": "FAB長押しカテゴリークイック追加パレット",
+          "description": "追加ボタン（FAB）を500ms長押しすると、学習・運動・創作・自己改善の4カテゴリーショートカットボタンが画面右下にスライドアップ表示される。各ボタンを押すとopenModalWithCat(cat)を呼び出し、カテゴリーが選択済みの状態で習慣追加モーダルが開く。外側クリックで自動クローズ。モバイルのtouchstart/touchend/touchmoveとデスクトップのmousedown/mouseup/mouseleaveの両方に対応。長押し開始時にvib(40)で触覚フィードバック。"
+        }
+      ],
+      "notes": "Cycle 114はスピードラン計測とFABパレットの2機能を追加。スピードランバッジは「今日何分で全部終わらせたか」というゲーム的な達成感を与える新機軸。自己ベスト更新時の金色PRバッジで追加のモチベーション。FABパレットはよく使うカテゴリーへの素早いアクセスを提供し、習慣追加の摩擦を減らすUX改善。Cycle 64のopenModalWithCat()を活用した自然な拡張。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T00:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
