@@ -1248,6 +1248,13 @@
     .perf-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(91,200,232,.12),rgba(91,200,232,.06));border:1px solid rgba(91,200,232,.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--sky)}
     body.light .perf-badge{background:linear-gradient(135deg,rgba(14,120,160,.1),rgba(14,120,160,.05));border-color:rgba(14,120,160,.3);color:#0e78a0}
 
+    /* Cycle 77: weekly perfect streak badge */
+    .week-streak-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(76,175,125,.12),rgba(76,175,125,.06));border:1px solid rgba(76,175,125,.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--green);transition:all .3s;white-space:nowrap}
+    body.light .week-streak-badge{background:linear-gradient(135deg,rgba(76,175,125,.15),rgba(76,175,125,.08));border-color:rgba(76,175,125,.35)}
+    /* Cycle 77: overdue rec-time badge */
+    .rec-time-badge.overdue{color:var(--red)!important;background:rgba(232,53,74,.1)!important;border-color:rgba(232,53,74,.3)!important;animation:rtOverdue 1.8s ease-in-out infinite}
+    @keyframes rtOverdue{0%,100%{box-shadow:none}50%{box-shadow:0 0 7px rgba(232,53,74,.35)}}
+
     /* Cycle 72: habit correlation widget */
     .corr-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
     .corr-ttl{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
@@ -1506,6 +1513,7 @@
     <span class="score-badge" id="score-badge" style="display:none"></span>
     <span class="perf-wrap"><span class="perf-badge" id="perf-badge" style="display:none" onclick="togglePerfHistory(event)" title="クリックで過去の完璧な日を確認">✨ 0日完璧</span><div class="perf-hist-pop" id="perf-hist-pop"></div></span>
     <span class="login-streak-badge" id="login-streak-badge" style="display:none" title="連続でアプリを開いた日数">📱 1日連続</span>
+    <span class="week-streak-badge" id="week-streak-badge" style="display:none" title="全習慣を週単位で達成した連続週数">🗓 0週</span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -2367,6 +2375,8 @@ function renderStats(){
   renderScoreBadge();
   // Cycle 70: perfect days badge
   renderPerfBadge();
+  // Cycle 77: weekly perfect streak badge
+  renderWeekStreakBadge();
 }
 
 let chartView='week';
@@ -4682,12 +4692,16 @@ function renderHighlightBox(){
 // ── Cycle 68: recommended execution time ──
 function _updateRecTimeBadges(){
   const n=new Date();const nowMin=n.getHours()*60+n.getMinutes();
+  const td=today();const dc=completions[td]||{};
   document.querySelectorAll('[data-rec-id]').forEach(el=>{
     const h=habits.find(x=>x.id===el.dataset.recId);
     if(!h||!h.recTime)return;
     const[rh,rm]=h.recTime.split(':').map(Number);
-    const diff=(rh*60+rm)-nowMin;
-    el.classList.toggle('soon',diff>=-15&&diff<=30);
+    const diff=(rh*60+rm)-nowMin; // positive=future, negative=past
+    const isDone=!!dc[h.id];
+    if(isDone){el.classList.remove('soon','overdue');return;}
+    el.classList.toggle('soon',diff>=-15&&diff<=30&&diff>-60);
+    el.classList.toggle('overdue',diff<-60); // Cycle 77: 60+ min past recommended time
   });
 }
 
@@ -4832,6 +4846,37 @@ function renderPerfBadge(){
   el.style.display='';
   el.textContent=`✨ ${n}日完璧`;
   el.title=`過去90日間で${n}回、全ての習慣を達成した日があります`;
+}
+
+// ── Cycle 77: weekly perfect streak ──
+function calcWeekStreak(){
+  const now=new Date();
+  const todayDow=(now.getDay()+6)%7; // 0=Mon,6=Sun
+  let streak=0;
+  for(let w=1;w<=52;w++){
+    const monOffset=todayDow+7*w;
+    let perfect=true,hasAny=false;
+    for(let d=0;d<7;d++){
+      const ago=monOffset-d;
+      const ds=dateAgo(ago);
+      const active=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,ds));
+      if(!active.length)continue;
+      hasAny=true;
+      if(dayRate(ds)<1){perfect=false;break;}
+    }
+    if(!hasAny){if(streak>0)break;else continue;}
+    if(!perfect)break;
+    streak++;
+  }
+  return streak;
+}
+function renderWeekStreakBadge(){
+  const el=document.getElementById('week-streak-badge');if(!el)return;
+  const ws=calcWeekStreak();
+  if(ws<1){el.style.display='none';return;}
+  el.style.display='';
+  el.textContent=`🗓 ${ws}週連続`;
+  el.title=`全習慣を完全達成した連続週数: ${ws}週`;
 }
 
 // ── Cycle 70: personal insights card ──

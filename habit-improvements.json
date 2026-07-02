@@ -1314,6 +1314,45 @@
         "deployedAt": "2026-07-02T05:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 77,
+      "version": "v2.77",
+      "timestamp": "2026-07-02T06:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "週間完全ストリークバッジ（🗓 N週連続）",
+          "description": "全習慣を週単位で100%達成した連続週数を表示する新バッジを追加。streak-row内の既存バッジ群の末尾に配置。calcWeekStreak()が直近52週を遡り、月〜日の7日間すべての有効習慣を達成した連続週数を計算。対象習慣が0件の週はスキップして連続を維持。1週以上の連続がある場合のみバッジを表示（非表示デフォルト）。renderWeekStreakBadge()がrenderStats()末尾で呼ばれるためチェック操作のたびにリアルタイム更新。グリーンカラー（--green）のピル型バッジでperf-badgeと視覚的一貫性を保持。",
+          "files": ["habit.html"],
+          "details": [
+            ".week-streak-badge: inline-flex, green gradient background, border-radius:20px, font-size:12px",
+            "body.light .week-streak-badge: より濃いグリーン背景",
+            "calcWeekStreak(): 1〜52週前を遡り、各週の月〜日全日のdayRate()が1.0かチェック",
+            "renderWeekStreakBadge(): ws<1なら非表示、1以上なら🗓 N週連続を表示",
+            "renderStats()末尾にrenderWeekStreakBadge()呼び出しを追加"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "推奨時刻超過バッジ（.overdueスタイル）",
+          "description": "推奨実行時刻（recTime）から60分以上経過しても未完了の習慣に、赤色の脈動するoverdueスタイルを適用。既存の_updateRecTimeBadges()を拡張し、isDoneチェックを追加（完了済みはsoon/overdueを両方除去）。diff<-60（推奨時刻から60分超過）の場合はoverdue classを付与。.rec-time-badge.overdueは赤色（--red）テキスト+背景+ボーダー+rtOverdueキーフレームによる1.8秒周期のglow pulse。60分という閾値でsoon（-15〜30分）との境界を明確化し、誤った警告を防ぐ。",
+          "files": ["habit.html"],
+          "details": [
+            ".rec-time-badge.overdue: color:var(--red), rgba(232,53,74,.1)背景, animation:rtOverdue 1.8s",
+            "@keyframes rtOverdue: 50%でbox-shadow:0 0 7px rgba(232,53,74,.35)のパルス",
+            "_updateRecTimeBadges()拡張: dc取得追加, isDoneチェック, overdue切替ロジック",
+            "soon条件をdiff>=-15&&diff<=30&&diff>-60に修正（-60分を超えたらoverdueに移行）",
+            "完了済み習慣はsoon/overdueを両方外しニュートラルに戻す"
+          ]
+        }
+      ],
+      "notes": "Cycle 77は「達成のさらなる可視化」と「習慣実行の緊急度表現」の2軸改善。週間完全ストリークバッジは日次ストリーク（🔥）・完璧な日バッジ（✨）に続く第3の達成指標で、週単位の継続性を評価する。7日間すべての習慣を完全達成した週が連続すると表示され、上位ユーザーへの新たなやりがいを提供。推奨時刻超過バッジはCycle 68のrecTimeバッジ（soon状態）を進化させ、「うっかり忘れ」を防ぐアラートとして機能。60分超過でsoon→overdueに切り替わり、完了時は自動でニュートラルに戻る。両改善ともLocalStorage構造変更なし・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T06:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
