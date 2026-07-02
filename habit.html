@@ -1259,6 +1259,21 @@
     .miss-badge{font-size:9px;color:var(--red);font-weight:900;padding:2px 5px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.25);border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.03em;cursor:default}
     body.compact .miss-badge{display:none}
     body.light .miss-badge{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.3)}
+    /* Cycle 120: streak champion badge */
+    .champ-badge{display:inline-flex;align-items:center;gap:2px;background:linear-gradient(135deg,rgba(245,200,66,.2),rgba(255,185,60,.1));border:1px solid rgba(245,200,66,.55);border-radius:6px;padding:2px 5px;font-size:10px;font-weight:900;color:var(--gold);flex-shrink:0;animation:champGlow 2s ease-in-out infinite alternate;cursor:default}
+    @keyframes champGlow{0%{box-shadow:0 0 3px rgba(245,200,66,.2)}100%{box-shadow:0 0 8px rgba(245,200,66,.45)}}
+    body.compact .champ-badge{display:none}
+    body.light .champ-badge{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(255,185,60,.08));border-color:rgba(245,200,66,.6);color:#8a6500}
+    /* Cycle 120: 4-week sparkline in habit detail panel */
+    .hd-spark-box{margin:10px 0 6px}
+    .hd-spark-ttl{font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600}
+    .hd-spark-bars{display:flex;gap:8px;height:56px;align-items:flex-end}
+    .hd-spark-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:3px}
+    .hd-spark-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;background:rgba(255,255,255,.05);border-radius:4px 4px 0 0;overflow:hidden;min-height:36px}
+    body.light .hd-spark-bar-wrap{background:rgba(0,0,0,.05)}
+    .hd-spark-fill{width:100%;border-radius:4px 4px 0 0;transition:height .5s cubic-bezier(.34,1.56,.64,1)}
+    .hd-spark-lbl{font-size:9px;color:var(--muted);white-space:nowrap}
+    .hd-spark-pct{font-size:10px;font-weight:700;color:var(--text)}
     /* Cycle 118: week matrix perfect-days footer */
     .wm-perfect-footer{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
     .wm-perfect-footer strong{color:var(--gold)}
@@ -2375,7 +2390,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false, _champId = null;
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
 let _selSG=0; // Cycle 104: streak goal selection
@@ -3335,6 +3350,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 118: miss streak badge (3+ consecutive scheduled misses)
   const _ms=(!isDone&&!isPaused)?missStreak(h.id):0;
   const missBadge=_ms>=3?`<span class="miss-badge" title="${_ms}日連続で未達成">⚠️${_ms}日</span>`:'';
+  // Cycle 120: champion badge for habit with highest active streak (≥7)
+  const champBadge=h.id===_champId?`<span class="champ-badge" title="全習慣中の最高ストリーク！現在${hs}日連続">👑</span>`:'';
   const hbs=habitBestStreak(h.id);
   const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const fix30=habitFix30(h.id);
@@ -3435,7 +3452,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 109: N-day challenge badge
   let ncBadge='';
   if(h.challengeDays>0){const _cd=h.challengeDays;const _done=hs>=_cd;ncBadge=`<span class="nc-badge${_done?' nc-done':''}" title="N日チャレンジ目標: ${_cd}日連続">${_done?'🏆 '+_cd+'日達成':'🎯 '+hs+'/'+_cd+'日'}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${champBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3473,6 +3490,9 @@ function renderList(){
     return;
   }
 
+  // Cycle 120: identify streak champion (highest current streak ≥7 among active habits)
+  _champId=null;let _champMax=6;
+  habits.filter(h=>!h.archived&&!h.paused).forEach(h=>{const s=habitStreak(h.id);if(s>_champMax){_champMax=s;_champId=h.id;}});
   let html='';
   // Cycle 66: all-done summary card
   if(!searchQuery&&!isDayOff(td)){
@@ -5257,7 +5277,11 @@ function _habitDetailHtml(id){
   const _hs=habitHealthScore(id);
   const healthSec=`<div class="hd-health"><div class="hd-health-row"><span class="hd-health-lbl">📊 継続スコア</span><span class="hd-health-score ${_hs.cls}">${_hs.score}<span style="font-size:11px;font-weight:600;opacity:.65">/100</span></span></div><div class="hd-health-bar"><div class="hd-health-bar-fill ${_hs.cls}" style="width:${_hs.score}%"></div></div></div>`;
   const bestWeekStat=bestWeek>0?`<div class="hd-stat"><div class="hd-stat-val">${bestWeek}</div><div class="hd-stat-lbl">週最高</div></div>`:'';
-  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${bestWeekStat}${avgTimeStat}</div>${healthSec}${todHtml}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
+  // Cycle 120: 4-week completion rate sparkline (most recent week on right)
+  const _sparkWeeks=[];
+  for(let w=3;w>=0;w--){let _wd=0,_ws=0;for(let d=0;d<7;d++){const _ds=dateAgo(w*7+d);if(hObj&&!isScheduled(hObj,_ds))continue;_ws++;if((completions[_ds]||{})[id])_wd++;}_sparkWeeks.push({rate:_ws>0?Math.round(_wd/_ws*100):null,lbl:w===0?'今週':`-${w}週`});}
+  const _sparkHtml=`<div class="hd-spark-box"><div class="hd-spark-ttl">📈 週別達成率（過去4週）</div><div class="hd-spark-bars">${_sparkWeeks.map(b=>{if(b.rate===null)return`<div class="hd-spark-col"><div class="hd-spark-bar-wrap"></div><div class="hd-spark-lbl">${b.lbl}</div><div class="hd-spark-pct">-</div></div>`;const _c=b.rate>=80?'var(--green)':b.rate>=50?'var(--gold)':'var(--red)';return`<div class="hd-spark-col"><div class="hd-spark-bar-wrap"><div class="hd-spark-fill" style="height:${b.rate}%;background:${_c}"></div></div><div class="hd-spark-lbl">${b.lbl}</div><div class="hd-spark-pct">${b.rate}%</div></div>`;}).join('')}</div></div>`;
+  return `<div class="hd-inner">${hmHtml}${legendHtml}<div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${bestWeekStat}${avgTimeStat}</div>${healthSec}${_sparkHtml}${todHtml}${dowHtml}${msHtml}${noteSec}${whySec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
