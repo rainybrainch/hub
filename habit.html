@@ -1347,6 +1347,20 @@
     body.light .arc-cancel-btn{background:rgba(0,0,0,.05);color:rgba(0,0,0,.5)}
     body.oled .arc-modal{background:#000}
 
+    /* Cycle 126: custom affirmation input in habit modal */
+    .affirmation-inp{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 14px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;margin-bottom:14px}
+    .affirmation-inp:focus{border-color:rgba(91,200,232,.4)}
+    .affirmation-inp::placeholder{color:var(--muted)}
+    body.light .affirmation-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .affirmation-inp::placeholder{color:rgba(0,0,0,.35)}
+    /* Cycle 126: affirmation line in check-snackbar */
+    .check-sb-aff{font-size:11px;color:var(--sky);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;line-height:1.3;margin-top:1px}
+    body.light .check-sb-aff{color:#1e8aab}
+    .check-sb-inner{display:flex;flex-direction:column;overflow:hidden}
+    /* Cycle 126: this-week total count badge */
+    .wk-count-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(155,109,214,.12);border:1px solid rgba(155,109,214,.28);border-radius:14px;padding:3px 9px;font-size:11px;font-weight:700;color:#9B6DD6;flex-shrink:0;cursor:default;transition:all .25s}
+    body.light .wk-count-badge{background:rgba(155,109,214,.1);border-color:rgba(155,109,214,.32);color:#6b3db8}
+
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
     body.light .score-badge{background:linear-gradient(135deg,rgba(245,200,66,.18),rgba(255,123,92,.15));border-color:rgba(245,200,66,.4)}
@@ -2040,6 +2054,8 @@
     <span class="hab-on-streak" id="hab-on-streak" style="display:none"></span>
     <span class="speed-badge" id="speed-badge" style="display:none"></span>
     <span class="checkin-badge" id="checkin-badge" style="display:none"></span>
+    <!-- Cycle 126: weekly total count badge -->
+    <span class="wk-count-badge" id="wk-count-badge" style="display:none"></span>
   </div>
 
   <!-- Cycle 87: weekly completion dots -->
@@ -2218,6 +2234,8 @@
       oninput="onHabitInput()" onkeydown="if(event.key==='Enter')saveHabit()">
     <input class="modal-inp" id="note-inp" type="text" placeholder="メモ（任意）..." maxlength="60" style="margin-bottom:14px">
     <textarea class="why-inp" id="why-inp" placeholder="💭 この習慣を始めた理由（任意・60文字）..." maxlength="60" rows="2"></textarea>
+    <!-- Cycle 126: custom affirmation message -->
+    <input class="affirmation-inp" id="affirmation-inp" type="text" placeholder="✨ 完了時のひとこと（任意）… 例：よくやった！" maxlength="40">
     <div class="tag-row">
       <span class="tag-row-lbl">🏷 タグ（任意）</span>
       <input class="tag-inp" id="tag-inp" type="text" placeholder="#タグ1 #タグ2（スペース区切り・最大3個）" maxlength="40">
@@ -2341,7 +2359,11 @@
 <div class="nc-toast" id="nc-toast"></div>
 
 <div class="check-snackbar" id="check-snackbar">
-  <span class="check-sb-msg" id="check-sb-msg"></span>
+  <div class="check-sb-inner">
+    <span class="check-sb-msg" id="check-sb-msg"></span>
+    <!-- Cycle 126: affirmation line -->
+    <span class="check-sb-aff" id="check-sb-aff" style="display:none"></span>
+  </div>
   <button class="check-sb-undo" id="check-sb-undo-btn">元に戻す</button>
 </div>
 
@@ -4007,6 +4029,7 @@ function render(){
   updateHdrProgStrip(); // Cycle 103: header progress strip
   updateTabCounts(); // Cycle 111: category tab completion count badges
   updateFabRing(); // Cycle 125: FAB progress ring
+  updateWeekCountBadge(); // Cycle 126: this-week total count badge
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -4340,6 +4363,7 @@ function openModal(id=null){
     inp.value=h?h.name:'';
     if(noteEl)noteEl.value=h&&h.note?h.note:'';
     if(whyEl)whyEl.value=h&&h.why?h.why:'';
+    const affEl=document.getElementById('affirmation-inp');if(affEl)affEl.value=h&&h.affirmation?h.affirmation:''; // Cycle 126
     if(emojiEl){emojiEl.value=h&&h.emoji?h.emoji:'';onEmojiInput(emojiEl.value);}
     selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
@@ -4360,6 +4384,7 @@ function openModal(id=null){
     const ts=document.getElementById('tmpl-section');if(ts)ts.style.display='none';
   }else{
     inp.value='';if(noteEl)noteEl.value='';if(whyEl)whyEl.value='';
+    const affElN=document.getElementById('affirmation-inp');if(affElN)affElN.value=''; // Cycle 126
     const tagElN=document.getElementById('tag-inp');if(tagElN)tagElN.value='';
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
     selCatVal='';catAutoSel=false;
@@ -4401,6 +4426,7 @@ function saveHabit(){
   const name=document.getElementById('habit-inp').value.trim();
   const note=((document.getElementById('note-inp')||{}).value||'').trim();
   const why=((document.getElementById('why-inp')||{}).value||'').trim();
+  const affirmation=((document.getElementById('affirmation-inp')||{}).value||'').trim(); // Cycle 126
   const emoji=((document.getElementById('emoji-inp')||{}).value||'').trim();
   const _rawTags=((document.getElementById('tag-inp')||{}).value||'').trim();
   const tagsSave=_rawTags?_rawTags.split(/\s+/).filter(Boolean).slice(0,3).map(t=>t.startsWith('#')?t:'#'+t):[];
@@ -4409,12 +4435,13 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;if(_selSG>0)h.streakGoal=_selSG;else delete h.streakGoal; /* Cycle 104 */if(_selChallDays>0){if(h.challengeDays!==_selChallDays){h.challengeDays=_selChallDays;delete h.challengeStart;/* reset when goal changes */}else h.challengeDays=_selChallDays;}else{delete h.challengeDays;delete h.challengeStart;} /* Cycle 109 */}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(why)h.why=why;else delete h.why;if(affirmation)h.affirmation=affirmation;else delete h.affirmation;/* Cycle 126 */if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selFreqVal==='custom'&&selDays.length>0)h.days=[...selDays];else delete h.days;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selImportant)h.important=true;else delete h.important;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(tagsSave.length)h.tags=tagsSave;else delete h.tags;if(_selWeeklyTarget>0)h.weeklyTarget=_selWeeklyTarget;else delete h.weeklyTarget;if(_selSG>0)h.streakGoal=_selSG;else delete h.streakGoal; /* Cycle 104 */if(_selChallDays>0){if(h.challengeDays!==_selChallDays){h.challengeDays=_selChallDays;delete h.challengeStart;/* reset when goal changes */}else h.challengeDays=_selChallDays;}else{delete h.challengeDays;delete h.challengeStart;} /* Cycle 109 */}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
     if(why)nh.why=why;
+    if(affirmation)nh.affirmation=affirmation; // Cycle 126
     if(emoji)nh.emoji=emoji;
     if(selFreqVal!=='daily')nh.frequency=selFreqVal;
     if(selFreqVal==='custom'&&selDays.length>0)nh.days=[...selDays];
@@ -6368,6 +6395,21 @@ function confirmArchive(){
   closeArcModal();
 }
 
+// ── Cycle 126: this-week total completions badge ──
+function updateWeekCountBadge(){
+  const el=document.getElementById('wk-count-badge');if(!el)return;
+  const now=new Date();const todayStr=today();
+  const dow=now.getDay();const daysSinceMon=dow===0?6:dow-1;
+  const wkDates=[];
+  for(let i=0;i<=daysSinceMon;i++){const d=new Date(now);d.setDate(now.getDate()-daysSinceMon+i);wkDates.push(toStr(d));}
+  let total=0;
+  wkDates.forEach(ds=>{const dc=completions[ds]||{};habits.filter(h=>!h.archived).forEach(h=>{if(dc[h.id])total++;});});
+  if(total===0){el.style.display='none';return;}
+  el.style.display='inline-flex';
+  el.title=`今週（月〜${todayStr}）の累計完了数`;
+  el.textContent=`📅 今週 ${total}件`;
+}
+
 // ── Cycle 44: widget visibility settings ──
 const WIDGET_DEFS=[
   {key:'w_donut',  name:'🍩 カテゴリー別ドーナツ',   id:'donut-box'},
@@ -7007,11 +7049,15 @@ let _checkSbTimer=null,_checkSbId=null;
 function showUndoCheckSnackbar(id,name){
   const sb=document.getElementById('check-snackbar');
   const msg=document.getElementById('check-sb-msg');
+  const affEl=document.getElementById('check-sb-aff');
   const btn=document.getElementById('check-sb-undo-btn');
   if(!sb||!msg||!btn)return;
   clearTimeout(_checkSbTimer);
   _checkSbId=id;
   msg.textContent='✅ '+name;
+  // Cycle 126: show custom affirmation if habit has one
+  const _h=habits.find(x=>x.id===id);
+  if(affEl){if(_h?.affirmation){affEl.textContent=_h.affirmation;affEl.style.display='block';}else{affEl.style.display='none';}}
   btn.onclick=()=>{
     if(_checkSbId){toggle(_checkSbId,null);_checkSbId=null;}
     sb.classList.remove('show');
