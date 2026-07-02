@@ -1255,6 +1255,15 @@
     .pot-streak{font-size:9px;color:var(--gold);font-weight:900;padding:2px 5px;background:rgba(245,200,66,.08);border:1px dashed rgba(245,200,66,.3);border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.03em;transition:all .15s;cursor:default}
     body.compact .pot-streak{display:none}
     body.light .pot-streak{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.4)}
+    /* Cycle 118: miss streak badge (consecutive scheduled misses) */
+    .miss-badge{font-size:9px;color:var(--red);font-weight:900;padding:2px 5px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.25);border-radius:6px;line-height:1.5;flex-shrink:0;letter-spacing:.03em;cursor:default}
+    body.compact .miss-badge{display:none}
+    body.light .miss-badge{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.3)}
+    /* Cycle 118: week matrix perfect-days footer */
+    .wm-perfect-footer{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
+    .wm-perfect-footer strong{color:var(--gold)}
+    body.light .wm-perfect-footer{border-top-color:rgba(0,0,0,.06);color:rgba(0,0,0,.4)}
+    body.light .wm-perfect-footer strong{color:var(--gold-d)}
 
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
@@ -2894,6 +2903,20 @@ function habitBestStreak(id){
   return best;
 }
 
+// Cycle 118: consecutive miss streak — how many consecutive scheduled days a habit was missed
+function missStreak(id){
+  const h=habits.find(x=>x.id===id);
+  if(!h)return 0;
+  let count=0;
+  for(let d=1;d<=60;d++){
+    const ds=dateAgo(d);
+    if(!isScheduled(h,ds))continue;
+    if(!!(completions[ds]||{})[id])break;
+    count++;
+  }
+  return count;
+}
+
 // cycle 11: 7-day dot calendar per habit (oldest→newest)
 function habit7Days(id){
   const h=habits.find(x=>x.id===id);
@@ -3265,6 +3288,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 115: potential streak badge (undone only, hs>=1 means there's a streak to protect)
   const _potS=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&hs>=1?hs+1:0;
   const potStreakBadge=_potS>=2?`<span class="pot-streak" title="今日完了すると${_potS}日連続になります">→🔥${_potS}</span>`:'';
+  // Cycle 118: miss streak badge (3+ consecutive scheduled misses)
+  const _ms=(!isDone&&!isPaused)?missStreak(h.id):0;
+  const missBadge=_ms>=3?`<span class="miss-badge" title="${_ms}日連続で未達成">⚠️${_ms}日</span>`:'';
   const hbs=habitBestStreak(h.id);
   const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const fix30=habitFix30(h.id);
@@ -3365,7 +3391,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 109: N-day challenge badge
   let ncBadge='';
   if(h.challengeDays>0){const _cd=h.challengeDays;const _done=hs>=_cd;ncBadge=`<span class="nc-badge${_done?' nc-done':''}" title="N日チャレンジ目標: ${_cd}日連続">${_done?'🏆 '+_cd+'日達成':'🎯 '+hs+'/'+_cd+'日'}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3679,7 +3705,16 @@ function renderWeekMatrix(){
     html+=`<td class="wm-pct">${pct}</td></tr>`;
   });
   html+='</tbody></table>';
-  tw.innerHTML=html;
+  // Cycle 118: perfect days footer (all scheduled habits done, excluding today)
+  let _perfectDays=0;
+  weekDates.forEach(ds=>{
+    if(ds===todayStr)return;
+    const _dc=completions[ds]||{};
+    const _anyS=activeH.some(h=>isScheduled(h,ds));
+    if(_anyS&&activeH.every(h=>!isScheduled(h,ds)||_dc[h.id]))_perfectDays++;
+  });
+  const _pMsg=_perfectDays>0?`🏅 今週のパーフェクト日: <strong>${_perfectDays}</strong>日`:'今週まだパーフェクト日なし';
+  tw.innerHTML=html+`<div class="wm-perfect-footer">${_pMsg}</div>`;
 }
 
 // ── Cycle 48: yesterday fix modal / Cycle 107: past-7-day nav ──
