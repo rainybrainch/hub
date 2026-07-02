@@ -1894,6 +1894,13 @@
     body.light .sc-text{color:#c0392b}
     /* Cycle 128: sort by rate button */
     .sort-rate-on{background:rgba(76,175,125,.18)!important;color:var(--green)!important;border-color:rgba(76,175,125,.35)!important}
+
+    /* Cycle 129: yesterday recap toast */
+    .yd-toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(12px);background:linear-gradient(135deg,rgba(76,175,125,.9),rgba(91,200,232,.8));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:9px 22px;border-radius:30px;box-shadow:0 8px 28px rgba(76,175,125,.35);z-index:440;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
+    .yd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 129: month perfect days in monthly stats card */
+    .month-perf{font-size:11px;color:var(--sky);margin-top:6px;text-align:center;font-weight:700;letter-spacing:.02em}
+    body.light .month-perf{color:#0e78a0}
   </style>
 </head>
 <body>
@@ -1932,6 +1939,8 @@
 </header>
 <div class="combo-toast" id="combo-toast"></div>
 <div class="next-habit-toast" id="next-habit-toast"></div>
+<!-- Cycle 129: yesterday recap toast -->
+<div class="yd-toast" id="yd-toast"></div>
 <!-- Cycle 53: habit focus timer bar -->
 <div class="timer-bar" id="timer-bar">
   <span class="timer-habit-name" id="timer-habit-name"></span>
@@ -5094,6 +5103,13 @@ function renderMonthStats(){
   let best=null,bestCnt=0;
   habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
   const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  // Cycle 129: count perfect days this month
+  let perfectThisMonth=0;
+  for(let d=1;d<=day;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(dayRate(ds)>=1)perfectThisMonth++;
+  }
+  const perfHtml=perfectThisMonth>0?`<div class="month-perf">✨ 完璧な日 ${perfectThisMonth}日 / ${day}日中</div>`:'';
   // Cycle 92: month-over-month comparison badge
   const lmYear=m===0?y-1:y, lmMonth=m===0?11:m-1;
   const lmDays=new Date(lmYear,lmMonth+1,0).getDate();
@@ -5135,7 +5151,7 @@ function renderMonthStats(){
     goalHtml=`<div class="month-goal-row"><span class="month-goal-lbl" style="flex:1">🎯 月次目標</span><button class="month-goal-set" onclick="event.stopPropagation();setMonthlyGoalPrompt()" title="今月の達成率目標を設定">設定する</button></div>`;
   }
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span>${momBadge}<button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}${paceHtml}${goalHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span>${momBadge}<button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${perfHtml}${bestHtml}${paceHtml}${goalHtml}</div>`;
 }
 
 // ── Cycle 92: 30-day performance trend label ──
@@ -5846,6 +5862,27 @@ function renderMWBProgress(){
   if(lbl)lbl.textContent='今月 '+n.getDate()+'日時点';
   pg.style.display='flex';
 }
+// ── Cycle 129: yesterday recap toast ──
+function _showYesterdayRecap(){
+  if(!habits.length)return;
+  const td=today();
+  const ydKey='rh_yd_shown_'+td;
+  if(localStorage.getItem(ydKey))return;
+  const yd=dateAgo(1);
+  const dc=completions[yd]||{};
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,yd));
+  if(!active.length)return;
+  const doneN=active.filter(h=>!!(dc[h.id])).length;
+  if(doneN===0&&!isDayOff(yd))return;
+  const rate=Math.round(dayRate(yd)*100);
+  localStorage.setItem(ydKey,'1');
+  const msg=rate>=100?'🎉 完璧！':rate>=70?'👍 好調':rate>=40?'😊 まずまず':'💪 今日頑張ろう';
+  const el=document.getElementById('yd-toast');
+  if(!el)return;
+  el.textContent=`昨日: ${doneN}/${active.length}完了 (${rate}%) ${msg}`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
 // ── init ──
 load();
 initTheme();
@@ -5883,6 +5920,7 @@ _checkAutoWReport(); // Cycle 70: auto weekly report on Monday
 setTimeout(checkMonthlySummary,1500); // Cycle 98: show last month summary on first visit of new month
 setTimeout(initMWB,2200); // Cycle 108: monthly welcome banner (after monthly toast)
 setTimeout(()=>{renderMonthRecap();renderMWBProgress();},2800); // Cycle 119: monthly recap card + MWB progress
+setTimeout(()=>_showYesterdayRecap(),3500); // Cycle 129: yesterday recap toast
 setInterval(renderPaceBox,60000);
 // ── Cycle 24: PWA theme-color meta tag sync (Cycle 73: OLED) ──
 function syncThemeColor(){
