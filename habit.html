@@ -1365,6 +1365,25 @@
     /* Cycle 76: emoji float on habit check */
     @keyframes emojiFloat{0%{transform:translateY(0) scale(0);opacity:1}40%{transform:translateY(-20px) scale(1.4);opacity:1}100%{transform:translateY(-72px) scale(1);opacity:0}}
     .emoji-float-el{position:fixed;pointer-events:none;z-index:550;font-size:22px;line-height:1;animation:emojiFloat .75s cubic-bezier(.2,.8,.3,1) forwards}
+
+    /* Cycle 78: yesterday summary banner */
+    .yest-banner{display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(135deg,rgba(91,200,232,.09),rgba(76,175,125,.07));border:1px solid rgba(91,200,232,.2);border-radius:12px;margin-bottom:14px;font-size:12px;color:var(--sky);transition:opacity .2s}
+    .yest-banner-pct{font-family:"Dela Gothic One",sans-serif;font-size:15px;margin-right:2px}
+    .yest-banner-txt{flex:1;display:flex;align-items:baseline;gap:4px}
+    .yest-banner-sub{font-size:11px;color:var(--muted)}
+    .yest-banner-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:17px;padding:0 3px;line-height:1;border-radius:4px;transition:color .15s}
+    .yest-banner-close:hover{color:var(--white)}
+    body.light .yest-banner{background:linear-gradient(135deg,rgba(14,120,160,.07),rgba(56,142,97,.05));border-color:rgba(14,120,160,.2);color:#0e78a0}
+    body.light .yest-banner-sub{color:rgba(0,0,0,.4)}
+    body.focus-mode .yest-banner{display:none!important}
+
+    /* Cycle 78: habit priority flag */
+    .prio-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .prio-btn:hover{color:var(--red);background:rgba(232,53,74,.1)}
+    .prio-btn.on{color:var(--red)}
+    .habit.high-prio:not(.done):not(.paused){border-left-width:3px;border-left-color:rgba(232,53,74,.6)!important}
+    .prio-lbl{font-size:9px;padding:2px 6px;background:rgba(232,53,74,.15);color:var(--red);border-radius:10px;font-weight:700;flex-shrink:0}
+    body.compact .prio-lbl{display:none}
   </style>
 </head>
 <body>
@@ -1431,6 +1450,12 @@
 
   <!-- Cycle 41: day-off banner -->
   <div class="dayoff-banner" id="dayoff-banner">🌴 今日はお休みデー — 全ての習慣がスキップされています。ゆっくり休もう！</div>
+
+  <!-- Cycle 78: yesterday summary banner -->
+  <div class="yest-banner" id="yest-banner" style="display:none">
+    <span class="yest-banner-txt">📅 <span class="yest-banner-pct" id="yest-pct"></span><span class="yest-banner-sub" id="yest-detail"></span></span>
+    <button class="yest-banner-close" onclick="dismissYestBanner()" aria-label="閉じる">×</button>
+  </div>
 
   <!-- Cycle 36: today's pace indicator -->
   <div class="pace-box" id="pace-box" style="display:none"></div>
@@ -2638,6 +2663,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const copyBtnHtml=`<button class="copy-btn" onclick="event.stopPropagation();copyHabit('${h.id}')" title="この習慣を複製" aria-label="複製">📋</button>`;
   // Cycle 54: archive button
   const archiveBtnHtml=`<button class="archive-btn" onclick="event.stopPropagation();archiveHabit('${h.id}')" title="アーカイブ（リストから非表示、データは保持）" aria-label="アーカイブ">📦</button>`;
+  // Cycle 78: priority flag
+  const isPriority=!!h.priority;
+  const prioBtn=`<button class="prio-btn${isPriority?' on':''}" onclick="event.stopPropagation();togglePriority('${h.id}')" title="${isPriority?'優先度を解除':'重要フラグを設定'}" aria-label="優先度">❗</button>`;
+  const prioLbl=isPriority&&!isDone?'<span class="prio-lbl">重要</span>':'';
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
   // Cycle 74: counter progress bar
   const ctrPct=tc>0?Math.min(100,Math.round(ctrCount/tc*100)):0;
@@ -2649,7 +2678,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${freqBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3058,6 +3087,7 @@ function render(){
   renderStats();
   processShield(); // Cycle 47: check shield state
   renderPaceBox();
+  renderYesterdayBanner(); // Cycle 78
   renderScheduleBox(); // Cycle 69
   renderInsightCard(); // Cycle 70
   renderChart();
@@ -5028,6 +5058,38 @@ function _renderPerfPop(pop){
   pop.innerHTML=`<div class="perf-hist-ttl">✨ 完璧な日 (${perfDays.length}日)</div><div class="perf-hist-list">${perfDays.slice(0,15).map(p=>`<div class="perf-hist-item">✅ ${p.label}</div>`).join('')}${perfDays.length>15?`<div style="font-size:10px;color:var(--muted);padding:4px 6px">他 ${perfDays.length-15} 日</div>`:''}</div>`;
 }
 
+// ── Cycle 78: yesterday summary banner ──
+function _yestDismissKey(){return'rh_yest_dis_'+today();}
+function dismissYestBanner(){
+  localStorage.setItem(_yestDismissKey(),'1');
+  const el=document.getElementById('yest-banner');
+  if(el){el.style.opacity='0';setTimeout(()=>{el.style.display='none';el.style.opacity='';},220);}
+}
+function renderYesterdayBanner(){
+  const el=document.getElementById('yest-banner');if(!el)return;
+  if(localStorage.getItem(_yestDismissKey())){el.style.display='none';return;}
+  const yd=dateAgo(1);
+  const active=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,yd));
+  if(!active.length){el.style.display='none';return;}
+  const dc=completions[yd]||{};
+  const done=active.filter(h=>!!dc[h.id]).length;
+  const total=active.length;
+  const pct=Math.round(done/total*100);
+  const dn=new Date(yd+'T00:00:00');
+  const wd=['日','月','火','水','木','金','土'][dn.getDay()];
+  const icon=pct===100?'🎉':pct>=70?'✅':pct>=40?'📊':'💪';
+  const pctEl=document.getElementById('yest-pct');
+  const detEl=document.getElementById('yest-detail');
+  if(pctEl)pctEl.textContent=pct+'%';
+  if(detEl)detEl.textContent=` 昨日（${wd}）${done}/${total}件達成 ${icon}`;
+  el.style.display='flex';
+}
+// ── Cycle 78: habit priority flag ──
+function togglePriority(id){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  h.priority=!h.priority;
+  saveH();render();
+}
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
   const all=habits.filter(h=>!h.archived);

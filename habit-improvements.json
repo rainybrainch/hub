@@ -1353,6 +1353,47 @@
         "deployedAt": "2026-07-02T06:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 78,
+      "version": "v2.78",
+      "timestamp": "2026-07-02T07:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "昨日の達成サマリーバナー（Yesterday Summary Banner）",
+          "description": "毎日アプリを開いたとき、統計カードとペース指標の間に前日の達成状況をコンパクトなバナーで表示する機能を追加。「📅 XX% 昨日（曜日）N/M件達成 [アイコン]」形式で昨日のパフォーマンスを即座に確認可能。達成率に応じてアイコンを自動変換（100%=🎉、70%以上=✅、40%以上=📊、それ以下=💪）。×ボタンでdismiss可能で、非表示状態はLocalStorage（rh_yest_dis_YYYY-MM-DD）に日付別保存し翌日は再表示。フォーカスモード中は自動非表示。アーカイブ済み・一時停止中習慣は除外してアクティブ習慣のみでカウント。isScheduled()で平日のみ習慣にも正確対応。ライト/ダーク両テーマ対応（水色グラデーション）。",
+          "files": ["habit.html"],
+          "details": [
+            "renderYesterdayBanner(): dateAgo(1)で昨日を計算、アクティブ習慣の達成率を集計",
+            "dismissYestBanner(): LocalStorageにdismissフラグを保存し0.22sでフェードアウト",
+            "_yestDismissKey(): 'rh_yest_dis_'+today()で日付別dismiss管理",
+            ".yest-banner / .yest-banner-pct / .yest-banner-sub / .yest-banner-close のCSS追加",
+            "render()からrenderYesterdayBanner()を呼び出し（renderPaceBox()直後）",
+            "body.focus-mode時は display:none!important で自動非表示"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "習慣優先度フラグ（❗ Priority Flag）",
+          "description": "各習慣カードに❗ボタンを追加。クリックで習慣の優先度（habit.priority）をトグルし、LocalStorage（rh_habits内）に永続保存。高優先度の未完了習慣カードは左ボーダーが赤くなり（border-left 3px赤）、カード内に「重要」バッジを表示。❗ボタン自体もred色でハイライト。完了済み・一時停止中の習慣にはボーダー適用しない（:not(.done):not(.paused)）。priorityフィールドはboolean型でhabitオブジェクトに追加。既存データはpriority=undefinedとして後方完全互換。コンパクトモードでは「重要」ラベルを非表示にしてスペース最適化。フォーカスセクション・通常リスト両方に適用。",
+          "files": ["habit.html"],
+          "details": [
+            "togglePriority(id): h.priority=!h.priorityしてsaveH()+render()",
+            "_hCard(): isPriority=!!h.priority, prioBtn, prioLblを生成",
+            "habit.high-prio クラスを_hCard()のreturn文に追加",
+            ".habit.high-prio:not(.done):not(.paused): border-left-width:3px, border-left-color:rgba(232,53,74,.6)",
+            ".prio-btn / .prio-btn.on / .prio-lbl のCSS追加",
+            "body.compact .prio-lbl{display:none}でコンパクトモード対応"
+          ]
+        }
+      ],
+      "notes": "Cycle 78は「朝の振り返り促進」と「習慣の重要度管理」の2軸改善。昨日バナーはCycle 48の昨日修正モーダル（データ編集）とは異なり、昨日の実績を読み取り専用でサマリー表示する機能。朝アプリを開いた際に「昨日75%達成できた、今日はもっと頑張ろう」という内省を促す。日別dismissフラグでノイズを最小化。優先度フラグはCycle 19のフォーカスピン（今日だけ強調）とは異なる永続的な重要度マーキング機能。「毎日どうしても欠かせない習慣」を赤ボーダーで視覚化し、習慣リストが増えた際のスキャン速度を向上させる。どちらもLocalStorage構造変更なし（rh_yest_dis_日付キー新規追加のみ）・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-02T07:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
