@@ -1311,6 +1311,14 @@
     /* Cycle 123: app check-in streak badge */
     .checkin-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(155,109,214,.1);border:1px solid rgba(155,109,214,.3);border-radius:14px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--purple);flex-shrink:0}
     body.light .checkin-badge{background:rgba(155,109,214,.08);border-color:rgba(155,109,214,.35)}
+    /* Cycle 124: weekly MVP habit badge */
+    .mvp-badge{display:inline-flex;align-items:center;gap:2px;background:linear-gradient(135deg,rgba(76,175,125,.18),rgba(91,200,232,.1));border:1px solid rgba(76,175,125,.45);border-radius:6px;padding:2px 5px;font-size:10px;font-weight:900;color:var(--green);flex-shrink:0;animation:mvpPulse 2.5s ease-in-out infinite alternate;cursor:default}
+    @keyframes mvpPulse{0%{box-shadow:0 0 2px rgba(76,175,125,.15)}100%{box-shadow:0 0 8px rgba(76,175,125,.4)}}
+    body.compact .mvp-badge{display:none}
+    body.light .mvp-badge{background:linear-gradient(135deg,rgba(76,175,125,.15),rgba(91,200,232,.08));border-color:rgba(76,175,125,.5);color:#267a50}
+    /* Cycle 124: screen wake lock indicator */
+    #wakelock-btn.wl-on{color:var(--sky)!important;background:rgba(91,200,232,.1)}
+    body.light #wakelock-btn.wl-on{background:rgba(91,200,232,.12)}
 
     /* Cycle 61: daily score badge */
     .score-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(255,123,92,.1));border:1px solid rgba(245,200,66,.3);border-radius:14px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);margin-left:6px;flex-shrink:0;transition:all .25s;cursor:default}
@@ -1838,6 +1846,7 @@
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
   <button class="hdr-btn" id="focus-mode-btn" onclick="toggleFocusMode()" title="集中モード（習慣リストのみ表示）">🎯</button>
+  <button class="hdr-btn" id="wakelock-btn" onclick="toggleWakeLock()" title="スクリーン常時点灯（画面が消えないようにする）" style="display:none">💡</button>
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
   <button class="hdr-btn" id="dayoff-btn" onclick="toggleDayOff()" title="今日をお休みデーに設定（ストリーク維持）">🌴</button>
   <button class="hdr-btn" onclick="openKbdHelp()" title="キーボードショートカット（?キー）">⌨</button>
@@ -2327,6 +2336,7 @@
       <tr><td><kbd class="kbdkey">R</kbd></td><td class="kbd-desc">ランダムに未完了習慣を選んでハイライト</td></tr>
       <tr><td><kbd class="kbdkey">W</kbd></td><td class="kbd-desc">スマートソート（緊急度・ストリーク危険度）切替</td></tr>
       <tr><td><kbd class="kbdkey">V</kbd></td><td class="kbd-desc">集中モード切替（統計を非表示、習慣リストに集中）</td></tr>
+      <tr><td><kbd class="kbdkey">L</kbd></td><td class="kbd-desc">スクリーン常時点灯（Wake Lock）オン / オフ</td></tr>
       <tr><td><kbd class="kbdkey">[</kbd> / <kbd class="kbdkey">]</kbd></td><td class="kbd-desc">カテゴリータブを前後に切り替え</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">↑</kbd> <kbd class="kbdkey">↓</kbd></td><td class="kbd-desc">習慣リストを上下に移動（Enterでトグル）</td></tr>
@@ -2429,7 +2439,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false, _champId = null;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = 0, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selImportant = false, sortImportant = false, _yfixOffset = 0, _smartSort = false, _champId = null, _weekMvpId = null;
 // Cycle 101: weekly count target modal state
 let _selWeeklyTarget=0;
 let _selSG=0; // Cycle 104: streak goal selection
@@ -3391,6 +3401,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const missBadge=_ms>=3?`<span class="miss-badge" title="${_ms}日連続で未達成">⚠️${_ms}日</span>`:'';
   // Cycle 120: champion badge for habit with highest active streak (≥7)
   const champBadge=h.id===_champId?`<span class="champ-badge" title="全習慣中の最高ストリーク！現在${hs}日連続">👑</span>`:'';
+  // Cycle 124: weekly MVP badge for best completion rate this week
+  const mvpBadge=h.id===_weekMvpId?`<span class="mvp-badge" title="今週の習慣MVP！今週の完了率が全習慣中トップ">🌟 MVP</span>`:'';
   const hbs=habitBestStreak(h.id);
   const bestBadge=hbs>hs&&hbs>=5?`<span class="habit-best" title="個人最高ストリーク: ${hbs}日">🏅${hbs}</span>`:'';
   const fix30=habitFix30(h.id);
@@ -3491,7 +3503,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 109: N-day challenge badge
   let ncBadge='';
   if(h.challengeDays>0){const _cd=h.challengeDays;const _done=hs>=_cd;ncBadge=`<span class="nc-badge${_done?' nc-done':''}" title="N日チャレンジ目標: ${_cd}日連続">${_done?'🏆 '+_cd+'日達成':'🎯 '+hs+'/'+_cd+'日'}</span>`;}
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${champBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}${eveningRisk}${impClass}${goldenNow}${pinnedClass}"${_inlineStyle} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${tagsHtml}${quickNoteHtml}${ctrProgressHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${lvBadge}${streakBadge}${potStreakBadge}${missBadge}${champBadge}${mvpBadge}${bestBadge}${fixBadge}${trendBadge}${freqBadge}${weekendLbl}${lowRateLbl}${lastDoneBadge}${timeBadge}${durBadge}${wtBadge}${sgBadge}${mthProgBadge}${ncBadge}${goldenBadge}${impBadge}${pinBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${pinBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 // ── Cycle 91: arrow-key habit navigation ──
@@ -3532,6 +3544,34 @@ function renderList(){
   // Cycle 120: identify streak champion (highest current streak ≥7 among active habits)
   _champId=null;let _champMax=6;
   habits.filter(h=>!h.archived&&!h.paused).forEach(h=>{const s=habitStreak(h.id);if(s>_champMax){_champMax=s;_champId=h.id;}});
+  // Cycle 124: identify weekly MVP (best completion rate Mon→today, ≥3 scheduled days)
+  _weekMvpId=null;
+  (()=>{
+    const _now=new Date();const _td=today();const _dow=_now.getDay();const _daysSinceMon=_dow===0?6:_dow-1;
+    const _wkDates=[];for(let i=0;i<=_daysSinceMon;i++){const _d=new Date(_now);_d.setDate(_now.getDate()-_daysSinceMon+i);_wkDates.push(toStr(_d));}
+    let _mvpMax=-1,_mvpTieBreak=-1;
+    habits.filter(h=>!h.archived&&!h.paused).forEach(h=>{
+      let done=0,sched=0;
+      _wkDates.forEach(ds=>{if(isScheduled(h,ds)){sched++;if((completions[ds]||{})[h.id])done++;}});
+      if(sched<3)return;
+      const rate=done/sched;
+      if(rate<0.57)return;// require at least 4/7
+      const tc=habitTotalCount(h.id);
+      if(rate>_mvpMax||(rate===_mvpMax&&tc>_mvpTieBreak)){_mvpMax=rate;_mvpTieBreak=tc;_weekMvpId=h.id;}
+    });
+    // don't overlap with streak champion — prefer different habits if possible
+    if(_weekMvpId&&_weekMvpId===_champId){
+      let _alt=null,_altMax=-1,_altTie=-1;
+      habits.filter(h=>!h.archived&&!h.paused&&h.id!==_champId).forEach(h=>{
+        let done=0,sched=0;
+        _wkDates.forEach(ds=>{if(isScheduled(h,ds)){sched++;if((completions[ds]||{})[h.id])done++;}});
+        if(sched<3)return;const rate=done/sched;if(rate<0.57)return;
+        const tc=habitTotalCount(h.id);
+        if(rate>_altMax||(rate===_altMax&&tc>_altTie)){_altMax=rate;_altTie=tc;_alt=h.id;}
+      });
+      if(_alt!==null)_weekMvpId=_alt;
+    }
+  })();
   let html='';
   // Cycle 66: all-done summary card
   if(!searchQuery&&!isDayOff(td)){
@@ -5691,6 +5731,7 @@ updateSoundBtn();
 initCompactView();
 _applyFocusMode(); // Cycle 123: restore focus mode state
 _updateCheckinStreak(); // Cycle 123: update app check-in streak badge
+_initWakeLock(); // Cycle 124: init screen wake lock
 initEmojiPresets();
 initTemplates();
 initIntention();
@@ -5871,6 +5912,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='r'||e.key==='R')pickRandomHabit();
   else if(e.key==='w'||e.key==='W')toggleSmartSort();
   else if(e.key==='v'||e.key==='V')toggleFocusMode();
+  else if(e.key==='l'||e.key==='L')toggleWakeLock(); // Cycle 124: wake lock toggle
   // Cycle 111: [ / ] to cycle category tabs
   else if(e.key==='['||e.key===']'){
     const _tabOrder=['all','学習','運動','創作','自己改善','important'];
@@ -6198,6 +6240,36 @@ function _updateCheckinStreak(){
   else{streak=1;localStorage.setItem('rh_ci_streak','1');localStorage.setItem('rh_ci_last',td);}
   if(streak>=2){el.textContent=`📱 ${streak}日`;el.title=`${streak}日連続でアプリを開いています`;el.style.display='';}
   else el.style.display='none';
+}
+
+// ── Cycle 124: screen wake lock (keep screen on while tracking habits) ──
+let _wakeLock=null;
+function _updateWakeLockBtn(){
+  const btn=document.getElementById('wakelock-btn');if(!btn)return;
+  const on=!!_wakeLock&&!_wakeLock.released;
+  btn.classList.toggle('wl-on',on);
+  btn.title=on?'スクリーン常時点灯中（タップで解除）':'スクリーン常時点灯（画面が消えないようにする）';
+}
+async function requestWakeLock(){
+  if(!('wakeLock' in navigator))return;
+  if(_wakeLock&&!_wakeLock.released)return;
+  try{
+    _wakeLock=await navigator.wakeLock.request('screen');
+    _wakeLock.addEventListener('release',()=>{_updateWakeLockBtn();});
+    _updateWakeLockBtn();
+  }catch(e){}
+}
+async function toggleWakeLock(){
+  if(_wakeLock&&!_wakeLock.released){await _wakeLock.release();_wakeLock=null;_updateWakeLockBtn();}
+  else await requestWakeLock();
+}
+function _initWakeLock(){
+  const btn=document.getElementById('wakelock-btn');
+  if(!('wakeLock' in navigator)||!btn){return;}
+  btn.style.display='';
+  requestWakeLock();
+  // re-acquire on visibility change (e.g. after phone unlock)
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')requestWakeLock();});
 }
 
 // ── Cycle 44: widget visibility settings ──
