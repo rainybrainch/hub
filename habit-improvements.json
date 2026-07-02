@@ -2448,6 +2448,33 @@
                 "deployedAt": "2026-07-02T12:00:00Z",
                 "status": "success"
             }
+        },
+        {
+            "cycle": 127,
+            "timestamp": "2026-07-02T13:00:00Z",
+            "version": "v2.127",
+            "changes": [
+                "グリッドビューモード（▦）: ソート行に▦ グリッドボタンを追加。2列グリッドレイアウトで習慣を表示し、名前とチェックボックスのみを見やすく並べる。状態はLocalStorageに保存（rh_grid_view）。",
+                "今週達成率予測バッジ（📅 今週予測 N%）: 月曜日から今日までの平均達成率を計算し、このペースで週末まで続けた場合の予測達成率をstreak-rowに表示。80%以上で緑（good）、50%未満で赤（warn）に色分け。"
+            ],
+            "improvements": [
+                {
+                    "type": "feature",
+                    "title": "2列グリッドビューモード（▦ グリッド）をソート行に追加",
+                    "description": "ソート行に「▦ グリッド」ボタン（id: grid-view-btn）を追加。クリックするとbody.grid-viewクラスが付与され、#list .sec-habitsがCSS Gridで2列表示になる（grid-template-columns: 1fr 1fr; gap: 8px）。グリッドビューでは習慣名・チェックボックス・完了時間のみを表示し、詳細情報（habit-detail、各種バッジ、アクションボタン等）はdisplay:none。状態はLocalStorage（rh_grid_view）に保存し、ページリロード後も維持。initGridView()が初期化時に呼ばれる。コンパクトビューとは独立して動作し、モバイルで多数の習慣をスキャンするのに最適。"
+                },
+                {
+                    "type": "feature",
+                    "title": "今週達成率予測バッジ（📅 今週予測 N%）をstreak-rowに追加",
+                    "description": "streak-rowに「📅 今週予測 N%」バッジ（id: forecast-badge、.forecast-badge）を追加。calcWeekForecast()が月曜日から今日（当日含む）の各日の達成率（完了数/対象習慣数）を平均してパーセンテージで返す。80%以上はgoodクラス（緑）、50%未満はwarnクラス（赤）、それ以外は通常色。renderForecastBadge()がrenderStats()末尾で毎回呼ばれる。既存のperfect-week-badge（全習慣100%達成時のみ表示）やwk-count-badge（累積件数）とは異なり、「このペースで続けたら週末に何%達成か」という予測パーセンテージを常時表示。月曜日（今日だけ）でも1日分のデータから予測値を表示する。LocalStorage変更なし・後方完全互換。"
+                }
+            ],
+            "notes": "Cycle 127は「視覚的な効率化」と「週次進捗の予測可視化」の2軸。グリッドビューはモバイル環境で多数の習慣（20件以上）を持つユーザーが、スクロールなしで全習慣を一覧できるようにする。予測バッジはCycle 103のヘッダープログレス（今日の達成率）・Cycle 126の今週累積件数バッジとは異なり、週全体のトレンドを未来視点で表示。「今日サボると今週予測が下がる」という心理的圧力が習慣維持に効く。どちらも後方完全互換で既存データへの影響なし。",
+            "deploy": {
+                "branch": "main",
+                "deployedAt": "2026-07-02T13:00:00Z",
+                "status": "success"
+            }
         }
     ]
 }

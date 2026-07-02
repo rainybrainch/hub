@@ -277,6 +277,19 @@
     body.compact .sec-progress{display:none}
     body.compact .chk{width:20px;height:20px;border-radius:6px}
 
+    /* Cycle 127: 2-column grid view mode */
+    body.grid-view #list .sec-habits{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    body.grid-view .habit{padding:10px 12px;margin-bottom:0;gap:8px}
+    body.grid-view .habit-detail{display:none!important}
+    body.grid-view .cat-dot,body.grid-view .h-dots,body.grid-view .habit-cnt,body.grid-view .habit-streak,body.grid-view .habit-best,body.grid-view .done-time,body.grid-view .del-btn,body.grid-view .edit-btn,body.grid-view .star-btn,body.grid-view .pause-btn,body.grid-view .skip-btn,body.grid-view .info-btn,body.grid-view .note-btn,body.grid-view .copy-btn,body.grid-view .archive-btn,body.grid-view .reorder-btn,body.grid-view .timer-btn,body.grid-view .rec-time-badge,body.grid-view .dur-badge,body.grid-view .habit-fixed,body.grid-view .trend-badge,body.grid-view .week-prog,body.grid-view .freq-badge,body.grid-view .tough-badge,body.grid-view .batch-btn,body.grid-view .habit-counter,body.grid-view .habit-note,body.grid-view .habit-why,body.grid-view .habit-quick-note,body.grid-view .low-rate-lbl,body.grid-view .paused-lbl,body.grid-view .skip-lbl,body.grid-view .weekend-lbl,body.grid-view .pot-streak,body.grid-view .miss-badge,body.grid-view .champ-badge,body.grid-view .mvp-badge,body.grid-view .imp-badge,body.grid-view .pin-badge,body.grid-view .sg-badge,body.grid-view .wt-badge,body.grid-view .golden-badge,body.grid-view .last-done-badge,body.grid-view .pin-btn{display:none!important}
+    /* Cycle 127: weekly forecast badge */
+    .forecast-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;letter-spacing:.03em;color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);cursor:default}
+    .forecast-badge.good{color:var(--green);background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.2)}
+    .forecast-badge.warn{color:var(--red);background:rgba(232,53,74,.1);border-color:rgba(232,53,74,.15)}
+    body.light .forecast-badge{color:rgba(0,0,0,.5);background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1)}
+    body.light .forecast-badge.good{color:#2e7d51;background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
+    body.light .forecast-badge.warn{color:#c0392b;background:rgba(232,53,74,.1);border-color:rgba(232,53,74,.2)}
+
     /* Cycle 14: real-time search filter */
     .search-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;position:relative}
     .search-inp{flex:1;background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 34px 8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s}
@@ -2056,6 +2069,8 @@
     <span class="checkin-badge" id="checkin-badge" style="display:none"></span>
     <!-- Cycle 126: weekly total count badge -->
     <span class="wk-count-badge" id="wk-count-badge" style="display:none"></span>
+    <!-- Cycle 127: weekly forecast badge -->
+    <span class="forecast-badge" id="forecast-badge" style="display:none" title="今週（月〜今日）の平均達成率をもとに計算した今週末の予測達成率">📅 今週予測 --%</span>
   </div>
 
   <!-- Cycle 87: weekly completion dots -->
@@ -2173,6 +2188,7 @@
     <button class="sort-btn" id="complete-all-btn" onclick="completeAllToday()" style="margin-left:8px" title="今日の未完了習慣を一括完了（Cycle 80）">✓ 全完了</button>
     <button class="sort-btn" id="sort-prio-btn" onclick="toggleSortImportant()" style="margin-left:8px" title="重要フラグ付き習慣を先頭に表示">⭐ 重要優先</button>
     <button class="sort-btn" id="smart-sort-btn" onclick="toggleSmartSort()" style="margin-left:8px" title="緊急度・ストリーク危険度で自動ソート（Wキー）">⚡ おすすめ</button>
+    <button class="sort-btn" id="grid-view-btn" onclick="toggleGridView()" style="margin-left:8px" title="2列グリッド表示切替">▦ グリッド</button>
     <span class="rem-mins" id="rem-mins" style="display:none;margin-left:8px"></span>
     <span class="done-mins" id="done-mins" style="display:none;margin-left:8px"></span>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
@@ -3228,6 +3244,8 @@ function renderStats(){
   updatePerfectMonthBadge();
   // Cycle 114: speedrun badge
   renderSpeedBadge();
+  // Cycle 127: weekly forecast badge
+  renderForecastBadge();
 }
 
 // Cycle 81: count days this month where all habits were completed
@@ -5007,6 +5025,15 @@ function initCompactView(){
   updateCompactBtn();
 }
 
+// ── Cycle 127: 2-column grid view mode ──
+let gridView=localStorage.getItem('rh_grid_view')==='true';
+function toggleGridView(){gridView=!gridView;localStorage.setItem('rh_grid_view',gridView?'true':'false');document.body.classList.toggle('grid-view',gridView);updateGridViewBtn();}
+function updateGridViewBtn(){const btn=document.getElementById('grid-view-btn');if(btn)btn.classList.toggle('active',gridView);}
+function initGridView(){if(gridView)document.body.classList.add('grid-view');updateGridViewBtn();}
+// ── Cycle 127: weekly forecast badge ──
+function calcWeekForecast(){const dow=new Date().getDay();const daysFromMon=dow===0?7:dow;let total=0,count=0;for(let i=daysFromMon-1;i>=0;i--){const d=dateAgo(i);const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,d));if(!active.length)continue;const dc2=completions[d]||{};const done=active.filter(h=>dc2[h.id]).length;total+=done/active.length;count++;}return count?Math.round((total/count)*100):null;}
+function renderForecastBadge(){const el=document.getElementById('forecast-badge');if(!el)return;if(!habits.filter(h=>!h.archived&&!h.paused).length){el.style.display='none';return;}const pct=calcWeekForecast();if(pct===null){el.style.display='none';return;}el.style.display='';el.textContent=`📅 今週予測 ${pct}%`;el.title=`今週（月〜今日）平均 ${pct}% — このペースで週末まで達成した場合の予測`;el.className='forecast-badge'+(pct>=80?' good':pct<50?' warn':'');}
+
 // ── Cycle 19: Today's Focus ──
 function _focusKey(){return 'rh_focus_'+today()}
 function getFocusIds(){try{return JSON.parse(localStorage.getItem(_focusKey())||'[]')}catch{return[]}}
@@ -5802,6 +5829,7 @@ initTheme();
 initFontSize();
 updateSoundBtn();
 initCompactView();
+initGridView(); // Cycle 127: restore grid view state
 _applyFocusMode(); // Cycle 123: restore focus mode state
 _updateCheckinStreak(); // Cycle 123: update app check-in streak badge
 _initWakeLock(); // Cycle 124: init screen wake lock
