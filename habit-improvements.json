@@ -1760,6 +1760,29 @@
         "deployedAt": "2026-07-03T13:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 91,
+      "timestamp": "2026-07-03T14:00:00Z",
+      "version": "v2.91",
+      "changes": [
+        "完了済み習慣を隠すトグルボタン（👁 完了を隠す）をソート行に追加",
+        "Hキーショートカットで完了済み習慣の表示/非表示をトグル可能",
+        "hideDone状態をLocalStorage（rh_hide_done）に永続化"
+      ],
+      "details": [
+        {
+          "type": "feature",
+          "title": "完了済み習慣を隠すトグル（Hキー対応）",
+          "description": "ソート行（.sort-row）に「👁 完了を隠す」ボタンを追加。クリックまたはHキーでtoggleHideDone()を呼び出し、hideDoneフラグを反転。hideDone=trueの場合、renderList()内でlist=list.filter(h=>!dc[h.id]||h.paused||!isScheduled(h,td))を適用し、当日チェック済み・かつ稼働中・かつスケジュール対象の習慣をリストから除外。休止中またはスケジュール外の習慣は非表示にならない（別途表示価値があるため）。状態はLocalStorage（rh_hide_done='1'/'0'）に保存され、ページリロード後も復元される（init部でinitCompactView()直後に復元処理を追加）。キーボードショートカットヘルプ（⌨️モーダル）にHキー行を追加。アクティブ時はボタンに.activeクラスが付与されCSSで強調表示。完了率が高い日に未完了タスクだけ集中して確認したいユーザー向けの集中フィルタ機能。"
+        }
+      ],
+      "notes": "Cycle 91は「完了済みノイズ除去」による集中UX向上。チェック済み習慣が多い夕方・夜に特に有効で、残タスクのみ素早く確認できる。Cycle 7（未完了を上に）と相補的：前者は並び順、後者は非表示で異なるアプローチ。paused/unscheduledは除外対象外とし、情報の欠落を防ぐ。後方互換性完全維持（新LocalStorageキーrh_hide_doneのみ追加）。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T14:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

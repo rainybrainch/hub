@@ -1924,6 +1924,7 @@
     <button class="sort-btn" id="reorder-mode-btn" onclick="toggleReorderMode()" style="margin-left:8px">⇅ 並び替え</button>
     <button class="sort-btn" id="collapse-all-btn" onclick="toggleCollapseAll()" style="margin-left:8px" title="全カテゴリーを折りたたむ/展開（Zキー）">≡ 全折</button>
     <button class="sort-btn" id="random-pick-btn" onclick="randomPickHabit()" style="margin-left:8px" title="未完了習慣をランダムにピックアップ（🎲）">🎲</button>
+    <button class="sort-btn" id="hide-done-btn" onclick="toggleHideDone()" style="margin-left:8px" title="完了済み習慣を非表示（Hキー）">👁 完了を隠す</button>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
       <button class="font-size-btn" data-size="sm" onclick="_applyFontSize('sm',true)" title="小さいテキスト">A-</button>
       <button class="font-size-btn" data-size="normal" onclick="_applyFontSize('normal',true)" title="標準テキスト">A</button>
@@ -2083,6 +2084,7 @@
       <tr><td><kbd class="kbdkey">D</kbd></td><td class="kbd-desc">今日のチャレンジ習慣を完了</td></tr>
       <tr><td><kbd class="kbdkey">1</kbd>〜<kbd class="kbdkey">9</kbd></td><td class="kbd-desc">表示中のN番目の習慣をトグル</td></tr>
       <tr><td><kbd class="kbdkey">Q</kbd></td><td class="kbd-desc">フォーカスモード（習慣リストのみ表示）</td></tr>
+      <tr><td><kbd class="kbdkey">H</kbd></td><td class="kbd-desc">完了済み習慣を非表示 / 再表示</td></tr>
       <tr><td><kbd class="kbdkey">↑</kbd> / <kbd class="kbdkey">↓</kbd></td><td class="kbd-desc">習慣カードを上下に移動してフォーカス</td></tr>
       <tr><td><kbd class="kbdkey">Enter</kbd></td><td class="kbd-desc">フォーカス中の習慣をトグル（チェック）</td></tr>
       <tr><td><kbd class="kbdkey">ESC</kbd></td><td class="kbd-desc">モーダルを閉じる / 検索クリア / ナビ解除</td></tr>
@@ -2182,7 +2184,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, statusFilter = '';
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, statusFilter = '', hideDone = false;
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -3164,6 +3166,7 @@ function renderList(){
   let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
   if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
   list=list.filter(h=>!h.archived);
+  if(hideDone)list=list.filter(h=>!dc[h.id]||h.paused||!isScheduled(h,td));
   const _sc=document.getElementById('status-chips');
   if(_sc)_sc.classList.toggle('visible',habits.filter(h=>!h.archived).length>0);
   list=_applyStatusFilter(list,td,dc);
@@ -4229,6 +4232,15 @@ function toggleSortUndone(){
   renderList();
 }
 
+// ── Cycle 91: hide completed habits toggle ──
+function toggleHideDone(){
+  hideDone=!hideDone;
+  localStorage.setItem('rh_hide_done',hideDone?'1':'0');
+  const btn=document.getElementById('hide-done-btn');
+  if(btn)btn.classList.toggle('active',hideDone);
+  renderList();
+}
+
 // ── Cycle 37: collapse-all / expand-all toggle (Z key) ──
 function toggleCollapseAll(){
   const cats=['学習','運動','創作','自己改善'];
@@ -4932,6 +4944,9 @@ initTheme();
 initFontSize();
 updateSoundBtn();
 initCompactView();
+// Cycle 91: restore hide-done state
+hideDone=localStorage.getItem('rh_hide_done')==='1';
+if(hideDone){const _hdb=document.getElementById('hide-done-btn');if(_hdb)_hdb.classList.add('active');}
 initEmojiPresets();
 initTemplates();
 initIntention();
@@ -5080,6 +5095,7 @@ document.addEventListener('keydown',e=>{
     toggle(undone[seed].id,null);
   }
   else if(e.key==='q'||e.key==='Q')toggleFocusMode();
+  else if(e.key==='h'||e.key==='H')toggleHideDone();
   // Cycle 63: arrow key navigation
   else if(e.key==='ArrowDown'){
     e.preventDefault();
