@@ -1673,6 +1673,29 @@
         "deployedAt": "2026-07-03T09:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 87,
+      "timestamp": "2026-07-03T10:00:00Z",
+      "version": "v2.87",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "カスタムモチベーションメッセージ（マイメッセージ）機能",
+          "description": "設定モーダルに「💬 マイメッセージ」セクションを追加。ユーザーがオリジナルのモチベーションメッセージを最大5件まで登録でき、ダッシュボードのモットーエリアのローテーションプールに追加されます。LocalStorageキー'rh_user_mottos'に保存。追加・削除ボタン付きリスト表示。最大40文字制限。Enterキーでも追加可能。"
+        },
+        {
+          "type": "feature",
+          "title": "テーマ自動切替スケジュール機能",
+          "description": "設定モーダルに「🌙 テーマ自動切替」セクションを追加。ダークモード開始時刻・ライトモード開始時刻をtime入力で設定でき、毎分チェック（setInterval 60秒）して自動でテーマを切替。LocalStorageキー'rh_theme_dark'/'rh_theme_light'に保存。ページ読み込み時にも即座に適用（checkThemeSchedule()を初期化時に呼び出し）。"
+        }
+      ],
+      "notes": "Cycle 87は「ユーザーのパーソナライズ強化」をテーマに2機能を追加。マイメッセージはモチベーション維持に、テーマスケジュールは就寝前のダークモード自動化など生活リズムとの連携に貢献。どちらも追加LocalStorageキーを使い後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T10:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

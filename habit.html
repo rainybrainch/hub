@@ -1534,6 +1534,34 @@
     .month-cal-cell.future-cell{background:rgba(255,255,255,.04)!important;color:rgba(255,255,255,.2)!important;cursor:default;border-color:transparent!important}
     body.light .month-cal-cell.future-cell{background:rgba(0,0,0,.04)!important;color:rgba(0,0,0,.2)!important}
     body.light .month-cal-daylbl{color:rgba(0,0,0,.35)}
+
+    /* Cycle 87: custom user mottos + auto theme schedule in settings modal */
+    .wset-section-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:12px;margin-bottom:4px;padding-left:2px}
+    .user-motto-row{display:flex;gap:6px;margin-top:4px}
+    .user-motto-inp{flex:1;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 10px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;outline:none;transition:border-color .15s}
+    .user-motto-inp:focus{border-color:rgba(245,200,66,.35)}
+    .user-motto-inp::placeholder{color:var(--muted)}
+    .user-motto-add{background:var(--gold);border:none;color:var(--dark);font-weight:700;font-size:11px;padding:7px 10px;border-radius:8px;cursor:pointer;flex-shrink:0;font-family:"Zen Maru Gothic",sans-serif;transition:opacity .15s}
+    .user-motto-add:hover{opacity:.85}.user-motto-add:disabled{opacity:.35;cursor:not-allowed}
+    .user-motto-list{display:flex;flex-direction:column;gap:3px;margin-top:5px;max-height:90px;overflow-y:auto}
+    .user-motto-item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);padding:5px 8px;border-radius:7px;border:1px solid rgba(255,255,255,.05)}
+    .user-motto-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--white)}
+    .user-motto-del{background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:12px;padding:2px 4px;line-height:1;flex-shrink:0;transition:color .15s;border-radius:4px}
+    .user-motto-del:hover{color:var(--red)}
+    body.light .user-motto-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .user-motto-inp::placeholder{color:rgba(0,0,0,.35)}
+    body.light .user-motto-item{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.07)}
+    body.light .user-motto-text{color:#1a1a2e}
+    body.light .user-motto-del{color:rgba(0,0,0,.2)}
+    .sth-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}
+    .sth-lbl{font-size:10px;font-weight:700;color:var(--muted);flex-shrink:0;white-space:nowrap}
+    .sth-inp{background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 8px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;outline:none;width:86px;transition:border-color .15s}
+    .sth-inp:focus{border-color:rgba(245,200,66,.35)}
+    .sth-clr{background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;flex-shrink:0;line-height:1;transition:color .15s}
+    .sth-clr:hover{color:var(--red)}
+    body.light .sth-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .sth-lbl{color:rgba(0,0,0,.4)}
+    body.light .sth-clr{color:rgba(0,0,0,.2)}
   </style>
 </head>
 <body>
@@ -1986,6 +2014,13 @@
       <button class="wset-preset-btn" onclick="applyWidgetPreset('full')">🌟 フル</button>
     </div>
     <div class="wset-list" id="wset-list"></div>
+    <!-- Cycle 87: custom user mottos -->
+    <div class="wset-section-lbl">💬 マイメッセージ</div>
+    <div class="user-motto-row"><input type="text" id="user-motto-inp" class="user-motto-inp" placeholder="オリジナルメッセージ（最大40字）" maxlength="40" onkeydown="if(event.key==='Enter')addUserMotto()"><button class="user-motto-add" id="user-motto-add-btn" onclick="addUserMotto()">追加</button></div>
+    <div class="user-motto-list" id="user-motto-list"></div>
+    <!-- Cycle 87: auto theme schedule -->
+    <div class="wset-section-lbl">🌙 テーマ自動切替</div>
+    <div class="sth-row"><span class="sth-lbl">🌙 ダーク開始</span><input type="time" class="sth-inp" id="sth-dark-inp" title="この時刻にダークモードへ自動切替" oninput="saveThemeSchedule()"><button class="sth-clr" onclick="clearThemeScheduleSlot('dark')" title="クリア">✕</button><span class="sth-lbl">☀️ ライト開始</span><input type="time" class="sth-inp" id="sth-light-inp" title="この時刻にライトモードへ自動切替" oninput="saveThemeSchedule()"><button class="sth-clr" onclick="clearThemeScheduleSlot('light')" title="クリア">✕</button></div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
   </div>
 </div>
@@ -4185,7 +4220,7 @@ function renderMotto(){
   if(rate===100)msg='🎊 今日の全習慣クリア！最高の一日！';
   else if(streak>=7)msg=`🔥 ${streak}日連続！あなたの継続力は本物です！`;
   else if(streak>=3)msg=`✨ ${streak}日連続中！この勢いを止めるな！`;
-  else{const d=new Date();msg=MOTTOS[(d.getDate()+d.getMonth()*3)%MOTTOS.length];}
+  else{const d=new Date();const pool=[...MOTTOS,..._userMottos];msg=pool[(d.getDate()+d.getMonth()*3)%pool.length];}
   box.textContent=msg;
 }
 
@@ -4742,6 +4777,66 @@ function saveWeekly(val){
   if(prev){prev.textContent=val.trim()||'今週の振り返りを書こう...';prev.classList.toggle('has-text',!!val.trim());}
 }
 
+// ── Cycle 87: custom user motivational mottos ──
+let _userMottos=[];
+function loadUserMottos(){
+  try{_userMottos=JSON.parse(localStorage.getItem('rh_user_mottos')||'[]');}catch(e){_userMottos=[];}
+  _renderUserMottoList();
+}
+function _renderUserMottoList(){
+  const el=document.getElementById('user-motto-list');if(!el)return;
+  el.innerHTML=_userMottos.length?_userMottos.map((m,i)=>`<div class="user-motto-item"><span class="user-motto-text">${esc(m)}</span><button class="user-motto-del" onclick="removeUserMotto(${i})" title="削除">✕</button></div>`).join(''):'';
+  const ab=document.getElementById('user-motto-add-btn');if(ab)ab.disabled=_userMottos.length>=5;
+}
+function addUserMotto(){
+  const inp=document.getElementById('user-motto-inp');if(!inp)return;
+  const v=inp.value.trim();if(!v||_userMottos.length>=5)return;
+  _userMottos.push(v);
+  localStorage.setItem('rh_user_mottos',JSON.stringify(_userMottos));
+  inp.value='';_renderUserMottoList();
+}
+function removeUserMotto(i){
+  _userMottos.splice(i,1);
+  localStorage.setItem('rh_user_mottos',JSON.stringify(_userMottos));
+  _renderUserMottoList();
+}
+
+// ── Cycle 87: auto theme schedule ──
+function loadThemeSchedule(){
+  const d=document.getElementById('sth-dark-inp');
+  const l=document.getElementById('sth-light-inp');
+  if(d)d.value=localStorage.getItem('rh_theme_dark')||'';
+  if(l)l.value=localStorage.getItem('rh_theme_light')||'';
+}
+function saveThemeSchedule(){
+  const dv=(document.getElementById('sth-dark-inp')||{}).value||'';
+  const lv=(document.getElementById('sth-light-inp')||{}).value||'';
+  if(dv)localStorage.setItem('rh_theme_dark',dv);else localStorage.removeItem('rh_theme_dark');
+  if(lv)localStorage.setItem('rh_theme_light',lv);else localStorage.removeItem('rh_theme_light');
+}
+function clearThemeScheduleSlot(slot){
+  const id=slot==='dark'?'sth-dark-inp':'sth-light-inp';
+  const el=document.getElementById(id);if(el)el.value='';
+  localStorage.removeItem(slot==='dark'?'rh_theme_dark':'rh_theme_light');
+}
+function checkThemeSchedule(){
+  const darkT=localStorage.getItem('rh_theme_dark');
+  const lightT=localStorage.getItem('rh_theme_light');
+  if(!darkT&&!lightT)return;
+  const now=new Date();
+  const hm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  if(darkT&&hm===darkT&&document.body.classList.contains('light')){
+    document.body.classList.remove('light');
+    localStorage.setItem('rh_theme','dark');
+    if(typeof syncThemeColor==='function')syncThemeColor();
+  }
+  if(lightT&&hm===lightT&&!document.body.classList.contains('light')){
+    document.body.classList.add('light');
+    localStorage.setItem('rh_theme','light');
+    if(typeof syncThemeColor==='function')syncThemeColor();
+  }
+}
+
 // ── init ──
 load();
 initTheme();
@@ -4760,10 +4855,13 @@ initFocusMode();
 toggleTough(false); // Cycle 47: init tough buttons
 render();
 calcLoginStreak(); // Cycle 71
+loadUserMottos(); // Cycle 87: restore custom user mottos
+checkThemeSchedule(); // Cycle 87: apply schedule at page load
 document.body.classList.add('loaded');
 setInterval(renderPaceBox,60000);
 setInterval(_updateRecTimeBadges,60000); // Cycle 68
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
+setInterval(checkThemeSchedule,60000); // Cycle 87: auto theme by schedule
 // ── Cycle 24 + 75: PWA theme-color meta tag sync ──
 function syncThemeColor(){
   const mc=document.getElementById('meta-theme-color');
@@ -5056,7 +5154,7 @@ function applyWidgetViz(){
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
-  _renderWsetList();el.classList.add('open');
+  _renderWsetList();_renderUserMottoList();loadThemeSchedule();el.classList.add('open');
 }
 function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
 function _renderWsetList(){
