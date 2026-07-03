@@ -1513,6 +1513,47 @@
         "deployedAt": "2026-07-03T03:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 82,
+      "version": "v2.82",
+      "timestamp": "2026-07-03T05:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣「強さ」レベルシステム（Lv.1〜5）",
+          "description": "累計完了回数（habitTotalCount）に基づいて各習慣にLv.1〜Lv.5の「強さ」レベルを付与。Lv.1: 1〜9回🌱芽生え、Lv.2: 10〜29回🌿成長中、Lv.3: 30〜99回🌳定着、Lv.4: 100〜364回🔥達人、Lv.5: 365回以上💎レジェンド。各習慣カードに`.habit-lv`バッジとして絵文字+レベル番号を常時表示（コンパクトモードでは非表示）。習慣チェック時にcheckHabitLevelUp()がレベルアップを検出し、Lv上昇時にグリーングラデーションのlv-toastをアニメーション表示（複数レベルアップは順番にキュー表示）。LocalStorage（rh_lv_shown）に習慣ごとの表示済みレベルを保存して重複トースト防止。ライト/ダーク両テーマ・後方完全互換。",
+          "files": ["habit.html"],
+          "details": [
+            "HABIT_LEVELS配列: lv/min/max/emoji/nameを定義",
+            "habitLevel(id): habitTotalCount(id)からレベルオブジェクトを返す",
+            "checkHabitLevelUp(id): toggle()から呼び出し、レベルアップ検出→トースト表示",
+            "_showLvUpToast(id,lv)/  _drainLvQ(): キュー方式で複数トーストを順次表示",
+            "_hCard()にlvBadgeを追加: bestBadgeの直後に配置",
+            ".habit-lv/.lv1〜.lv5 CSSクラス追加（ライト/ダーク/コンパクト対応）",
+            ".lv-toast CSS追加・<div id='lv-toast'>をHTMLに追加"
+          ]
+        },
+        {
+          "type": "ux",
+          "title": "週間バーチャートのインタラクティブ日付詳細ポップアップ",
+          "description": "週間バーチャート（Cycle 1）の各バーをクリック/タップすると、その日の達成習慣一覧をフローティングポップアップで表示。日付・曜日・達成率%をヘッダーに、各完了習慣を絵文字+名前+完了時刻（HH:MM）付きで一覧表示（Cycle 9のISOタイムスタンプを活用）。達成ゼロの日は「記録なし」と表示。外側クリックで自動クローズ。バーにcursor:pointerとtitleヒントを追加してクリック可能性を提示。ライト/ダーク両テーマ対応・@keyframes cdpFadeInで0.15秒フェードイン。",
+          "files": ["habit.html"],
+          "details": [
+            "showChartDayPopup(e,ds): クリックされたバーのBoundingClientRectで位置計算し固定ポップアップを動的生成",
+            "_closeCdp(): document.addEventListener 'click' once:trueでポップアップを自動クローズ",
+            "renderChart()のbar-wrapにonclick='showChartDayPopup(event,ds)'を追加",
+            ".chart-day-popup/.cdp-date/.cdp-item/.cdp-empty CSSクラス追加",
+            "@keyframes cdpFadeIn アニメーション追加"
+          ]
+        }
+      ],
+      "notes": "Cycle 82は「長期継続の達成感可視化」と「既存ウィジェットのインタラクティビティ向上」の2軸改善。習慣レベルシステムはCycle 4の累計達成日数バッジ・Cycle 8の個別ストリークバッジ・Cycle 22の実績バッジに続く新しいモチベーション軸。連続達成ではなく「累積回数」の積み上げを5段階で評価するため、ストリークが途切れてもLvが下がらず長期的な自己肯定感を維持できる。週間チャートポップアップはCycle 1以来の基本ウィジェットを初めてインタラクティブ化した改善で、蓄積されたcompletionsデータとCycle 9の完了ISOタイムスタンプを自然な形で活用。LocalStorage構造変更最小（rh_lv_shown新規追加のみ）・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T05:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
