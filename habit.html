@@ -456,6 +456,9 @@
     /* Cycle 24: swipe-to-complete gesture visual feedback */
     .habit.swipe-right{background:rgba(76,175,125,.1)!important;border-color:rgba(76,175,125,.3)!important}
     body.light .habit.swipe-right{background:rgba(76,175,125,.14)!important;border-color:rgba(76,175,125,.38)!important}
+    /* Cycle 73: left-swipe-to-skip visual feedback */
+    .habit.swipe-left{background:rgba(220,80,80,.1)!important;border-color:rgba(220,80,80,.35)!important;border-left:3px solid rgba(220,80,80,.6)!important}
+    body.light .habit.swipe-left{background:rgba(220,80,80,.12)!important;border-color:rgba(220,80,80,.4)!important}
 
     /* Cycle 25: streak visual glow motivator */
     .habit.streak-warm:not(.done):not(.paused){border-color:rgba(245,200,66,.3)!important}
@@ -1599,6 +1602,25 @@
     .yd-dismiss:hover{color:var(--white)}
     body.light .yd-banner{border-color:rgba(0,0,0,.08);border-left-color:rgba(91,200,232,.45)}
     body.light .yd-dismiss:hover{color:#1a1a2e}
+    /* Cycle 73: tomorrow's prep note widget */
+    .tomorrow-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;margin:0 0 10px;overflow:hidden;transition:border-color .2s}
+    body.light .tomorrow-box{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.1)}
+    .tomorrow-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;user-select:none;transition:background .15s}
+    .tomorrow-hdr:hover{background:rgba(255,255,255,.04)}
+    body.light .tomorrow-hdr:hover{background:rgba(0,0,0,.04)}
+    .tomorrow-preview{flex:1;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .15s}
+    .tomorrow-preview.has-text{color:var(--white)}
+    body.light .tomorrow-preview.has-text{color:#1a1a2e}
+    .tomorrow-chev{font-size:10px;color:var(--muted);transition:transform .25s}
+    .tomorrow-chev.open{transform:rotate(180deg)}
+    .tomorrow-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+    .tomorrow-body.open{max-height:200px}
+    .tomorrow-prev-note{font-size:11px;color:var(--muted);padding:4px 14px 0;font-style:italic;display:none}
+    .tomorrow-ta{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--white);font-family:inherit;font-size:13px;padding:8px 12px;resize:none;margin:8px 0 10px;transition:border-color .2s}
+    body.light .tomorrow-ta{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.12);color:#1a1a2e}
+    .tomorrow-ta:focus{outline:none;border-color:rgba(91,200,232,.5)}
+    .tomorrow-ta::placeholder{color:var(--muted)}
+    body.focus-mode .tomorrow-box{display:none!important}
   </style>
 </head>
 <body>
@@ -1873,6 +1895,19 @@
     </div>
     <div class="hl-body" id="hl-body">
       <textarea class="hl-inp" id="hl-inp" placeholder="今日一番印象に残ったこと・達成・気づきを記録（最大100文字）" maxlength="100" rows="2" oninput="onHighlightInput(this.value)"></textarea>
+    </div>
+  </div>
+
+  <!-- Cycle 73: tomorrow's prep note -->
+  <div class="tomorrow-box" id="tomorrow-box">
+    <div class="tomorrow-hdr" onclick="toggleTomorrow()">
+      <span style="font-size:14px;flex-shrink:0;line-height:1">🌅</span>
+      <span class="tomorrow-preview" id="tomorrow-preview">明日の準備をメモ...</span>
+      <span class="tomorrow-chev" id="tomorrow-chev">▼</span>
+    </div>
+    <div class="tomorrow-body" id="tomorrow-body">
+      <div class="tomorrow-prev-note" id="tomorrow-prev"></div>
+      <textarea class="tomorrow-ta" id="tomorrow-ta" rows="3" placeholder="明日やること・準備・前日確認リスト..." maxlength="150" oninput="saveTomorrowNote()"></textarea>
     </div>
   </div>
 
@@ -3656,6 +3691,7 @@ function render(){
   renderMoodWidget();
   renderMoodStats(); // Cycle 51
   renderHighlightBox();
+  renderTomorrowBox();
   renderList();
   renderCatPills(); // Cycle 66
   renderChallenge();
@@ -4957,27 +4993,33 @@ function initSwipeGestures(){
     el._swipeInited=true;
     let sx=0,sy=0,dx=0,moving=false;
     const id=el.dataset.id;
-    const THRESH=64;
+    const THRESH=64,SKIP_THRESH=-56;
     el.addEventListener('touchstart',e=>{
       sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;moving=false;
     },{passive:true});
     el.addEventListener('touchmove',e=>{
       const fx=e.touches[0].clientX-sx,fy=e.touches[0].clientY-sy;
       if(!moving&&Math.abs(fy)>Math.abs(fx)+8)return;
-      if(fx<0)return;
       moving=true;dx=fx;
-      el.style.transform=`translateX(${Math.min(90,dx)}px)`;
+      const clampedDx=dx>=0?Math.min(90,dx):Math.max(-80,dx);
+      el.style.transform=`translateX(${clampedDx}px)`;
       el.style.transition='none';
       el.classList.toggle('swipe-right',dx>=THRESH);
+      el.classList.toggle('swipe-left',dx<=SKIP_THRESH);
     },{passive:true});
     el.addEventListener('touchend',e=>{
       el.style.transition='transform .25s ease';
       el.style.transform='';
-      el.classList.remove('swipe-right');
+      el.classList.remove('swipe-right','swipe-left');
       if(moving&&dx>=THRESH){
         e.preventDefault();
         const h=habits.find(x=>x.id===id);
         if(h&&!h.paused)toggle(id,{currentTarget:el,target:el});
+      }else if(moving&&dx<=SKIP_THRESH){
+        e.preventDefault();
+        const h=habits.find(x=>x.id===id);
+        const td=today();
+        if(h&&!h.paused&&!(completions[td]&&completions[td][h.id]))toggleSkip(id);
       }
       dx=0;moving=false;
     },{passive:false});
@@ -5200,6 +5242,7 @@ const WIDGET_DEFS=[
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
   {key:'w_insight', name:'💡 習慣インサイト',         id:'insight-card'},
   {key:'w_donut',   name:'🍩 カテゴリー別達成状況',   id:'donut-box'},
+  {key:'w_tomorrow',name:'🌅 明日の準備メモ',          id:'tomorrow-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
@@ -5425,6 +5468,40 @@ function renderHighlightBox(){
   const inp=document.getElementById('hl-inp');
   if(prv){prv.textContent=txt||'今日の振り返りを記録...';prv.classList.toggle('has-text',!!txt);}
   if(inp&&inp.value!==txt)inp.value=txt;
+}
+
+// ── Cycle 73: tomorrow's prep note ──
+function _tomorrowKey(){
+  const d=new Date();d.setDate(d.getDate()+1);
+  return 'rh_tomorrow_'+d.toISOString().slice(0,10);
+}
+function _todayFromTomorrowKey(){return 'rh_tomorrow_'+today();}
+function toggleTomorrow(){
+  const body=document.getElementById('tomorrow-body');
+  const chev=document.getElementById('tomorrow-chev');
+  if(!body||!chev)return;
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+}
+function renderTomorrowBox(){
+  const prevNote=localStorage.getItem(_todayFromTomorrowKey())||'';
+  const tomorrowNote=localStorage.getItem(_tomorrowKey())||'';
+  const prev=document.getElementById('tomorrow-prev');
+  const ta=document.getElementById('tomorrow-ta');
+  const preview=document.getElementById('tomorrow-preview');
+  if(prev){
+    if(prevNote){prev.textContent='昨日の準備：'+prevNote;prev.style.display='block';}
+    else{prev.style.display='none';}
+  }
+  if(ta&&ta.value!==tomorrowNote)ta.value=tomorrowNote;
+  if(preview){preview.textContent=tomorrowNote||'明日の準備をメモ...';preview.classList.toggle('has-text',!!tomorrowNote);}
+}
+function saveTomorrowNote(){
+  const ta=document.getElementById('tomorrow-ta');if(!ta)return;
+  const val=ta.value.slice(0,150);
+  if(val)localStorage.setItem(_tomorrowKey(),val);else localStorage.removeItem(_tomorrowKey());
+  const preview=document.getElementById('tomorrow-preview');
+  if(preview){preview.textContent=val||'明日の準備をメモ...';preview.classList.toggle('has-text',!!val);}
 }
 
 // ── Cycle 68: recommended execution time ──

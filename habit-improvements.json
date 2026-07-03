@@ -1737,6 +1737,29 @@
         "deployedAt": "2026-07-03T12:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 90,
+      "version": "v2.90",
+      "timestamp": "2026-07-03T13:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "左スワイプでスキップ（スワイプ双方向対応）",
+          "description": "習慣リストの各アイテムに右スワイプ（完了）に加え左スワイプ（スキップ）ジェスチャーを追加。initSwipeGestures()を拡張し、dx<=-56pxの左スワイプで赤いswipe-leftクラスを付与してビジュアルフィードバックを表示（赤border-left＋淡い赤背景）。指を離すとtoggleSkip(id)を呼び出し（ただし既に完了済みの習慣は左スワイプ無効）。モバイル操作で「今日はスキップしたい」判断を素早く実行できる。Cycle 24の右スワイプ完了機能の対称拡張でタッチUXを完成させた。"
+        },
+        {
+          "type": "feature",
+          "title": "明日の準備メモウィジェット（🌅 tomorrow-box）",
+          "description": "夜に翌日の習慣・タスクを前日確認できる「明日の準備メモ」ウィジェットを追加。ウィジェット設定（⚙️）から表示/非表示切替可能（key: w_tomorrow）。ヘッダークリックで展開（toggleTomorrow()）。textarea（最大150文字）に入力するとsaveTomorrowNote()がLocalStorage（rh_tomorrow_YYYY-MM-DD形式で翌日の日付）に自動保存。翌日になると「昨日の準備」として前日のメモを参照表示。renderTomorrowBox()がrender()内で呼び出され常に最新状態を反映。フォーカスモード時は非表示。Cycle 22（今日の意図）・Cycle 31（週次振り返り）・Cycle 50（今日のハイライト）と異なる前向き・前日準備の時間軸を担う独自ウィジェット。"
+        }
+      ],
+      "notes": "Cycle 90はタッチUX完成と前日準備ワークフローの2軸。左スワイプスキップはCycle 24で導入した右スワイプ完了の対称ジェスチャーで、モバイルユーザーがリストを高速処理できるUXを完成させる。明日の準備メモは「前夜の実行意図（implementation intention）」をデジタルサポートする機能で、翌日キー（rh_tomorrow_YYYY-MM-DD）は日付変更で自動的に当日参照→前日表示の切り替えが発生するため追加のリセット処理不要。後方互換性完全維持（新LocalStorageキーのみ追加）。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T13:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
