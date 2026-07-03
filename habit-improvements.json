@@ -1829,6 +1829,29 @@
         "deployedAt": "2026-07-03T16:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 94,
+      "version": "v2.94",
+      "timestamp": "2026-07-03T17:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "月曜日自動週次レポートバナー（先週の振り返り）",
+          "description": "毎週月曜日のみ、先週7日間の達成率サマリーをページ上部にアニメーション付きバナーで自動表示するshowMonRecap()関数を追加。習慣の予定件数（totalSched）と完了件数（totalDone）からpct（達成率）を計算し、90%以上=🏆、70%以上=🥈、50%以上=🥉、それ以下=💪のメダル絵文字と達成率・最多完了曜日・激励メッセージを表示。✕ボタンでdismissMonRecap()を呼び出すと当日キー（rh_mon_recap_YYYY-MM-DD）をLocalStorageに記録し再表示しない。月曜以外・習慣0件・既dismiss済みの場合は非表示。Cycle 89の昨日反省バナー（yd-banner）の直下に配置し900ms遅延で表示。CSS keyframes monRecapSlide でスムーズなスライドイン演出。ライト/ダークテーマ両対応・フォーカスモード除外。"
+        },
+        {
+          "type": "feature",
+          "title": "ソート設定の永続化（rh_sort_pref）",
+          "description": "「⬆ 未完了を上に」と「🔥 順」のソートボタンの選択状態をLocalStorage（rh_sort_pref='undone'/'streak'）に保存し、ページリロード後も自動復元する機能を追加。toggleSortUndone()/toggleSortStreak()にlocalStorage.setItem/removeItemを追加。初期化時（rh_hide_doneの復元直後）に(()=>{const sp=localStorage.getItem('rh_sort_pref');...})()でフラグ変数とボタンのactiveクラスを復元。ソート解除時はrh_sort_prefを削除してデフォルト（登録順）に戻す。Cycle 91のhide-done永続化と同パターンで実装。毎回アプリを開くたびにソートが解除されるフラストレーションを解消し、継続して未完了を上に表示したいユーザーの操作を省力化。"
+        }
+      ],
+      "notes": "Cycle 94は「週次振り返りの自動化」と「ソート設定の記憶」の2軸改善。月曜週次レポートはCycle 28（週間比較バッジ常時表示）・Cycle 32（週次グレードバッジ）・Cycle 89（昨日反省バナー）とは異なり、先週7日間全体の達成率を月曜朝に能動的・一度限り・テキスト形式で提示する点が独自。達成率とメダル絵文字により週の振り返りを5秒で完了できる。ソート永続化はCycle 93のストリーク順ソート・Cycle 7の未完了を上にソートで生まれた「リロードするたびにソートが消える」問題を解決。LocalStorage構造はrh_sort_pref（'undone'/'streak'またはキーなし）とrh_mon_recap_日付の2キー追加のみで後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T17:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

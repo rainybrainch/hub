@@ -1419,6 +1419,21 @@
     body.light .yest-banner{background:linear-gradient(135deg,rgba(14,120,160,.07),rgba(56,142,97,.05));border-color:rgba(14,120,160,.2);color:#0e78a0}
     body.light .yest-banner-sub{color:rgba(0,0,0,.4)}
     body.focus-mode .yest-banner{display:none!important}
+    /* Cycle 94: Monday weekly recap banner */
+    .mon-recap-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,rgba(155,109,214,.1),rgba(91,200,232,.07));border:1px solid rgba(155,109,214,.25);border-radius:12px;margin-bottom:14px;font-size:12px;animation:monRecapSlide .3s ease}
+    @keyframes monRecapSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+    .mon-recap-ico{font-size:20px;flex-shrink:0}
+    .mon-recap-body{flex:1}
+    .mon-recap-ttl{font-size:13px;font-weight:700;color:var(--white);margin-bottom:1px}
+    .mon-recap-sub{color:var(--muted);font-size:11px}
+    .mon-recap-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:3px 6px;border-radius:5px;transition:color .15s;flex-shrink:0}
+    .mon-recap-close:hover{color:var(--white)}
+    body.light .mon-recap-bar{background:linear-gradient(135deg,rgba(155,109,214,.08),rgba(91,200,232,.07));border-color:rgba(155,109,214,.2)}
+    body.light .mon-recap-ttl{color:#1a1a2e}
+    body.light .mon-recap-sub{color:rgba(0,0,0,.45)}
+    body.light .mon-recap-close{color:rgba(0,0,0,.3)}
+    body.light .mon-recap-close:hover{color:#1a1a2e}
+    body.focus-mode .mon-recap-bar{display:none!important}
 
     /* Cycle 78: habit priority flag */
     .prio-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
@@ -1729,6 +1744,9 @@
 
   <!-- Cycle 89: yesterday reflection banner -->
   <div class="yd-banner" id="yd-banner" style="display:none"></div>
+
+  <!-- Cycle 94: Monday weekly recap banner -->
+  <div id="mon-recap-bar" style="display:none"></div>
 
   <!-- Cycle 78: yesterday summary banner -->
   <div class="yest-banner" id="yest-banner" style="display:none">
@@ -4283,6 +4301,8 @@ function toggleSortUndone(){
   const btn2=document.getElementById('sort-streak-btn');
   if(btn)btn.classList.toggle('active',sortUndone);
   if(btn2)btn2.classList.remove('active');
+  // Cycle 94: persist sort preference
+  if(sortUndone)localStorage.setItem('rh_sort_pref','undone');else localStorage.removeItem('rh_sort_pref');
   renderList();
 }
 
@@ -4294,6 +4314,8 @@ function toggleSortStreak(){
   const btn2=document.getElementById('sort-undone-btn');
   if(btn)btn.classList.toggle('active',sortStreak);
   if(btn2)btn2.classList.remove('active');
+  // Cycle 94: persist sort preference
+  if(sortStreak)localStorage.setItem('rh_sort_pref','streak');else localStorage.removeItem('rh_sort_pref');
   renderList();
 }
 
@@ -5071,6 +5093,8 @@ initCompactView();
 // Cycle 91: restore hide-done state
 hideDone=localStorage.getItem('rh_hide_done')==='1';
 if(hideDone){const _hdb=document.getElementById('hide-done-btn');if(_hdb)_hdb.classList.add('active');}
+// Cycle 94: restore sort preference
+(()=>{const sp=localStorage.getItem('rh_sort_pref');if(sp==='undone'){sortUndone=true;const _b=document.getElementById('sort-undone-btn');if(_b)_b.classList.add('active');}else if(sp==='streak'){sortStreak=true;const _b=document.getElementById('sort-streak-btn');if(_b)_b.classList.add('active');}})();
 initEmojiPresets();
 initTemplates();
 initIntention();
@@ -5087,6 +5111,7 @@ loadUserMottos(); // Cycle 87: restore custom user mottos
 checkThemeSchedule(); // Cycle 87: apply schedule at page load
 document.body.classList.add('loaded');
 setTimeout(showYdBanner,600); // Cycle 89: yesterday reflection banner
+setTimeout(showMonRecap,900); // Cycle 94: Monday weekly recap
 setInterval(renderPaceBox,60000);
 setInterval(_updateRecTimeBadges,60000); // Cycle 68
 setInterval(_updateGoldenTimeBadges,60000); // Cycle 92
@@ -6232,6 +6257,38 @@ function dismissYdBanner(){
   el.style.opacity='0';
   setTimeout(()=>{el.style.display='none';},300);
   localStorage.setItem('rh_yd_shown_'+today(),'1');
+}
+// ── Cycle 94: Monday weekly recap banner ──
+function showMonRecap(){
+  const el=document.getElementById('mon-recap-bar');if(!el)return;
+  const now=new Date();
+  if(now.getDay()!==1)return; // Monday only
+  const key='rh_mon_recap_'+today();
+  if(localStorage.getItem(key))return;
+  const days_lbl=['日','月','火','水','木','金','土'];
+  let totalSched=0,totalDone=0,bestDay='',bestCount=0;
+  for(let i=1;i<=7;i++){
+    const d=new Date(now);d.setDate(d.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    const sched=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,ds));
+    if(!sched.length)continue;
+    const done=sched.filter(h=>!!(completions[ds]||{})[h.id]).length;
+    totalSched+=sched.length;totalDone+=done;
+    if(done>bestCount){bestCount=done;bestDay=days_lbl[d.getDay()];}
+  }
+  if(!totalSched)return;
+  const pct=Math.round(totalDone/totalSched*100);
+  const medal=pct>=90?'🏆':pct>=70?'🥈':pct>=50?'🥉':'💪';
+  const msg=pct>=90?'素晴らしい週でした！':pct>=70?'いい調子！今週も継続！':pct>=50?'良いペース、今週さらに上を目指そう！':'今週は巻き返しましょう！';
+  const bestTxt=bestDay?` ・${bestDay}曜が最多（${bestCount}件）`:'';
+  el.innerHTML=`<div class="mon-recap-bar"><span class="mon-recap-ico">${medal}</span><div class="mon-recap-body"><div class="mon-recap-ttl">先週の振り返り — 達成率 ${pct}%</div><div class="mon-recap-sub">${totalDone}/${totalSched}件 完了${bestTxt} — ${msg}</div></div><button class="mon-recap-close" onclick="dismissMonRecap()" title="閉じる">✕</button></div>`;
+  el.style.display='block';
+}
+function dismissMonRecap(){
+  const el=document.getElementById('mon-recap-bar');if(!el)return;
+  el.style.opacity='0';el.style.transition='opacity .25s';
+  setTimeout(()=>{el.style.display='none';},270);
+  localStorage.setItem('rh_mon_recap_'+today(),'1');
 }
 
 function _renderStatsOvl(){
