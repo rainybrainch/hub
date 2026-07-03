@@ -811,6 +811,36 @@
     body.light .wset-toggle{background:rgba(0,0,0,.12)}
     body.light .wset-close{background:rgba(0,0,0,.06);color:#1a1a2e}
     body.light .wset-close:hover{background:rgba(0,0,0,.1)}
+    /* Cycle 97: storage usage display */
+    .stor-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;margin-bottom:10px;gap:8px}
+    .stor-info{font-size:12px;color:var(--muted);flex:1}
+    .stor-bar-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:4px;margin-top:4px}
+    .stor-bar{height:4px;border-radius:4px;background:var(--green);transition:width .4s}
+    .stor-bar.warn{background:var(--gold)}
+    .stor-bar.crit{background:#e5534b}
+    .stor-clean{background:rgba(255,255,255,.07);border:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;border-radius:8px;padding:6px 10px;transition:all .15s;flex-shrink:0}
+    .stor-clean:hover{background:rgba(232,91,75,.18);color:#e5534b}
+    body.light .stor-row{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.06)}
+    body.light .stor-bar-wrap{background:rgba(0,0,0,.06)}
+    body.light .stor-clean{background:rgba(0,0,0,.05);color:rgba(0,0,0,.4)}
+    body.light .stor-clean:hover{background:rgba(232,91,75,.1);color:#c0392b}
+    /* Cycle 97: personal bests panel */
+    .pbest-ovl{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px)}
+    .pbest-ovl.open{opacity:1;pointer-events:all}
+    .pbest-modal{background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:24px;max-width:380px;width:calc(100vw - 40px);max-height:80vh;overflow-y:auto;transform:translateY(16px);transition:transform .25s}
+    .pbest-ovl.open .pbest-modal{transform:translateY(0)}
+    .pbest-ttl{font-family:"Dela Gothic One",sans-serif;font-size:17px;margin-bottom:16px;text-align:center}
+    .pbest-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .pbest-row:last-child{border-bottom:none}
+    .pbest-lbl{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em}
+    .pbest-val{font-family:"Dela Gothic One",sans-serif;font-size:18px;color:var(--gold)}
+    .pbest-sub{font-size:10px;color:var(--muted);margin-top:2px}
+    .pbest-close{width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:none;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:16px}
+    .pbest-close:hover{background:rgba(255,255,255,.12)}
+    body.light .pbest-modal{background:#f8f8fa;border-color:rgba(0,0,0,.1)}
+    body.light .pbest-row{border-color:rgba(0,0,0,.06)}
+    body.light .pbest-close{background:rgba(0,0,0,.06);color:#1a1a2e}
+    body.light .pbest-close:hover{background:rgba(0,0,0,.1)}
 
     /* Cycle 46: counter habit widget */
     .habit-counter{display:flex;align-items:center;gap:4px;flex-shrink:0}
@@ -1718,6 +1748,7 @@
   <button class="hdr-btn" id="focus-mode-btn" onclick="toggleFocusMode()" title="フォーカスモード（習慣リストのみ表示・Qキー）">👁</button>
   <button class="hdr-btn" onclick="openYFix()" title="過去7日間の習慣を修正（Yキー）">昨</button>
   <button class="hdr-btn" onclick="openJournal()" title="今日のジャーナル（意図・気分・達成メモを一覧）">📖</button>
+  <button class="hdr-btn" onclick="showPersonalBests()" title="パーソナルベスト（個人記録一覧・Bキー）">🏆</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -2212,7 +2243,22 @@
     <div class="wset-section-lbl">🎯 ストリーク目標</div>
     <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px"><button class="sg-none-btn" onclick="setStreakGoal(0)" title="目標なし">なし</button></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="streak-goal-btns"></div>
+    <!-- Cycle 97: storage usage -->
+    <div class="wset-section-lbl">💾 ストレージ使用量</div>
+    <div class="stor-row">
+      <div class="stor-info" id="stor-info">計算中...</div>
+      <button class="stor-clean" onclick="cleanOldData()" title="90日以前の完了データを削除">🗑 90日前を削除</button>
+    </div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
+  </div>
+</div>
+
+<!-- Cycle 97: personal bests panel -->
+<div class="pbest-ovl" id="pbest-ovl" onclick="if(event.target===this)closePersonalBests()">
+  <div class="pbest-modal">
+    <div class="pbest-ttl">🏆 パーソナルベスト</div>
+    <div id="pbest-body"></div>
+    <button class="pbest-close" onclick="closePersonalBests()">閉じる（ESCでも）</button>
   </div>
 </div>
 
@@ -5321,6 +5367,7 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('yfix-ovl')?.classList.contains('open')){closeYFix();return;}
     if(document.getElementById('stats-ovl')?.classList.contains('open')){closeStatsModal();return;}
     if(document.getElementById('journal-ovl')?.classList.contains('open')){closeJournal();return;}
+    if(document.getElementById('pbest-ovl')?.classList.contains('open')){closePersonalBests();return;}
     if(document.getElementById('overlay').classList.contains('open'))closeModal();
     else if(searchQuery)clearSearch();
     else if(_kfocusId){_setKfocus(-1);}
@@ -5349,6 +5396,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='q'||e.key==='Q')toggleFocusMode();
   else if(e.key==='h'||e.key==='H')toggleHideDone();
   else if(e.key==='p'||e.key==='P')toggleSortPri();
+  else if(e.key==='b'||e.key==='B')showPersonalBests();
   // Cycle 63: arrow key navigation
   else if(e.key==='ArrowDown'){
     e.preventDefault();
@@ -5521,9 +5569,70 @@ function applyWidgetViz(){
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
-  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();el.classList.add('open');
+  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();renderStorInfo();el.classList.add('open');
 }
 function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
+function showSnack(msg){
+  const b=document.getElementById('banner');if(!b)return;
+  const prev=b.textContent;
+  b.textContent=msg;b.classList.add('show');
+  setTimeout(()=>{b.textContent=prev;b.classList.remove('show');},2500);
+}
+function getStorKB(){
+  let b=0;
+  for(const k of Object.keys(localStorage)){if(k.startsWith('rh_')){try{b+=(localStorage.getItem(k)||'').length*2;}catch(e){}}}
+  return (b/1024).toFixed(1);
+}
+function renderStorInfo(){
+  const el=document.getElementById('stor-info');if(!el)return;
+  const kb=parseFloat(getStorKB());
+  const pct=Math.min(100,Math.round(kb/50*100));
+  const cls=pct>=80?'crit':pct>=50?'warn':'';
+  el.innerHTML=`<span style="font-weight:700;color:var(--white)">${kb} KB</span> 使用中 <span style="font-size:10px;opacity:.7">(上限50KB比 ${pct}%)</span><div class="stor-bar-wrap"><div class="stor-bar ${cls}" style="width:${pct}%"></div></div>`;
+}
+function cleanOldData(){
+  const c=JSON.parse(localStorage.getItem(CK)||'{}');
+  const cut=dateAgo(90);
+  let del=0;
+  for(const d of Object.keys(c)){if(d<cut){delete c[d];del++;}}
+  if(del===0){showSnack('削除対象なし（90日以内のデータのみ）');return;}
+  localStorage.setItem(CK,JSON.stringify(c));
+  completions=c;
+  renderStorInfo();
+  showSnack(`${del}日分の古いデータを削除しました ✓`);
+}
+function showPersonalBests(){
+  const el=document.getElementById('pbest-ovl');if(!el)return;
+  document.getElementById('pbest-body').innerHTML=_calcPersonalBests();
+  el.classList.add('open');
+}
+function closePersonalBests(){document.getElementById('pbest-ovl')?.classList.remove('open');}
+function _calcPersonalBests(){
+  const h=habits;
+  const c=completions;
+  const dates=Object.keys(c).sort();
+  if(!dates.length||!h.length)return '<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">まだデータがありません</p>';
+  let total=0;
+  for(const d of dates)for(const id of Object.keys(c[d]))if(c[d][id])total++;
+  let bestDay='',bestDayCount=0;
+  for(const d of dates){const cnt=Object.keys(c[d]).filter(id=>c[d][id]).length;if(cnt>bestDayCount){bestDayCount=cnt;bestDay=d;}}
+  const bk=JSON.parse(localStorage.getItem(BK)||'{}');
+  let bestStreakName='—',bestStreakDays=0;
+  for(const id of Object.keys(bk)){if((bk[id]||0)>bestStreakDays){bestStreakDays=bk[id];const hab=h.find(x=>x.id==id);bestStreakName=hab?hab.emoji+' '+hab.name:id;}}
+  const totByHabit={};
+  for(const d of dates)for(const id of Object.keys(c[d]))if(c[d][id]){totByHabit[id]=(totByHabit[id]||0)+1;}
+  let topHabitName='—',topHabitCnt=0;
+  for(const id of Object.keys(totByHabit)){if(totByHabit[id]>topHabitCnt){topHabitCnt=totByHabit[id];const hab=h.find(x=>x.id==id);topHabitName=hab?hab.emoji+' '+hab.name:id;}}
+  const daysSince=dates.length?Math.round((new Date(today())-new Date(dates[0]))/(1000*60*60*24)):0;
+  const rows=[
+    {lbl:'🔥 最長連続記録',val:bestStreakDays?`${bestStreakDays}日`:'—',sub:bestStreakName},
+    {lbl:'⭐ 最多達成習慣',val:topHabitCnt?`${topHabitCnt}回`:'—',sub:topHabitName},
+    {lbl:'📅 最高達成日',val:bestDay||'—',sub:bestDay?`${bestDayCount}習慣を達成`:''},
+    {lbl:'✅ 総完了回数',val:`${total}回`,sub:'全習慣・全期間合計'},
+    {lbl:'📆 利用開始から',val:daysSince?`${daysSince}日`:'—',sub:dates[0]||''}
+  ];
+  return rows.map(r=>`<div class="pbest-row"><div><div class="pbest-lbl">${r.lbl}</div>${r.sub?`<div class="pbest-sub">${r.sub}</div>`:''}</div><div class="pbest-val">${r.val}</div></div>`).join('');
+}
 function _renderWsetList(){
   const el=document.getElementById('wset-list');if(!el)return;
   const v=getWidgetViz();
