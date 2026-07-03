@@ -1182,7 +1182,7 @@
     body.focus-mode .intention-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,
     body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .pace-box,
     body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row,body.focus-mode .schedule-box,
-    body.focus-mode .insight-card,body.focus-mode .corr-box{display:none!important}
+    body.focus-mode .insight-card,body.focus-mode .corr-box,body.focus-mode .daytl-box{display:none!important}
     .hdr-btn.focus-on{color:var(--sky)!important}
     /* Cycle 63: keyboard arrow navigation focus ring */
     .habit.kfocus{outline:2px solid var(--sky);outline-offset:2px;box-shadow:0 0 0 4px rgba(91,200,232,.15)!important}
@@ -1562,6 +1562,30 @@
     body.light .sth-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
     body.light .sth-lbl{color:rgba(0,0,0,.4)}
     body.light .sth-clr{color:rgba(0,0,0,.2)}
+    /* Cycle 88: day progress graphical timeline */
+    .daytl-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .daytl-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .daytl-track{position:relative;height:36px;margin:0 4px}
+    .daytl-rail{position:absolute;top:50%;left:0;right:0;height:2px;background:rgba(255,255,255,.08);border-radius:1px;transform:translateY(-50%)}
+    .daytl-fill{position:absolute;top:50%;left:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--sky));border-radius:1px;transform:translateY(-50%);transition:width .4s ease}
+    .daytl-needle{position:absolute;top:4px;bottom:4px;width:2px;background:var(--sky);border-radius:1px;pointer-events:none}
+    .daytl-needle::before{content:'';position:absolute;top:-3px;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--sky);box-shadow:0 0 8px rgba(91,200,232,.7)}
+    .daytl-dot{position:absolute;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer;transition:transform .15s,box-shadow .15s}
+    .daytl-dot:hover{transform:translate(-50%,-50%) scale(1.4)}
+    .daytl-dot.dt-done{background:var(--green);box-shadow:0 0 6px rgba(76,175,125,.45)}
+    .daytl-dot.dt-soon{background:var(--gold);box-shadow:0 0 5px rgba(245,200,66,.4);animation:rtPulse 2.2s ease-in-out infinite}
+    .daytl-dot.dt-sched{background:rgba(255,255,255,.12);border:1.5px dashed rgba(255,255,255,.28)}
+    .daytl-dot.dt-over{background:rgba(232,53,74,.2);border:1.5px dashed rgba(232,53,74,.45)}
+    .daytl-lbls{position:relative;height:14px;margin:5px 4px 0}
+    .daytl-hlbl{position:absolute;font-size:8px;color:var(--muted);transform:translateX(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+    .daytl-tip{position:fixed;background:var(--dark3);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;z-index:9999;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.55);color:var(--white)}
+    .daytl-tip.show{opacity:1}
+    body.light .daytl-box{border-color:rgba(0,0,0,.08)}
+    body.light .daytl-rail{background:rgba(0,0,0,.08)}
+    body.light .daytl-dot.dt-sched{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.18)}
+    body.light .daytl-tip{background:#f0f2f5;border-color:rgba(0,0,0,.1);color:#1a1a2e}
+    body.light .daytl-hlbl{color:rgba(0,0,0,.35)}
+    body.compact .daytl-box{display:none}
   </style>
 </head>
 <body>
@@ -1643,6 +1667,18 @@
 
   <!-- Cycle 69: today's time schedule widget -->
   <div class="schedule-box" id="schedule-box" style="display:none"></div>
+
+  <!-- Cycle 88: day progress graphical timeline -->
+  <div class="daytl-box" id="daytl-box" style="display:none">
+    <div class="daytl-ttl">📍 今日の進捗タイムライン</div>
+    <div class="daytl-track" id="daytl-track">
+      <div class="daytl-rail"></div>
+      <div class="daytl-fill" id="daytl-fill" style="width:0"></div>
+      <div class="daytl-needle" id="daytl-needle" style="display:none"></div>
+    </div>
+    <div class="daytl-lbls" id="daytl-lbls"></div>
+  </div>
+  <div class="daytl-tip" id="daytl-tip"></div>
 
   <div class="chart-box">
     <div class="chart-hdr">
@@ -3580,6 +3616,7 @@ function render(){
   renderPaceBox();
   renderYesterdayBanner(); // Cycle 78
   renderScheduleBox(); // Cycle 69
+  renderDayTimeline(); // Cycle 88
   renderInsightCard(); // Cycle 70
   renderDonutChart(); // Cycle 79
   renderSparkline(); // Cycle 79
@@ -5122,6 +5159,7 @@ function scrollToHabit(id){
 const WIDGET_DEFS=[
   {key:'w_pace',   name:'⏱ ペース指標',             id:'pace-box'},
   {key:'w_schedule',name:'⏰ 今日のスケジュール',    id:'schedule-box'},
+  {key:'w_daytl',   name:'📍 今日の進捗タイムライン', id:'daytl-box'},
   {key:'w_chart',  name:'📊 週間/月間チャート',      id:'chart-box'},
   {key:'w_weekly', name:'📓 週次振り返りメモ',        id:'weekly-box'},
   {key:'w_wm',     name:'📋 今週のグリッド',          id:'wm-box'},
@@ -5729,6 +5767,73 @@ function renderHabitCorr(){
         <span class="corr-days">(${p.co}日)</span>
       </div>
     </div>`).join('');
+}
+
+// ── Cycle 88: day progress graphical timeline ──
+function renderDayTimeline(){
+  const box=document.getElementById('daytl-box');
+  if(!box)return;
+  const td=today(),dc=completions[td]||{};
+  const now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
+  const items=[];
+  habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)).forEach(h=>{
+    const val=dc[h.id];
+    if(val&&typeof val==='string'){
+      try{const d=new Date(val);items.push({h,min:d.getHours()*60+d.getMinutes(),type:'done'});}catch(_){}
+    } else if(!val&&h.recTime){
+      const[rh,rm]=h.recTime.split(':').map(Number);
+      const min=rh*60+rm;
+      const diff=min-nowMin;
+      items.push({h,min,type:diff<-5?'over':diff<=30?'soon':'sched'});
+    }
+  });
+  if(!items.length){box.style.display='none';return;}
+  box.style.display='';
+  const minsAll=items.map(x=>x.min);
+  const rs=Math.min(5*60,...minsAll.map(m=>Math.max(0,m-30)));
+  const re=Math.max(23*60,...minsAll.map(m=>Math.min(24*60,m+30)));
+  const span=Math.max(re-rs,60);
+  const pct=m=>Math.max(0,Math.min(100,(m-rs)/span*100)).toFixed(2)+'%';
+  const needle=document.getElementById('daytl-needle');
+  if(needle){
+    if(nowMin>=rs&&nowMin<=re){needle.style.display='';needle.style.left=pct(nowMin);}
+    else needle.style.display='none';
+  }
+  const fill=document.getElementById('daytl-fill');
+  if(fill)fill.style.width=pct(Math.min(nowMin,re));
+  const track=document.getElementById('daytl-track');
+  track.querySelectorAll('.daytl-dot').forEach(e=>e.remove());
+  const tip=document.getElementById('daytl-tip');
+  items.forEach(item=>{
+    const dot=document.createElement('span');
+    dot.className='daytl-dot dt-'+item.type;
+    dot.style.left=pct(item.min);
+    const hhmm=String(Math.floor(item.min/60)).padStart(2,'0')+':'+String(item.min%60).padStart(2,'0');
+    const em=item.h.emoji?item.h.emoji+' ':'';
+    const st=item.type==='done'?'✅':item.type==='soon'?'⏳':item.type==='over'?'⚠️':'📅';
+    dot.addEventListener('mouseenter',()=>{
+      if(!tip)return;
+      tip.textContent=`${em}${item.h.name} ${hhmm} ${st}`;
+      tip.classList.add('show');
+    });
+    dot.addEventListener('mouseleave',()=>tip?.classList.remove('show'));
+    dot.addEventListener('mousemove',e=>{
+      if(!tip)return;
+      tip.style.left=Math.min(e.clientX-tip.offsetWidth/2,window.innerWidth-tip.offsetWidth-8)+'px';
+      tip.style.top=(e.clientY-tip.offsetHeight-10)+'px';
+    });
+    track.appendChild(dot);
+  });
+  const lbls=document.getElementById('daytl-lbls');
+  if(lbls){
+    const firstH=Math.ceil(rs/60),lastH=Math.floor(re/60);
+    const step=span>13*60?4:span>7*60?2:1;
+    let html='';
+    for(let h=firstH;h<=lastH;h+=step){
+      if(h*60>=rs&&h*60<=re)html+=`<span class="daytl-hlbl" style="left:${pct(h*60)}">${h}時</span>`;
+    }
+    lbls.innerHTML=html;
+  }
 }
 
 // ── Cycle 72: perfect day history popup ──
