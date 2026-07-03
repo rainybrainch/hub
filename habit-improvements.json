@@ -1473,6 +1473,46 @@
         "deployedAt": "2026-07-03T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 81,
+      "version": "v2.81",
+      "timestamp": "2026-07-03T03:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "過去14日ジャーナルアーカイブ",
+          "description": "📖ジャーナルモーダルに「今日」「過去14日」の2タブを追加。アーカイブタブでは過去14日間の日付・達成率バッジ（緑/金/グレー色分け）・気分絵文字・意図メモ・ハイライトをカード形式で一覧表示。記録がない日はスキップし、全日記録なしの場合は空メッセージを表示。日祝（isDayOff）は🌴マークを付与。",
+          "files": ["habit.html"],
+          "details": [
+            "switchJournalTab(tab): タブ切り替え・表示/非表示制御",
+            "_renderJournalArchive(): 過去14日のLocalStorageデータを読み取りカードHTML生成",
+            "openJournal()冒頭にタブリセット処理を追加",
+            ".journal-tabs / .journal-tab / .journal-tab.active のCSS追加",
+            ".jrn-arch-day / .jrn-arch-hdr / .jrn-arch-date / .jrn-arch-rate(.hi/.mid/.lo) / .jrn-arch-mood / .jrn-arch-intent / .jrn-arch-hl / .jrn-arch-empty のCSS追加",
+            "ジャーナルモーダルHTMLにタブUI・#journal-archive-contentを追加"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "N日チャレンジ目標バッジ",
+          "description": "習慣の追加/編集モーダルに「N日チャレンジ」入力欄を追加。targetDaysを設定した習慣のカードに「📅 12/30日」形式の進捗バッジを表示し、達成時は「🎉 30/30日」に変化。コンパクトモードではバッジを非表示。habitTotalCount()で累計達成日数を計算するため、中断・再開しても通算日数が正しく反映される。",
+          "files": ["habit.html"],
+          "details": [
+            "challBadge: _hCard()内でtargetDaysの有無・達成状況を判定してバッジHTMLを生成",
+            "saveHabit(): editing時・新規時ともにtargetDaysをhオブジェクトに保存（1〜365の範囲外は削除）",
+            "openModal(): 編集時にchallenge-days-inpにtargetDaysを復元",
+            ".challenge-badge / .chall-active / .chall-done / .challenge-days-inp のCSS追加（ダーク/ライト/コンパクト対応）",
+            "モーダルHTMLに#challenge-days-rowとinputを追加"
+          ]
+        }
+      ],
+      "notes": "Cycle 81はジャーナルの時系列可視化とモチベーション管理の2軸改善。過去14日アーカイブはCycle 74で追加した今日のジャーナルを「履歴ビュー」に発展させ、過去の努力を振り返る動線を作る。N日チャレンジは「30日間継続」などのスポット目標を設定できる機能で、streak（連続）とは異なり累計達成日数で判定するため、旅行や体調不良があっても諦めずに続けやすい設計。どちらもLocalStorage構造変更最小限・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T03:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

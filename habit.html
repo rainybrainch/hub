@@ -1426,6 +1426,36 @@
     .comp-done-badge.visible{display:inline-flex}
     .comp-done-delta{font-size:9px;opacity:.7;margin-left:3px}
     body.light .comp-done-badge{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.28);color:#2e7d52}
+    /* Cycle 81: journal archive tabs */
+    .journal-tabs{display:flex;gap:0;margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08);flex-shrink:0}
+    .journal-tab{flex:1;padding:8px 4px;font-size:12px;font-weight:700;text-align:center;cursor:pointer;background:none;border:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;transition:all .15s}
+    .journal-tab.active{background:rgba(245,200,66,.15);color:var(--gold)}
+    body.light .journal-tabs{border-color:rgba(0,0,0,.1)}
+    body.light .journal-tab.active{background:rgba(245,200,66,.18);color:var(--gold-d)}
+    /* Cycle 81: journal archive entries */
+    .jrn-arch-day{border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);margin-bottom:8px;padding:10px 12px}
+    .jrn-arch-hdr{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+    .jrn-arch-date{font-size:12px;font-weight:700;color:var(--white)}
+    .jrn-arch-rate{font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px}
+    .jrn-arch-rate.hi{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2)}
+    .jrn-arch-rate.mid{color:var(--gold);background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.2)}
+    .jrn-arch-rate.lo{color:var(--muted);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+    .jrn-arch-mood{font-size:14px;margin-left:auto}
+    .jrn-arch-intent{font-size:11px;color:var(--sky);border-left:2px solid rgba(91,200,232,.4);padding-left:7px;margin-top:3px;word-break:break-word}
+    .jrn-arch-hl{font-size:11px;color:var(--green);border-left:2px solid rgba(76,175,125,.4);padding-left:7px;margin-top:3px;word-break:break-word}
+    .jrn-arch-empty{text-align:center;color:var(--muted);font-size:12px;padding:20px 0}
+    body.light .jrn-arch-day{background:rgba(0,0,0,.02);border-color:rgba(0,0,0,.08)}
+    body.light .jrn-arch-date{color:rgba(0,0,0,.85)}
+    /* Cycle 81: N-day challenge badge */
+    .challenge-badge{font-size:9px;font-weight:700;flex-shrink:0;padding:2px 6px;border-radius:6px;line-height:1.5;border:1px solid;letter-spacing:.02em;white-space:nowrap;display:inline-flex;align-items:center;gap:2px}
+    .challenge-badge.chall-active{color:var(--sky);background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.25)}
+    .challenge-badge.chall-done{color:var(--green);background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.25)}
+    body.compact .challenge-badge{display:none}
+    body.light .challenge-badge.chall-active{color:#0e78a0;background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.3)}
+    body.light .challenge-badge.chall-done{color:#2e7d52;background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.28)}
+    .challenge-days-inp{background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:90px}
+    .challenge-days-inp:focus{border-color:rgba(245,200,66,.4)}
+    body.light .challenge-days-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1);background:#f5f5f5}
   </style>
 </head>
 <body>
@@ -1779,6 +1809,12 @@
       <button class="rec-time-clr" type="button" onclick="document.getElementById('rec-time-inp').value=''" title="クリア">✕</button>
       <span style="font-size:10px;color:var(--muted);flex:1">推奨実行時刻（任意）</span>
     </div>
+    <!-- Cycle 81: N-day challenge goal -->
+    <div class="rec-time-row" id="challenge-days-row">
+      <span class="rec-time-lbl">🎯 目標</span>
+      <input class="challenge-days-inp" id="challenge-days-inp" type="number" min="1" max="365" placeholder="30" title="N日チャレンジ: 累計N日達成を目標に設定（任意）">
+      <span style="font-size:10px;color:var(--muted);flex:1">日チャレンジ（任意）</span>
+    </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
@@ -1848,8 +1884,13 @@
 <div class="journal-ovl" id="journal-ovl" onclick="if(event.target===this)closeJournal()">
   <div class="journal-modal">
     <div class="journal-handle"></div>
-    <div class="journal-ttl">📖 今日のジャーナル</div>
+    <!-- Cycle 81: journal archive tabs -->
+    <div class="journal-tabs">
+      <button class="journal-tab active" id="jrn-tab-today" onclick="switchJournalTab('today')">📖 今日</button>
+      <button class="journal-tab" id="jrn-tab-archive" onclick="switchJournalTab('archive')">📅 過去14日</button>
+    </div>
     <div id="journal-content"></div>
+    <div id="journal-archive-content" style="display:none"></div>
     <button class="journal-close" onclick="closeJournal()">閉じる（ESCでも）</button>
   </div>
 </div>
@@ -2737,7 +2778,14 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${freqBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 81: N-day challenge badge
+  const challBadge=(()=>{
+    if(!h.targetDays||h.targetDays<1)return'';
+    const done=habitTotalCount(h.id);
+    const isDoneChall=done>=h.targetDays;
+    return`<span class="challenge-badge ${isDoneChall?'chall-done':'chall-active'}">${isDoneChall?'🎉':'📅'} ${Math.min(done,h.targetDays)}/${h.targetDays}日</span>`;
+  })();
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${freqBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3103,6 +3151,8 @@ function _renderYFixDates(){
 function selectYFixDate(ds){_yfixDate=ds;_renderYFixDates();_renderYFixList(ds);}
 // Cycle 74: daily journal modal
 function openJournal(){
+  _jrnTab='today';
+  switchJournalTab('today');
   const td=today();
   const mood=getMood(td);
   const moodLabels=['','😞','😕','😐','😊','😄'];
@@ -3129,6 +3179,41 @@ function openJournal(){
   document.getElementById('journal-ovl').classList.add('open');
 }
 function closeJournal(){document.getElementById('journal-ovl')?.classList.remove('open');}
+// Cycle 81: journal archive tab
+let _jrnTab='today';
+function switchJournalTab(tab){
+  _jrnTab=tab;
+  document.getElementById('jrn-tab-today').classList.toggle('active',tab==='today');
+  document.getElementById('jrn-tab-archive').classList.toggle('active',tab==='archive');
+  document.getElementById('journal-content').style.display=tab==='today'?'':'none';
+  const arc=document.getElementById('journal-archive-content');
+  if(arc){arc.style.display=tab==='archive'?'':'none';if(tab==='archive')_renderJournalArchive();}
+}
+function _renderJournalArchive(){
+  const body=document.getElementById('journal-archive-content');if(!body)return;
+  const DOW=['日','月','火','水','木','金','土'];
+  const MOODS=['😩','😔','😐','😊','💪'];
+  let html='';let hasAny=false;
+  for(let i=1;i<=14;i++){
+    const d=dateAgo(i);
+    const dt=new Date(d+'T00:00:00');
+    const dow=DOW[dt.getDay()];
+    const mm=String(dt.getMonth()+1).padStart(2,'0');
+    const dd=String(dt.getDate()).padStart(2,'0');
+    const rate=rawDayRate(d);
+    const rateP=Math.round(rate*100);
+    const intent=localStorage.getItem('rh_intent_'+d)||'';
+    const hl=localStorage.getItem('rh_hl_'+d)||'';
+    const mood=localStorage.getItem('rh_mood_'+d)||'';
+    const moodEm=mood!==''?MOODS[parseInt(mood)]||'':'';
+    if(!intent&&!hl&&rateP===0)continue;
+    hasAny=true;
+    const cls=rateP>=80?'hi':rateP>=40?'mid':'lo';
+    const dayOffMark=isDayOff(d)?'🌴 ':'';
+    html+=`<div class="jrn-arch-day"><div class="jrn-arch-hdr"><span class="jrn-arch-date">${mm}/${dd}（${dow}）</span><span class="jrn-arch-rate ${cls}">${dayOffMark}${rateP}%</span>${moodEm?`<span class="jrn-arch-mood">${moodEm}</span>`:''}</div>${intent?`<div class="jrn-arch-intent">📝 ${esc(intent)}</div>`:''}${hl?`<div class="jrn-arch-hl">⭐ ${esc(hl)}</div>`:''}</div>`;
+  }
+  body.innerHTML=hasAny?html:'<div class="jrn-arch-empty">📭 まだ記録がありません<br><small>今日の意図やハイライトを書くと蓄積されます</small></div>';
+}
 function _renderYFixList(ds){
   const el=document.getElementById('yfix-list');
   if(!el)return;
@@ -3496,6 +3581,7 @@ function openModal(id=null){
     const whyEl=document.getElementById('why-inp');if(whyEl)whyEl.value=h&&h.why?h.why:'';
     const rtEl=document.getElementById('rec-time-inp');if(rtEl)rtEl.value=h&&h.recTime?h.recTime:'';
     const wkTEl=document.getElementById('wk-target-sel');if(wkTEl)wkTEl.value=(h&&h.weeklyTarget)?h.weeklyTarget:0;
+    const cdEl=document.getElementById('challenge-days-inp');if(cdEl)cdEl.value=(h&&h.targetDays)?h.targetDays:'';
     toggleTough(!!(h&&h.tough));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
@@ -3513,6 +3599,7 @@ function openModal(id=null){
     const whyElN=document.getElementById('why-inp');if(whyElN)whyElN.value='';
     const rtElN=document.getElementById('rec-time-inp');if(rtElN)rtElN.value='';
     const wkTElN=document.getElementById('wk-target-sel');if(wkTElN)wkTElN.value=0;
+    const cdElN=document.getElementById('challenge-days-inp');if(cdElN)cdElN.value='';
     toggleTough(false);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -3547,7 +3634,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3561,6 +3648,7 @@ function saveHabit(){
     if(whySave)nh.why=whySave;
     if(recTimeSave)nh.recTime=recTimeSave;
     const wkTSaveN=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSaveN>=1&&wkTSaveN<=7)nh.weeklyTarget=wkTSaveN;
+    const tdSaveN=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSaveN>=1&&tdSaveN<=365)nh.targetDays=tdSaveN;
     habits.push(nh);
     _newHabitId=nh.id;
   }
