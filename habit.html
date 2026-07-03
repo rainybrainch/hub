@@ -270,6 +270,25 @@
     /* Cycle 73: evening reminder toast */
     .eve-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(155,109,214,.92),rgba(91,200,232,.82));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:9px 20px;border-radius:30px;box-shadow:0 8px 28px rgba(155,109,214,.4);z-index:448;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
     .eve-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 74: Monday weekly recap card */
+    .recap-card{background:linear-gradient(135deg,rgba(245,200,66,.08),rgba(212,160,23,.04));border:1px solid rgba(245,200,66,.22);border-radius:14px;padding:14px 16px;margin-bottom:16px;animation:fadeSlideIn .4s ease}
+    .recap-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .recap-ttl{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);flex:1}
+    .recap-dismiss{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;transition:color .15s}
+    .recap-dismiss:hover{color:var(--white)}
+    .recap-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+    .recap-stat{text-align:center;padding:8px 4px;background:rgba(255,255,255,.035);border-radius:8px}
+    .recap-stat-val{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:var(--gold);line-height:1}
+    .recap-stat-lbl{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.05em}
+    .recap-best{font-size:11px;color:var(--muted);text-align:center;padding:8px 10px;background:rgba(255,255,255,.03);border-radius:8px}
+    body.light .recap-card{background:linear-gradient(135deg,rgba(212,160,23,.05),rgba(245,200,66,.02));border-color:rgba(212,160,23,.3)}
+    body.light .recap-stat,.body.light .recap-best{background:rgba(0,0,0,.025)}
+    body.light .recap-dismiss:hover{color:var(--dark)}
+    /* Cycle 74: category left border accent on undone habit cards */
+    .habit[data-cat="学習"]:not(.done):not(.paused){border-left:3px solid rgba(91,200,232,.5)}
+    .habit[data-cat="運動"]:not(.done):not(.paused){border-left:3px solid rgba(76,175,125,.5)}
+    .habit[data-cat="創作"]:not(.done):not(.paused){border-left:3px solid rgba(155,109,214,.5)}
+    .habit[data-cat="自己改善"]:not(.done):not(.paused){border-left:3px solid rgba(245,200,66,.45)}
 
     /* Cycle 13: compact view mode */
     body.compact .habit{padding:8px 12px}
@@ -1157,7 +1176,7 @@
     body.focus-mode .intention-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,
     body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .pace-box,
     body.focus-mode .dayoff-banner,body.focus-mode .stats,body.focus-mode .streak-row,body.focus-mode .schedule-box,
-    body.focus-mode .insight-card{display:none!important}
+    body.focus-mode .insight-card,body.focus-mode .recap-card{display:none!important}
     .hdr-btn.focus-on{color:var(--sky)!important}
     /* Cycle 63: keyboard arrow navigation focus ring */
     .habit.kfocus{outline:2px solid var(--sky);outline-offset:2px;box-shadow:0 0 0 4px rgba(91,200,232,.15)!important}
@@ -1252,7 +1271,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box,.insight-card{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box,.insight-card,.recap-card{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn{display:none!important}
@@ -1373,6 +1392,16 @@
 
   <!-- Cycle 36: today's pace indicator -->
   <div class="pace-box" id="pace-box" style="display:none"></div>
+
+  <!-- Cycle 74: Monday weekly recap card -->
+  <div class="recap-card" id="recap-card" style="display:none">
+    <div class="recap-hdr">
+      <span class="recap-ttl">📅 先週のまとめ</span>
+      <button class="recap-dismiss" onclick="dismissRecap()" title="閉じる">✕</button>
+    </div>
+    <div class="recap-stats" id="recap-stats"></div>
+    <div class="recap-best" id="recap-best"></div>
+  </div>
 
   <!-- Cycle 69: today's time schedule widget -->
   <div class="schedule-box" id="schedule-box" style="display:none"></div>
@@ -2521,7 +2550,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${dueBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" data-cat="${h.category}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${dueBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -2893,6 +2922,7 @@ function render(){
   processShield(); // Cycle 47: check shield state
   renderPaceBox();
   renderScheduleBox(); // Cycle 69
+  renderRecapCard(); // Cycle 74
   renderInsightCard(); // Cycle 70
   renderChart();
   renderWeekComparison();
@@ -4830,6 +4860,46 @@ function renderInsightCard(){
   el.style.display='';
   const rr=document.getElementById('insight-rows');
   if(rr)rr.innerHTML=ins.map(i=>`<div class="insight-row"><span class="insight-ico">${i.ico}</span><span class="insight-txt">${i.txt}</span></div>`).join('');
+}
+
+// ── Cycle 74: Monday Weekly Recap Card ──
+function _recapLastMon(){
+  const d=new Date();
+  d.setDate(d.getDate()-7); // last week's Monday = today - 7 days (called on Monday)
+  return toStr(d);
+}
+function renderRecapCard(){
+  const el=document.getElementById('recap-card');if(!el)return;
+  if(new Date().getDay()!==1){el.style.display='none';return;} // Only on Mondays
+  const lmStr=_recapLastMon();
+  if(localStorage.getItem('rh_recap_'+lmStr)==='1'){el.style.display='none';return;}
+  // Compute last week stats (past 7 days = last Mon through last Sun)
+  let totalRate=0,validDays=0,perfectDays=0;
+  const hCounts={};
+  for(let i=1;i<=7;i++){
+    const ds=dateAgo(i);
+    const actH=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,ds));
+    if(!actH.length)continue;
+    const dc=completions[ds]||{};
+    const done=actH.filter(h=>dc[h.id]).length;
+    const rate=done/actH.length;
+    totalRate+=rate;validDays++;
+    if(rate>=1)perfectDays++;
+    actH.forEach(h=>{if(dc[h.id])hCounts[h.id]=(hCounts[h.id]||0)+1;});
+  }
+  if(!validDays){el.style.display='none';return;}
+  const avgRate=Math.round(totalRate/validDays*100);
+  let bestH=null,bestCnt=0;
+  Object.entries(hCounts).forEach(([id,cnt])=>{if(cnt>bestCnt){bestCnt=cnt;bestH=habits.find(h=>h.id===id);}});
+  const sr=document.getElementById('recap-stats');
+  if(sr)sr.innerHTML=`<div class="recap-stat"><div class="recap-stat-val">${avgRate}<span style="font-size:11px">%</span></div><div class="recap-stat-lbl">平均達成率</div></div><div class="recap-stat"><div class="recap-stat-val">${perfectDays}<span style="font-size:11px">日</span></div><div class="recap-stat-lbl">完璧な日</div></div><div class="recap-stat"><div class="recap-stat-val">${validDays}</div><div class="recap-stat-lbl">記録日数</div></div>`;
+  const bb=document.getElementById('recap-best');
+  if(bb)bb.innerHTML=bestH?`🏆 先週のベスト: <b>${bestH.emoji?bestH.emoji+' ':''}${esc(bestH.name)}</b>（${bestCnt}/7日）`:'今週もがんばろう！';
+  el.style.display='';
+}
+function dismissRecap(){
+  const el=document.getElementById('recap-card');if(el)el.style.display='none';
+  localStorage.setItem('rh_recap_'+_recapLastMon(),'1');
 }
 
 function _renderStatsOvl(){
