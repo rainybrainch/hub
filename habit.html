@@ -1621,6 +1621,27 @@
     .tomorrow-ta:focus{outline:none;border-color:rgba(91,200,232,.5)}
     .tomorrow-ta::placeholder{color:var(--muted)}
     body.focus-mode .tomorrow-box{display:none!important}
+
+    /* Cycle 92: streak goal badge */
+    .streak-goal-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(155,109,214,.12),rgba(155,109,214,.06));border:1px solid rgba(155,109,214,.25);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--purple);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .3s;flex-shrink:0;white-space:nowrap}
+    .streak-goal-badge.met{background:linear-gradient(135deg,rgba(76,175,125,.15),rgba(76,175,125,.08));border-color:rgba(76,175,125,.4);color:var(--green);box-shadow:0 0 12px rgba(76,175,125,.2)}
+    body.light .streak-goal-badge{background:linear-gradient(135deg,rgba(155,109,214,.15),rgba(155,109,214,.08));border-color:rgba(155,109,214,.35)}
+    .sgb{background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;transition:all .15s}
+    .sgb:hover{color:var(--white);border-color:rgba(255,255,255,.25)}
+    .sgb.sgb-active{background:rgba(155,109,214,.2);border-color:var(--purple);color:var(--purple)}
+    body.light .sgb{border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.45)}
+    body.light .sgb:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    body.light .sgb.sgb-active{background:rgba(155,109,214,.15);color:var(--purple);border-color:var(--purple)}
+    .sg-row-inner{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .sg-none-btn{background:none;border:none;font-size:10px;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:6px;transition:all .15s}
+    .sg-none-btn:hover{color:var(--red)}
+
+    /* Cycle 92: golden time badge */
+    @keyframes goldenPulse{0%,100%{opacity:1;border-color:rgba(245,200,66,.35)}50%{opacity:.75;border-color:rgba(245,200,66,.75)}}
+    .golden-badge{font-size:9px;color:#c9a820;font-weight:700;flex-shrink:0;padding:2px 6px;background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.35);border-radius:6px;line-height:1.5;white-space:nowrap;animation:goldenPulse 2.2s ease-in-out infinite}
+    body.light .golden-badge{color:#9a7d0a;background:rgba(201,168,32,.12);border-color:rgba(201,168,32,.4)}
+    body.compact .golden-badge{display:none!important}
+    @media print{.golden-badge{display:none!important}}
   </style>
 </head>
 <body>
@@ -1822,6 +1843,8 @@
     <span class="week-streak-badge" id="week-streak-badge" style="display:none" title="全習慣を週単位で達成した連続週数">🗓 0週</span>
     <!-- Cycle 79: 7-day sparkline -->
     <span class="sparkline-wrap" id="sparkline-wrap" style="display:none" title="過去7日の達成率推移"></span>
+    <!-- Cycle 92: streak goal badge -->
+    <span class="streak-goal-badge" id="streak-goal-badge" style="display:none" onclick="openWidgetSettings()" title="ストリーク目標（設定で変更）"></span>
     <!-- Cycle 73: day completion time badge -->
     <span class="comp-done-badge" id="comp-done-badge" title="今日の全習慣達成時刻"></span>
   </div>
@@ -2110,6 +2133,10 @@
     <!-- Cycle 87: auto theme schedule -->
     <div class="wset-section-lbl">🌙 テーマ自動切替</div>
     <div class="sth-row"><span class="sth-lbl">🌙 ダーク開始</span><input type="time" class="sth-inp" id="sth-dark-inp" title="この時刻にダークモードへ自動切替" oninput="saveThemeSchedule()"><button class="sth-clr" onclick="clearThemeScheduleSlot('dark')" title="クリア">✕</button><span class="sth-lbl">☀️ ライト開始</span><input type="time" class="sth-inp" id="sth-light-inp" title="この時刻にライトモードへ自動切替" oninput="saveThemeSchedule()"><button class="sth-clr" onclick="clearThemeScheduleSlot('light')" title="クリア">✕</button></div>
+    <!-- Cycle 92: streak goal setting -->
+    <div class="wset-section-lbl">🎯 ストリーク目標</div>
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px"><button class="sg-none-btn" onclick="setStreakGoal(0)" title="目標なし">なし</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="streak-goal-btns"></div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
   </div>
 </div>
@@ -3143,6 +3170,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
+  // Cycle 92: golden time badge
+  const goldenBadge=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&!h.recTime?`<span class="golden-badge" data-golden-id="${h.id}" style="display:none" title="今があなたの習慣のゴールデンタイム！"></span>`:'';
   // Cycle 81: N-day challenge badge
   const challBadge=(()=>{
     if(!h.targetDays||h.targetDays<1)return'';
@@ -3156,7 +3185,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const ms=habitMissStreak(h.id);
     return ms>=3?`<span class="miss-alert-badge" title="${ms}日連続で達成できていません。今日こそ！">💢 ${ms}日ミス中</span>`:'';
   })();
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3707,6 +3736,7 @@ function render(){
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   _updateScrollTop(); // Cycle 85: update scroll-top button with today's rate
+  renderStreakGoalBadge(); // Cycle 92
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -4938,6 +4968,55 @@ function checkThemeSchedule(){
   }
 }
 
+// ── Cycle 92: streak goal badge ──
+const STREAK_GOALS=[7,14,21,30,60,90];
+function _renderStreakGoalBtns(){
+  const cur=parseInt(localStorage.getItem('rh_streak_goal')||'0');
+  const wrap=document.getElementById('streak-goal-btns');
+  if(!wrap)return;
+  wrap.innerHTML=STREAK_GOALS.map(g=>`<button class="sgb${g===cur?' sgb-active':''}" onclick="setStreakGoal(${g})">${g}日</button>`).join('');
+}
+function setStreakGoal(n){
+  if(!n)localStorage.removeItem('rh_streak_goal');
+  else localStorage.setItem('rh_streak_goal',String(n));
+  _renderStreakGoalBtns();renderStreakGoalBadge();
+}
+function renderStreakGoalBadge(){
+  const el=document.getElementById('streak-goal-badge');if(!el)return;
+  const goal=parseInt(localStorage.getItem('rh_streak_goal')||'0');
+  const active=habits.filter(h=>!h.archived).length;
+  if(!goal||!active){el.style.display='none';return;}
+  const streak=calcStreak();
+  el.style.display='';
+  const met=streak>=goal;
+  el.classList.toggle('met',met);
+  el.textContent=met?`🎯 目標達成！${streak}日`:`🎯 ${streak}/${goal}日`;
+  el.title=`ストリーク目標: ${goal}日連続（現在${streak}日）`;
+}
+
+// ── Cycle 92: golden time badge ──
+const _goldenTimeCache={};
+function _calcGoldenTime(id){
+  if(id in _goldenTimeCache)return _goldenTimeCache[id];
+  const mins=[];
+  for(let i=0;i<60;i++){const ds=dateAgo(i);const v=(completions[ds]||{})[id];if(v&&typeof v==='string'&&v.length>4){const t=new Date(v);if(!isNaN(t.getTime()))mins.push(t.getHours()*60+t.getMinutes());}}
+  const result=mins.length>=5?Math.round(mins.reduce((a,b)=>a+b,0)/mins.length):null;
+  _goldenTimeCache[id]=result;return result;
+}
+function _updateGoldenTimeBadges(){
+  const now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
+  document.querySelectorAll('[data-golden-id]').forEach(el=>{
+    const id=el.dataset.goldenId;
+    const h=habits.find(x=>x.id===id);
+    if(!h||h.paused||h.archived){el.style.display='none';return;}
+    const avgMin=_calcGoldenTime(id);
+    if(avgMin===null){el.style.display='none';return;}
+    const diff=Math.abs(nowMin-avgMin);
+    if(diff<=30){const hh=String(Math.floor(avgMin/60)).padStart(2,'0'),mm=String(avgMin%60).padStart(2,'0');el.style.display='';el.textContent=`💛 ベスト(${hh}:${mm})`;el.title=`あなたのゴールデンタイム（平均: ${hh}:${mm}）`;}
+    else el.style.display='none';
+  });
+}
+
 // ── init ──
 load();
 initTheme();
@@ -4965,6 +5044,8 @@ document.body.classList.add('loaded');
 setTimeout(showYdBanner,600); // Cycle 89: yesterday reflection banner
 setInterval(renderPaceBox,60000);
 setInterval(_updateRecTimeBadges,60000); // Cycle 68
+setInterval(_updateGoldenTimeBadges,60000); // Cycle 92
+_updateGoldenTimeBadges(); // Cycle 92: initial golden time check
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
 setInterval(checkThemeSchedule,60000); // Cycle 87: auto theme by schedule
 // ── Cycle 24 + 75: PWA theme-color meta tag sync ──
@@ -5268,7 +5349,7 @@ function applyWidgetViz(){
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
-  _renderWsetList();_renderUserMottoList();loadThemeSchedule();el.classList.add('open');
+  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();el.classList.add('open');
 }
 function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
 function _renderWsetList(){
