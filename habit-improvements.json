@@ -1617,6 +1617,16 @@
         "deployedAt": "2026-07-03T06:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 84,
+      "timestamp": "2026-07-03T01:00:00Z",
+      "version": "v2.84",
+      "changes": [
+        "カスタム曜日スケジュール: 月〜日を個別にON/OFFで実施曜日を自由に指定可能（🗓カスタムボタン＋7つの曜日トグル、ハビットカードに選択曜日バッジ表示）",
+        "習慣達成SVGカードダウンロード: 🖼ボタンでその日の達成状況をSVGカードとしてダウンロード（モバイルはWeb Share API連携、PC はファイル保存）"
+      ],
+      "notes": "カスタム曜日はcustomDays配列（DOW 0-6）で保存。isScheduled()がcustomDaysを最優先で参照。SVGカードはJS文字列テンプレートで動的生成、進捗リングをstroke-dashoffsetで描画。"
     }
   ]
 }

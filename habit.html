@@ -721,6 +721,19 @@
     body.light .freq-btn:hover{color:#1a1a2e}
     body.light .freq-btn.sel{background:rgba(91,200,232,.1);border-color:var(--sky);color:var(--sky)}
 
+    /* Cycle 73: custom days picker */
+    .custom-days-picker{display:none;flex-wrap:wrap;gap:5px;margin-top:8px;margin-bottom:2px}
+    .custom-days-picker.open{display:flex}
+    .day-btn{flex:1;min-width:36px;padding:7px 2px;border-radius:8px;border:1.5px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
+    .day-btn.sel{background:rgba(91,200,232,.15);border-color:var(--sky);color:var(--sky)}
+    .day-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    body.light .day-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.5)}
+    body.light .day-btn:hover{color:#1a1a2e}
+    body.light .day-btn.sel{background:rgba(91,200,232,.1);border-color:var(--sky);color:var(--sky)}
+    .custom-days-badge{font-size:9px;color:var(--sky);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:6px;line-height:1.5}
+    body.light .custom-days-badge{background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.3)}
+    body.compact .custom-days-badge{display:none}
+
     /* Cycle 40: custom habit accent color */
     .color-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
     .color-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;width:30px}
@@ -1495,6 +1508,7 @@
   <h1 class="hdr-title">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
   <button class="hdr-btn" onclick="shareDailyCard()" title="今日の達成をシェア（コピー）">📱</button>
+  <button class="hdr-btn" onclick="exportSvgCard()" title="今日の達成をSVGカードとしてダウンロード">🖼</button>
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
@@ -1786,6 +1800,16 @@
       <span class="freq-row-lbl">頻度</span>
       <button class="freq-btn sel" id="freq-daily" onclick="selFreq('daily')" type="button">📅 毎日</button>
       <button class="freq-btn" id="freq-weekday" onclick="selFreq('weekday')" type="button">🏢 平日のみ</button>
+      <button class="freq-btn" id="freq-custom" onclick="selFreq('custom')" type="button">🗓 カスタム</button>
+    </div>
+    <div class="custom-days-picker" id="custom-days-picker">
+      <button class="day-btn sel" data-day="1" onclick="toggleDay(1)" type="button">月</button>
+      <button class="day-btn sel" data-day="2" onclick="toggleDay(2)" type="button">火</button>
+      <button class="day-btn sel" data-day="3" onclick="toggleDay(3)" type="button">水</button>
+      <button class="day-btn sel" data-day="4" onclick="toggleDay(4)" type="button">木</button>
+      <button class="day-btn sel" data-day="5" onclick="toggleDay(5)" type="button">金</button>
+      <button class="day-btn" data-day="6" onclick="toggleDay(6)" type="button">土</button>
+      <button class="day-btn" data-day="0" onclick="toggleDay(0)" type="button">日</button>
     </div>
     <div class="target-row">
       <span class="target-row-lbl">目標</span>
@@ -2023,6 +2047,11 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 
 // ── Cycle 39: habit frequency (daily / weekday-only) ──
 function isScheduled(h, dateStr){
+  // Cycle 73: custom days take priority
+  if(h.customDays&&h.customDays.length>0){
+    const dow=new Date(dateStr+'T00:00:00').getDay();
+    return h.customDays.includes(dow);
+  }
   if((h.frequency||'daily')==='weekday'){
     const dow=new Date(dateStr+'T00:00:00').getDay();
     return dow>=1&&dow<=5;
@@ -2030,11 +2059,26 @@ function isScheduled(h, dateStr){
   return true;
 }
 let selFreqVal='daily';
+let selCustomDays=[1,2,3,4,5];
 function selFreq(freq){
   selFreqVal=freq;
-  const d=document.getElementById('freq-daily'),w=document.getElementById('freq-weekday');
+  const d=document.getElementById('freq-daily'),w=document.getElementById('freq-weekday'),c=document.getElementById('freq-custom');
+  const pk=document.getElementById('custom-days-picker');
   if(d)d.classList.toggle('sel',freq==='daily');
   if(w)w.classList.toggle('sel',freq==='weekday');
+  if(c)c.classList.toggle('sel',freq==='custom');
+  if(pk)pk.classList.toggle('open',freq==='custom');
+}
+// ── Cycle 73: toggle individual day in custom schedule ──
+function toggleDay(d){
+  const idx=selCustomDays.indexOf(d);
+  if(idx>=0)selCustomDays.splice(idx,1);
+  else selCustomDays.push(d);
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('sel',selCustomDays.includes(parseInt(b.dataset.day))));
+}
+function _applyCustomDays(days){
+  selCustomDays=days?[...days]:[1,2,3,4,5];
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('sel',selCustomDays.includes(parseInt(b.dataset.day))));
 }
 
 // ── Cycle 40: custom habit accent color ──
@@ -2281,6 +2325,72 @@ function shareDailyCard(){
       setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2500);
     })
     .catch(()=>alert(text));
+}
+
+// ── Cycle 73: SVG achievement card export ──
+function exportSvgCard(){
+  const td=today(),dc=completions[td]||{};
+  const now=new Date();
+  const active=habits.filter(h=>!h.paused&&!h.archived&&isScheduled(h,td));
+  if(!active.length){
+    const b=document.getElementById('banner');
+    b.textContent='📭 習慣がありません';b.classList.add('show');
+    setTimeout(()=>b.classList.remove('show'),2000);return;
+  }
+  const doneCount=active.filter(h=>dc[h.id]).length;
+  const pct=active.length>0?Math.round(doneCount/active.length*100):0;
+  const streak=calcStreak();
+  const W=400,ITEM_H=36,HDR_H=88,FTR_H=60;
+  const H=HDR_H+active.length*ITEM_H+FTR_H;
+  const dateStr2=`${now.getMonth()+1}/${now.getDate()}（${['日','月','火','水','木','金','土'][now.getDay()]}）`;
+  const circ=2*Math.PI*24;const r=24;const cx=W/2;const cy=HDR_H-22;
+  const off=circ-(pct/100*circ);
+  let rows='';
+  active.forEach((h,i)=>{
+    const done=!!dc[h.id];
+    const y=HDR_H+i*ITEM_H+ITEM_H/2;
+    const em=h.emoji||'';
+    const nm=(h.name||'').substring(0,22)+((h.name||'').length>22?'…':'');
+    rows+=`<rect x="16" y="${HDR_H+i*ITEM_H+4}" width="${W-32}" height="${ITEM_H-8}" rx="8" fill="${done?'rgba(76,175,125,.12)':'rgba(255,255,255,.04)'}"/>`;
+    rows+=`<circle cx="34" cy="${y}" r="9" fill="${done?'#4CAF7D':'none'}" stroke="${done?'#4CAF7D':'rgba(255,255,255,.25)'}" stroke-width="1.5"/>`;
+    if(done)rows+=`<text x="34" y="${y+4}" text-anchor="middle" font-size="10" fill="#0d1117" font-weight="900">✓</text>`;
+    if(em)rows+=`<text x="52" y="${y+5}" font-size="14">${em}</text>`;
+    rows+=`<text x="${em?72:52}" y="${y+5}" font-size="12" fill="${done?'rgba(255,255,255,.5)':'rgba(255,255,255,.88)'}" font-family="sans-serif"${done?' text-decoration="line-through"':''}>${nm}</text>`;
+  });
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <defs>
+    <linearGradient id="gbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/><stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+  </defs>
+  <rect width="${W}" height="${H}" rx="16" fill="url(#gbg)"/>
+  <text x="20" y="26" font-size="12" fill="rgba(255,255,255,.4)" font-family="sans-serif">${dateStr2} の習慣記録</text>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${pct>=100?'#4CAF7D':pct>=50?'#F5C842':'#5BC8E8'}" stroke-width="4"
+    stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round"
+    transform="rotate(-90 ${cx} ${cy})"/>
+  <text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="15" fill="${pct>=100?'#4CAF7D':pct>=50?'#F5C842':'#5BC8E8'}" font-weight="900" font-family="sans-serif">${pct}%</text>
+  ${rows}
+  <text x="20" y="${H-FTR_H+22}" font-size="11" fill="rgba(255,255,255,.35)" font-family="sans-serif">${doneCount}/${active.length}達成${streak>0?'  🔥'+streak+'日連続':''}</text>
+  <text x="${W-20}" y="${H-FTR_H+22}" text-anchor="end" font-size="9" fill="rgba(255,255,255,.18)" font-family="sans-serif">#習慣トラッカー</text>
+  <line x1="16" y1="${H-FTR_H+28}" x2="${W-16}" y2="${H-FTR_H+28}" stroke="rgba(255,255,255,.06)"/>
+  <text x="${W/2}" y="${H-14}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.15)" font-family="sans-serif">RAINYBRAIN HABIT TRACKER</text>
+</svg>`;
+  const blob=new Blob([svg],{type:'image/svg+xml'});
+  if(navigator.share&&navigator.canShare){
+    const file=new File([blob],`habit-${td}.svg`,{type:'image/svg+xml'});
+    if(navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'今日の習慣記録',text:`${doneCount}/${active.length}達成${streak>0?' 🔥'+streak+'日連続':''}`.trim()}).catch(()=>{});
+      return;
+    }
+  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`habit-${td}.svg`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  const b=document.getElementById('banner');
+  b.textContent='🖼 SVGカードをダウンロードしました';b.classList.add('show');
+  setTimeout(()=>{b.textContent='🎉 全習慣達成！今日も最高！';b.classList.remove('show');},2200);
 }
 
 // ── stats ──
@@ -2796,11 +2906,13 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
   const pauseBtn=`<button class="pause-btn${isPaused?' on':''}" onclick="event.stopPropagation();togglePause('${h.id}')" title="${isPaused?'再開する':'一時停止'}">${isPaused?'▶':'⏸'}</button>`;
-  // Cycle 39: weekday-only frequency
+  // Cycle 39: weekday-only frequency / Cycle 73: custom days
   const freq=h.frequency||'daily';
   const isWeekendOff=!isPaused&&!isScheduled(h,today());
   const freqBadge=freq==='weekday'&&!isWeekendOff?'<span class="freq-badge">平日</span>':'';
   const weekendLbl=isWeekendOff?'<span class="weekend-lbl">週末お休み</span>':'';
+  const _DAY_LABELS=['日','月','火','水','木','金','土'];
+  const customDaysBadge=h.customDays&&h.customDays.length>0&&!isWeekendOff&&!isPaused?`<span class="custom-days-badge" title="実施曜日: ${h.customDays.map(d=>_DAY_LABELS[d]).join('・')}">${h.customDays.map(d=>_DAY_LABELS[d]).join('・')}</span>`:'';
   // Cycle 40: custom accent color
   const hcol=h.color||'';
   const moveHtml=hIdx>=0?`<button class="reorder-btn"${hIdx===0?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',-1)" aria-label="上へ">↑</button><button class="reorder-btn"${hIdx>=hTotal-1?' disabled':''} onclick="event.stopPropagation();moveHabit('${h.id}',1)" aria-label="下へ">↓</button>`:'';
@@ -2842,7 +2954,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const isDoneChall=done>=h.targetDays;
     return`<span class="challenge-badge ${isDoneChall?'chall-done':'chall-active'}">${isDoneChall?'🎉':'📅'} ${Math.min(done,h.targetDays)}/${h.targetDays}日</span>`;
   })();
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${freqBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3715,7 +3827,7 @@ function openModal(id=null){
     if(emojiEl){emojiEl.value=h&&h.emoji?h.emoji:'';onEmojiInput(emojiEl.value);}
     selCatVal=h?h.category:'';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('sel',b.dataset.cat===selCatVal));
-    selFreq(h&&h.frequency?h.frequency:'daily');
+    if(h&&h.customDays){selFreq('custom');_applyCustomDays(h.customDays);}else{selFreq(h&&h.frequency?h.frequency:'daily');_applyCustomDays([1,2,3,4,5]);}
     selColor(h&&h.color?h.color:'');
     const tcEl=document.getElementById('target-inp');if(tcEl)tcEl.value=(h&&h.targetCount)?h.targetCount:1;
     const durEl=document.getElementById('dur-inp');if(durEl)durEl.value=(h&&h.duration>=1)?h.duration:'';
@@ -3733,7 +3845,7 @@ function openModal(id=null){
     if(emojiEl){emojiEl.value='';document.querySelectorAll('.emoji-preset').forEach(b=>b.classList.remove('sel'));}
     selCatVal='';catAutoSel=false;
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
-    selFreq('daily');
+    selFreq('daily');_applyCustomDays([1,2,3,4,5]);
     selColor('');
     const tcElN=document.getElementById('target-inp');if(tcElN)tcElN.value=1;
     const durElN=document.getElementById('dur-inp');if(durElN)durElN.value='';
@@ -3775,13 +3887,14 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal==='custom'&&selCustomDays.length>0){h.customDays=[...selCustomDays];delete h.frequency;}else{delete h.customDays;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;}if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
     if(note)nh.note=note;
     if(emoji)nh.emoji=emoji;
-    if(selFreqVal!=='daily')nh.frequency=selFreqVal;
+    if(selFreqVal==='custom'&&selCustomDays.length>0)nh.customDays=[...selCustomDays];
+    else if(selFreqVal!=='daily')nh.frequency=selFreqVal;
     if(selColorVal)nh.color=selColorVal;
     if(tcSave>1)nh.targetCount=tcSave;
     if(selTough)nh.tough=true;
