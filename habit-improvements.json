@@ -1434,6 +1434,45 @@
         "deployedAt": "2026-07-03T01:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 80,
+      "version": "v2.80",
+      "timestamp": "2026-07-03T02:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "クイックステータスフィルターチップ",
+          "description": "習慣リストの上部に「未完了のみ」「ストリーク中」「要注意」の3つのフィルターチップを追加。タップするとそのステータスの習慣のみを表示し、再タップで解除。未完了=今日未完了かつスキップ・一時停止・週末除外でない習慣、ストリーク中=2日以上連続達成中の習慣、要注意=過去7日間で1度も完了していない習慣をフィルタリング。アクティブ状態はチップの色（水色/金/赤）で視覚化。該当なしの場合は専用の空メッセージを表示。",
+          "files": ["habit.html"],
+          "details": [
+            "setStatusFilter(sf): statusFilterのトグル管理とrender()呼び出し",
+            "_applyStatusFilter(list,td,dc): undone/streak/warningの3モードでリストを絞り込み",
+            ".status-chips / .status-chip / .status-chip.active のCSS追加（ダーク/ライト両対応）",
+            "renderList()にステータスチップの表示制御とフィルター適用を追加",
+            "空状態時に「${_sfLabel}」に該当する習慣はありません」メッセージを表示"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "全完了達成タイムバッジ",
+          "description": "その日初めて全習慣を完了した時刻をLocalStorageに保存し、streak-rowに「🏁 HH:MM完了」バッジとして表示する機能を追加。昨日の完了時刻と比較して2分以上の差がある場合は「(+N分遅め)」または「(N分早め)」のデルタラベルも表示。showBanner()（全完了祝福時）に呼び出しをフックし、rh_comp_time_YYYY-MM-DDキーでLocalStorageに記録。",
+          "files": ["habit.html"],
+          "details": [
+            "recordCompletionTime(): LocalStorageに rh_comp_time_今日 キーで HH:MM を記録（重複記録防止）",
+            "renderCompDoneBadge(): 保存時刻を読み取り comp-done-badge を更新・表示",
+            ".comp-done-badge / .comp-done-delta のCSS追加（ダーク/ライト両対応）",
+            "showBanner()の冒頭で recordCompletionTime() を呼び出し",
+            "renderStats()の末尾で renderCompDoneBadge() を呼び出し"
+          ]
+        }
+      ],
+      "notes": "Cycle 80はフィルタリングと完了記録の2軸改善。クイックステータスフィルターは習慣が増えてきたユーザーが「今日まだやっていないもの」「調子がいいもの」「最近サボっているもの」を瞬時に絞り込める機能。フィルターチップはスクロール可能な水平レイアウトでモバイル操作しやすい設計。全完了達成タイムバッジは「昨日より10分早く全部終えた！」という小さな達成感を可視化し、習慣の時間最適化を動機付ける。どちらもLocalStorage構造変更最小限・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T02:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

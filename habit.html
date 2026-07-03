@@ -1406,6 +1406,26 @@
     .sparkline-wrap:hover{background:rgba(255,255,255,.07)}
     body.light .sparkline-wrap{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.09)}
     body.light .sparkline-wrap:hover{background:rgba(0,0,0,.07)}
+
+    /* Cycle 73: quick status filter chips */
+    .status-chips{display:none;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex-wrap:wrap}
+    .status-chips::-webkit-scrollbar{display:none}
+    .status-chips.visible{display:flex}
+    .status-chip{flex-shrink:0;padding:4px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.1);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;background:none;font-family:"Zen Maru Gothic",sans-serif;line-height:1.5}
+    .status-chip:hover{color:var(--white);border-color:rgba(255,255,255,.25)}
+    .status-chip.active[data-sf="undone"]{background:rgba(91,200,232,.15);border-color:rgba(91,200,232,.4);color:var(--sky)}
+    .status-chip.active[data-sf="streak"]{background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.4);color:var(--gold)}
+    .status-chip.active[data-sf="warning"]{background:rgba(232,53,74,.1);border-color:rgba(232,53,74,.3);color:var(--red)}
+    body.light .status-chip{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .status-chip:hover{color:#333;border-color:rgba(0,0,0,.25)}
+    body.light .status-chip.active[data-sf="undone"]{color:#0e78a0}
+    body.light .status-chip.active[data-sf="streak"]{color:var(--gold-d)}
+    body.light .status-chip.active[data-sf="warning"]{color:#b02232}
+    /* Cycle 73: day completion time badge */
+    .comp-done-badge{display:none;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(76,175,125,.1),rgba(76,175,125,.05));border:1px solid rgba(76,175,125,.22);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0}
+    .comp-done-badge.visible{display:inline-flex}
+    .comp-done-delta{font-size:9px;opacity:.7;margin-left:3px}
+    body.light .comp-done-badge{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.28);color:#2e7d52}
   </style>
 </head>
 <body>
@@ -1569,6 +1589,8 @@
     <span class="week-streak-badge" id="week-streak-badge" style="display:none" title="全習慣を週単位で達成した連続週数">🗓 0週</span>
     <!-- Cycle 79: 7-day sparkline -->
     <span class="sparkline-wrap" id="sparkline-wrap" style="display:none" title="過去7日の達成率推移"></span>
+    <!-- Cycle 73: day completion time badge -->
+    <span class="comp-done-badge" id="comp-done-badge" title="今日の全習慣達成時刻"></span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -1665,6 +1687,12 @@
   <div class="search-row">
     <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
     <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="検索をクリア">✕</button>
+  </div>
+  <!-- Cycle 73: quick status filter chips -->
+  <div class="status-chips" id="status-chips">
+    <button class="status-chip" data-sf="undone" onclick="setStatusFilter('undone')">🔲 未完了のみ</button>
+    <button class="status-chip" data-sf="streak" onclick="setStatusFilter('streak')">🔥 ストリーク中</button>
+    <button class="status-chip" data-sf="warning" onclick="setStatusFilter('warning')">⚠ 要注意</button>
   </div>
   <!-- Cycle 66: category progress pills -->
   <div class="cat-pills" id="cat-pills" style="display:none"></div>
@@ -1880,7 +1908,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, statusFilter = '';
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -2432,6 +2460,7 @@ function renderStats(){
   renderPerfBadge();
   // Cycle 77: weekly perfect streak badge
   renderWeekStreakBadge();
+  renderCompDoneBadge();
 }
 
 let chartView='week';
@@ -2718,8 +2747,16 @@ function renderList(){
   let list=filter==='all'?habits:habits.filter(h=>h.category===filter);
   if(searchQuery)list=list.filter(h=>h.name.toLowerCase().includes(searchQuery)||(h.note&&h.note.toLowerCase().includes(searchQuery)));
   list=list.filter(h=>!h.archived);
+  const _sc=document.getElementById('status-chips');
+  if(_sc)_sc.classList.toggle('visible',habits.filter(h=>!h.archived).length>0);
+  list=_applyStatusFilter(list,td,dc);
 
   if(!list.length){
+    if(statusFilter){
+      const _sfLabel=statusFilter==='undone'?'未完了のみ':statusFilter==='streak'?'ストリーク中':'要注意';
+      el.innerHTML=`<div class="empty"><div class="empty-ico">✨</div><div class="empty-txt">「${_sfLabel}」に該当する習慣はありません</div></div>`;
+      return;
+    }
     if(searchQuery){
       el.innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">「${esc(searchQuery)}」に一致する習慣はありません</div></div>`;
     } else if(habits.filter(h=>!h.archived).length===0){
@@ -3734,6 +3771,7 @@ function renderWeekGrade(){
 
 // ── celebration (cycle 2 新機能) ──
 function showBanner(){
+  recordCompletionTime();
   const b=document.getElementById('banner');
   b.classList.add('show');
   vib([80,40,80,40,180]);
@@ -5186,6 +5224,44 @@ function togglePriority(id){
   const h=habits.find(x=>x.id===id);if(!h)return;
   h.priority=!h.priority;
   saveH();render();
+}
+// ── Cycle 73: quick status filter chips ──
+function setStatusFilter(sf){
+  statusFilter=(statusFilter===sf)?'':sf;
+  document.querySelectorAll('.status-chip').forEach(b=>b.classList.toggle('active',b.dataset.sf===statusFilter));
+  render();
+}
+function _applyStatusFilter(list,td,dc){
+  if(!statusFilter)return list;
+  if(statusFilter==='undone')return list.filter(h=>!h.paused&&isScheduled(h,td)&&!dc[h.id]&&!isSkippedToday(h.id));
+  if(statusFilter==='streak')return list.filter(h=>habitStreak(h.id)>=2);
+  if(statusFilter==='warning')return list.filter(h=>habit7Days(h.id).filter(x=>x===true).length===0&&!h.paused);
+  return list;
+}
+// ── Cycle 73: day completion time badge ──
+function recordCompletionTime(){
+  const key='rh_comp_time_'+today();
+  if(!localStorage.getItem(key)){
+    const now=new Date();
+    const hhmm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    localStorage.setItem(key,hhmm);
+  }
+}
+function renderCompDoneBadge(){
+  const el=document.getElementById('comp-done-badge');if(!el)return;
+  const stored=localStorage.getItem('rh_comp_time_'+today());
+  if(!stored){el.classList.remove('visible');el.innerHTML='';return;}
+  const yestStored=localStorage.getItem('rh_comp_time_'+dateAgo(1));
+  let delta='';
+  if(yestStored){
+    const[th,tm]=stored.split(':').map(Number);
+    const[yh,ym]=yestStored.split(':').map(Number);
+    const diffMin=(th*60+tm)-(yh*60+ym);
+    if(diffMin>2)delta=`<span class="comp-done-delta">(+${diffMin}分遅め)</span>`;
+    else if(diffMin<-2)delta=`<span class="comp-done-delta">(${Math.abs(diffMin)}分早め)</span>`;
+  }
+  el.innerHTML=`🏁 ${stored}完了${delta}`;
+  el.classList.add('visible');
 }
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
