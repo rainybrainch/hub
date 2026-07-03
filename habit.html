@@ -237,6 +237,23 @@
     /* Cycle 69: first-check-of-day toast */
     .first-check-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(76,175,125,.92),rgba(91,200,232,.8));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:9px 22px;border-radius:30px;box-shadow:0 8px 28px rgba(76,175,125,.45);z-index:445;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
     .first-check-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 72: accent color themes */
+    body.accent-blue{--gold:#5BC8E8;--gold-d:#2a8eb0}
+    body.accent-green{--gold:#4CAF7D;--gold-d:#35875d}
+    body.accent-purple{--gold:#9B6DD6;--gold-d:#7a50b0}
+    body.accent-rose{--gold:#E892A8;--gold-d:#c4506e}
+    .accent-row{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
+    .accent-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;flex-shrink:0;white-space:nowrap}
+    .accent-swatches{display:flex;gap:6px;flex:1;justify-content:flex-end}
+    .accent-swatch{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.15);cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0;padding:0}
+    .accent-swatch:hover{transform:scale(1.2)}
+    .accent-swatch.active{border-color:rgba(255,255,255,.85);transform:scale(1.18)}
+    body.light .accent-row{border-top-color:rgba(0,0,0,.08)}
+    body.light .accent-swatch{border-color:rgba(0,0,0,.2)}
+    body.light .accent-swatch.active{border-color:rgba(0,0,0,.7)}
+    /* Cycle 72: new habit start toast */
+    .nh-toast{position:fixed;bottom:152px;left:50%;transform:translateX(-50%) translateY(8px);background:linear-gradient(135deg,rgba(91,200,232,.92),rgba(155,109,214,.82));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:8px 18px;border-radius:30px;box-shadow:0 6px 24px rgba(91,200,232,.4);z-index:440;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
+    .nh-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
     /* Cycle 13: compact view mode */
     body.compact .habit{padding:8px 12px}
@@ -1302,6 +1319,7 @@
 <div class="next-habit-toast" id="next-habit-toast"></div>
 <!-- Cycle 69: first check of day toast -->
 <div class="first-check-toast" id="first-check-toast">🌱 今日のスタート！</div>
+<div class="nh-toast" id="nh-toast"></div>
 <!-- Cycle 53: habit focus timer bar -->
 <div class="timer-bar" id="timer-bar">
   <span class="timer-habit-name" id="timer-habit-name"></span>
@@ -1638,6 +1656,7 @@
   <div class="wset-modal">
     <div class="wset-ttl">⚙️ ウィジェット表示設定</div>
     <div class="wset-list" id="wset-list"></div>
+    <div class="accent-row"><span class="accent-lbl">🎨 テーマカラー</span><div class="accent-swatches" id="accent-swatches"></div></div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
   </div>
 </div>
@@ -2905,6 +2924,7 @@ function toggle(id,evt){
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
+    showNewHabitStartToast(_hh); // Cycle 72: new habit start dash toast
   }else{_showUncheckSnackbar(id,prevTs);} // Cycle 67: undo-check snackbar
   saveC();
   render();
@@ -2929,6 +2949,45 @@ function showFirstCheckToast(){
   if(!el)return;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── Cycle 72: Accent color theme ──
+const ACCENT_THEMES=[
+  {key:'',col:'#F5C842',name:'ゴールド（デフォルト）'},
+  {key:'accent-blue',col:'#5BC8E8',name:'スカイブルー'},
+  {key:'accent-green',col:'#4CAF7D',name:'エメラルド'},
+  {key:'accent-purple',col:'#9B6DD6',name:'パープル'},
+];
+function initAccentTheme(){
+  const a=localStorage.getItem('rh_accent')||'';
+  ACCENT_THEMES.forEach(t=>{if(t.key)document.body.classList.remove(t.key);});
+  if(a)document.body.classList.add(a);
+}
+function setAccentTheme(key){
+  ACCENT_THEMES.forEach(t=>{if(t.key)document.body.classList.remove(t.key);});
+  if(key)document.body.classList.add(key);
+  localStorage.setItem('rh_accent',key);
+  _renderAccentSwatches();
+}
+function _renderAccentSwatches(){
+  const el=document.getElementById('accent-swatches');if(!el)return;
+  const cur=localStorage.getItem('rh_accent')||'';
+  el.innerHTML=ACCENT_THEMES.map(t=>`<button class="accent-swatch${t.key===cur?' active':''}" style="background:${t.col}" title="${t.name}" onclick="setAccentTheme('${t.key}')"></button>`).join('');
+}
+
+// ── Cycle 72: New habit start dash toast ──
+const _nhToastShown=new Set();
+function showNewHabitStartToast(h){
+  if(!h||!h.createdAt)return;
+  if(_nhToastShown.has(h.id))return;
+  const days=Math.floor((Date.now()-new Date(h.createdAt).getTime())/864e5);
+  if(days<0||days>6)return;
+  _nhToastShown.add(h.id);
+  const toast=document.getElementById('nh-toast');if(!toast)return;
+  const em=h.emoji?h.emoji+' ':'';
+  toast.textContent=`🌱 ${em}${h.name}を始めて${days+1}日目！`;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2400);
 }
 
 // ── Cycle 60: Next habit suggestion toast ──
@@ -3996,6 +4055,7 @@ initWeekly();
 initReminder();
 initModalSwipe();
 initFocusMode();
+initAccentTheme(); // Cycle 72: restore accent color theme
 // Cycle 44: restore last selected category filter
 (()=>{const sf=localStorage.getItem('rh_filter');if(sf&&['all','学習','運動','創作','自己改善'].includes(sf)){filter=sf;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===sf));}})();
 toggleTough(false); // Cycle 47: init tough buttons
@@ -4287,7 +4347,7 @@ function applyWidgetViz(){
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
-  _renderWsetList();el.classList.add('open');
+  _renderWsetList();_renderAccentSwatches();el.classList.add('open');
 }
 function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
 function _renderWsetList(){
