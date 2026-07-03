@@ -1496,6 +1496,14 @@
     .challenge-days-inp{background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:90px}
     .challenge-days-inp:focus{border-color:rgba(245,200,66,.4)}
     body.light .challenge-days-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1);background:#f5f5f5}
+    /* Cycle 85: consecutive miss alert badge */
+    @keyframes missFlash{0%,100%{opacity:1}50%{opacity:.55}}
+    .miss-alert-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(232,53,74,.1);border:1px solid rgba(232,53,74,.3);border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--red);animation:missFlash 2.4s ease-in-out infinite;white-space:nowrap}
+    body.light .miss-alert-badge{background:rgba(232,53,74,.07);border-color:rgba(232,53,74,.35)}
+    /* Cycle 85: scroll-to-top button with today's rate */
+    #scroll-top{font-size:14px;flex-direction:column;gap:1px;line-height:1}
+    .st-rate{font-size:7px;font-weight:700;font-family:'Dela Gothic One',sans-serif;line-height:1.2}
+    .scroll-top.st-done{border-color:var(--green)!important;color:var(--green)!important}
   </style>
 </head>
 <body>
@@ -2554,6 +2562,20 @@ function habitStreak(id){
   return s;
 }
 
+// Cycle 85: consecutive missed days (scheduled, not day-off, not completed)
+function habitMissStreak(id){
+  const h=habits.find(x=>x.id===id);if(!h)return 0;
+  let count=0;
+  for(let i=1;i<=14;i++){
+    const d=dateAgo(i);
+    if(isDayOff(d))break;
+    if(!isScheduled(h,d))continue;
+    if((completions[d]||{})[id])break;
+    count++;
+  }
+  return count;
+}
+
 // Cycle 45: per-habit all-time personal best streak
 function habitBestStreak(id){
   const dates=Object.keys(completions).filter(d=>completions[d]&&completions[d][id]).sort();
@@ -2954,7 +2976,13 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const isDoneChall=done>=h.targetDays;
     return`<span class="challenge-badge ${isDoneChall?'chall-done':'chall-active'}">${isDoneChall?'🎉':'📅'} ${Math.min(done,h.targetDays)}/${h.targetDays}日</span>`;
   })();
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 85: consecutive miss alert badge (3+ missed scheduled days)
+  const missAlertBadge=(()=>{
+    if(isDone||isPaused||isWeekendOff)return'';
+    const ms=habitMissStreak(h.id);
+    return ms>=3?`<span class="miss-alert-badge" title="${ms}日連続で達成できていません。今日こそ！">💢 ${ms}日ミス中</span>`:'';
+  })();
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3443,6 +3471,7 @@ function render(){
   updateGoalBtn(); // Cycle 62: sync goal line button state
   applyWidgetViz(); // Cycle 44: enforce widget visibility after all renders
   updateNightMode(); // Cycle 60: night mode class for pulse animation
+  _updateScrollTop(); // Cycle 85: update scroll-top button with today's rate
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -4836,12 +4865,16 @@ function batchComplete(cat,e){
   saveC();render();
   if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();}
 }
-// ── Cycle 32: scroll to top ──
+// ── Cycle 32: scroll to top; Cycle 85: rate display ──
 function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
-window.addEventListener('scroll',()=>{
-  const b=document.getElementById('scroll-top');
-  if(b)b.classList.toggle('show',window.scrollY>250);
-},{passive:true});
+function _updateScrollTop(){
+  const b=document.getElementById('scroll-top');if(!b)return;
+  b.classList.toggle('show',window.scrollY>250);
+  const r=todayRate();
+  b.innerHTML=`<span>↑</span><span class="st-rate">${r}%</span>`;
+  b.classList.toggle('st-done',r===100);
+}
+window.addEventListener('scroll',_updateScrollTop,{passive:true});
 
 // ── Cycle 35: today's challenge widget ──
 function renderChallenge(){
