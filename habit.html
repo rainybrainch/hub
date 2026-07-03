@@ -1586,6 +1586,19 @@
     body.light .daytl-tip{background:#f0f2f5;border-color:rgba(0,0,0,.1);color:#1a1a2e}
     body.light .daytl-hlbl{color:rgba(0,0,0,.35)}
     body.compact .daytl-box{display:none}
+
+    /* Cycle 89: yesterday reflection banner */
+    @keyframes ydSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+    .yd-banner{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-left:3px solid rgba(91,200,232,.4);border-radius:12px;margin-bottom:14px;font-size:12px;color:var(--muted);animation:ydSlide .3s ease forwards;transition:opacity .3s}
+    .yd-stat{font-family:"Dela Gothic One",sans-serif;font-size:13px;flex-shrink:0}
+    .yd-stat.good{color:var(--green)}
+    .yd-stat.mid{color:var(--gold)}
+    .yd-stat.low{color:var(--red)}
+    .yd-msg{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .yd-dismiss{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;line-height:1;border-radius:4px;flex-shrink:0;transition:color .15s}
+    .yd-dismiss:hover{color:var(--white)}
+    body.light .yd-banner{border-color:rgba(0,0,0,.08);border-left-color:rgba(91,200,232,.45)}
+    body.light .yd-dismiss:hover{color:#1a1a2e}
   </style>
 </head>
 <body>
@@ -1655,6 +1668,9 @@
 
   <!-- Cycle 41: day-off banner -->
   <div class="dayoff-banner" id="dayoff-banner">🌴 今日はお休みデー — 全ての習慣がスキップされています。ゆっくり休もう！</div>
+
+  <!-- Cycle 89: yesterday reflection banner -->
+  <div class="yd-banner" id="yd-banner" style="display:none"></div>
 
   <!-- Cycle 78: yesterday summary banner -->
   <div class="yest-banner" id="yest-banner" style="display:none">
@@ -4895,6 +4911,7 @@ calcLoginStreak(); // Cycle 71
 loadUserMottos(); // Cycle 87: restore custom user mottos
 checkThemeSchedule(); // Cycle 87: apply schedule at page load
 document.body.classList.add('loaded');
+setTimeout(showYdBanner,600); // Cycle 89: yesterday reflection banner
 setInterval(renderPaceBox,60000);
 setInterval(_updateRecTimeBadges,60000); // Cycle 68
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
@@ -5950,6 +5967,53 @@ function renderCompDoneBadge(){
   el.innerHTML=`🏁 ${stored}完了${delta}`;
   el.classList.add('visible');
 }
+// ── Cycle 89: multi-tab LocalStorage sync ──
+(()=>{
+  let _syncPending=false;
+  window.addEventListener('storage',(e)=>{
+    if(!e.key||(e.key!==HK&&e.key!==CK))return;
+    if(_syncPending)return;
+    _syncPending=true;
+    setTimeout(()=>{
+      _syncPending=false;
+      load();render();
+      const sb=document.getElementById('snackbar');
+      if(sb){
+        const msgEl=sb.querySelector('.sb-msg');const ub=sb.querySelector('.snackbar-undo');
+        if(msgEl)msgEl.textContent='♻️ 別タブと同期しました';
+        if(ub)ub.style.visibility='hidden';
+        sb.classList.add('show');
+        setTimeout(()=>{sb.classList.remove('show');if(ub)ub.style.visibility='';},1500);
+      }
+    },100);
+  });
+})();
+
+// ── Cycle 89: yesterday's reflection banner ──
+function showYdBanner(){
+  const el=document.getElementById('yd-banner');if(!el)return;
+  const seenKey='rh_yd_shown_'+today();
+  if(localStorage.getItem(seenKey)){el.style.display='none';return;}
+  const yd=dateAgo(1);
+  const active=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,yd));
+  if(!active.length||isDayOff(yd)){el.style.display='none';return;}
+  const done=active.filter(h=>!!(completions[yd]||{})[h.id]).length;
+  const rate=done/active.length;
+  if(rate>=1){el.style.display='none';return;}
+  const pct=Math.round(rate*100);
+  const cls=pct>=70?'good':pct>=40?'mid':'low';
+  const msgs={good:'あと少しでした！今日こそ全達成！',mid:'今日は巻き返しましょう！',low:'今日こそ全力で！'};
+  const ydFmt=yd.slice(5).replace('-','/');
+  el.innerHTML=`<span style="flex-shrink:0">📅 ${ydFmt}の結果:</span><span class="yd-stat ${cls}">${done}/${active.length}件 (${pct}%)</span><span class="yd-msg">${msgs[cls]}</span><button class="yd-dismiss" onclick="dismissYdBanner()" title="閉じる">×</button>`;
+  el.style.display='flex';
+}
+function dismissYdBanner(){
+  const el=document.getElementById('yd-banner');if(!el)return;
+  el.style.opacity='0';
+  setTimeout(()=>{el.style.display='none';},300);
+  localStorage.setItem('rh_yd_shown_'+today(),'1');
+}
+
 function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
   const all=habits.filter(h=>!h.archived);

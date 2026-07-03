@@ -1714,6 +1714,29 @@
         "deployedAt": "2026-07-03T11:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 89,
+      "version": "v2.89",
+      "timestamp": "2026-07-03T12:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "マルチタブ同期（LocalStorage cross-tab sync）",
+          "description": "window.addEventListener('storage', ...)でrh_habitsまたはrh_completionsキーの変更を監視。別タブで習慣をチェック・追加・削除した際、現在のタブにload()+render()でリアルタイム自動反映し「♻️ 別タブと同期しました」スナックバーを1.5秒表示。_syncPendingフラグとsetTimeout 100msで連続storageイベントをデバウンス処理。後方完全互換・追加LocalStorageキーなし。"
+        },
+        {
+          "type": "feature",
+          "title": "昨日の振り返りバナー（Yesterday's Reflection Banner）",
+          "description": "アプリ起動600ms後にshowYdBanner()が実行され、昨日の達成率が100%未満の場合に「📅 MM/DDの結果: N/M件 (X%)」を水色左ボーダーのコンパクトバナーで表示。達成率70%以上=緑・40-69%=金・39%未満=赤でN/M件をカラーコーディング。×ボタンで閉じると本日中は再表示しない（LocalStorage: rh_yd_shown_YYYY-MM-DD）。昨日お休みデー・前日に習慣なし・全達成の場合は非表示。CSSアニメーションydSlide 0.3sでフェードイン。ライト/ダーク両テーマ対応済み。"
+        }
+      ],
+      "notes": "Cycle 89は「データ一貫性」と「前日振り返り促進」の2軸改善。マルチタブ同期はWeb Storage APIのstorageイベント（変更タブ自身には発火しない特性）を活用し、複数タブ/ウィンドウでの使用時のデータ一貫性を保つインフラ改善。昨日の振り返りバナーは前日に未達成があった場合のみ静かな注意喚起を提供し、全達成日は表示しないことでポジティブ体験を維持。LocalStorage変更（rh_yd_shown_日付キー新規のみ）・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T12:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
