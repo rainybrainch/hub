@@ -1916,6 +1916,29 @@
         "deployedAt": "2026-07-03T06:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 98,
+      "version": "v2.98",
+      "timestamp": "2026-07-03T08:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "ライフタイム習慣投資時間バッジ（⏱ 累計 Xh Ym）",
+          "description": "streak-row内に累計習慣投資時間バッジ（#lifetime-badge）を追加。h.duration（所要時間、Cycle 52で導入）が設定されたアクティブ習慣の全達成回数×所要分をcalcLifetimeTime()で合計算出。0分の場合は非表示、60分以上は「⏱ 累計 Xh Ym」、60分未満は「⏱ 累計 Xm」形式で表示。ウォームオレンジグラデーション（rgba(255,123,92)）のデザインで他バッジと視覚的に区別。新規localStorage不要、h.durationとhabitTotalCount()から計算。renderLifetimeBadge()をrender()末尾から呼び出し。"
+        },
+        {
+          "type": "feature",
+          "title": "週次ミニカレンダードット（今週7ドットインジケーター）",
+          "description": "streak-row内に今週（月〜日）の各曜日達成状況を10px丸ドット7個で可視化するウィジェット（#week-mini-cal）を追加。renderWeekMiniCal()がMon起点で7日分を計算：全達成→緑（wdone）、50%以上→ゴールド（wpart）、50%未満→赤（wnone）、本日未達成→水色枠（wtoday）、未来→薄グレー（wfuture）。habits 0件の場合は非表示。既存の習慣別ドット履歴・週次折線グラフ・30日ストリークカレンダーとは独立した「今週全体のコンパクト進捗一覧」として設計。新規localStorage不要。"
+        }
+      ],
+      "notes": "Cycle 98は「streak-rowの情報密度向上」をテーマにした2機能追加。ライフタイムバッジは習慣継続のモチベーション強化が目的で、「これまでに費やした時間の可視化」がself-efficacy（自己効力感）を高める心理的効果を期待。週次ミニカレンダードットは既存のストリーク数値を補完する「今週の全体的な波」の可視化で、週内の連続性を崩さないためのモニタリングを支援。renderLifetimeBadge()/renderWeekMiniCal()をrender()末尾（renderStreakGoalBadge()の後）から呼び出し、既存のapplyWidgetViz()/updateNightMode()との実行順序を保持。LocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T08:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

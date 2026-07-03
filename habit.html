@@ -1722,6 +1722,21 @@
     .dcb-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;margin-left:4px}
     .dcb-close:hover{color:#fff}
     @media print{.date-change-bar{display:none!important}}
+    /* Cycle 98: lifetime investment badge */
+    .lifetime-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(255,123,92,.12),rgba(245,200,66,.08));border:1px solid rgba(255,123,92,.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#FF7B5C;flex-shrink:0;cursor:default}
+    body.light .lifetime-badge{background:linear-gradient(135deg,rgba(255,100,60,.1),rgba(245,200,66,.08));border-color:rgba(255,100,60,.3);color:#cc4422}
+    /* Cycle 98: week mini calendar dots */
+    .wmc-wrap{display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+    .wmc-lbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.05em}
+    .wmc-dots{display:flex;gap:3px;align-items:center}
+    .wmc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .25s}
+    .wmc-dot.wdone{background:var(--green);box-shadow:0 0 5px rgba(76,175,125,.45)}
+    .wmc-dot.wpart{background:var(--gold)}
+    .wmc-dot.wnone{background:rgba(232,53,74,.5)}
+    .wmc-dot.wtoday{background:rgba(91,200,232,.2);border:1.5px solid var(--sky)}
+    .wmc-dot.wfuture{background:rgba(255,255,255,.08)}
+    body.light .wmc-dot.wfuture{background:rgba(0,0,0,.08)}
+    body.light .wmc-dot.wtoday{background:rgba(91,200,232,.15);border-color:var(--sky)}
   </style>
 </head>
 <body>
@@ -1944,6 +1959,10 @@
     <span class="streak-goal-badge" id="streak-goal-badge" style="display:none" onclick="openWidgetSettings()" title="ストリーク目標（設定で変更）"></span>
     <!-- Cycle 73: day completion time badge -->
     <span class="comp-done-badge" id="comp-done-badge" title="今日の全習慣達成時刻"></span>
+    <!-- Cycle 98: lifetime investment badge -->
+    <span class="lifetime-badge" id="lifetime-badge" style="display:none" title="習慣への累計投資時間（⏱所要時間設定済み習慣の合計）"></span>
+    <!-- Cycle 98: week mini calendar dots -->
+    <div class="wmc-wrap" id="week-mini-cal" style="display:none"><span class="wmc-lbl">今週</span><div class="wmc-dots" id="wmc-dots"></div></div>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -3909,6 +3928,8 @@ function render(){
   updateNightMode(); // Cycle 60: night mode class for pulse animation
   _updateScrollTop(); // Cycle 85: update scroll-top button with today's rate
   renderStreakGoalBadge(); // Cycle 92
+  renderLifetimeBadge(); // Cycle 98: cumulative time investment badge
+  renderWeekMiniCal();   // Cycle 98: this-week 7-dot indicator
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -6522,6 +6543,61 @@ function _renderStatsOvl(){
     </tr>`;
   }).join('');
   wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── Cycle 98: lifetime habit investment time ──
+function calcLifetimeTime(){
+  let totalMin=0;
+  habits.filter(h=>!h.archived&&h.duration>0).forEach(h=>{
+    totalMin+=h.duration*habitTotalCount(h.id);
+  });
+  return totalMin;
+}
+function renderLifetimeBadge(){
+  const el=document.getElementById('lifetime-badge');
+  if(!el)return;
+  const min=calcLifetimeTime();
+  if(min<=0){el.style.display='none';return;}
+  const h=Math.floor(min/60),m=min%60;
+  el.textContent=h>0?`⏱ 累計 ${h}h${m>0?' '+m+'m':''}`:`⏱ 累計 ${m}m`;
+  el.style.display='inline-flex';
+}
+
+// ── Cycle 98: week mini calendar dots ──
+function renderWeekMiniCal(){
+  const wrap=document.getElementById('week-mini-cal');
+  const dotsEl=document.getElementById('wmc-dots');
+  if(!wrap||!dotsEl)return;
+  const activeHabits=habits.filter(h=>!h.paused&&!h.archived);
+  if(!activeHabits.length){wrap.style.display='none';return;}
+  const td=today();
+  const d=new Date(td+'T00:00:00');
+  const dow=d.getDay();
+  const mondayOffset=dow===0?-6:1-dow;
+  const dots=[];
+  const dayLabels=['月','火','水','木','金','土','日'];
+  for(let i=0;i<7;i++){
+    const dd=new Date(d);
+    dd.setDate(d.getDate()+mondayOffset+i);
+    const ds=dd.toISOString().slice(0,10);
+    const isFuture=ds>td;
+    const isToday=ds===td;
+    const scheduled=activeHabits.filter(h=>isScheduled(h,ds));
+    if(isFuture){
+      dots.push(`<div class="wmc-dot wfuture" title="${dayLabels[i]}"></div>`);
+    } else {
+      const dc=completions[ds]||{};
+      const done=scheduled.filter(h=>dc[h.id]).length;
+      const total=scheduled.length;
+      let cls='wnone';
+      if(total===0||done===total)cls='wdone';
+      else if(done/total>=0.5)cls='wpart';
+      if(isToday&&done<total)cls='wtoday';
+      dots.push(`<div class="wmc-dot ${cls}" title="${dayLabels[i]}: ${done}/${total}達成"></div>`);
+    }
+  }
+  dotsEl.innerHTML=dots.join('');
+  wrap.style.display='inline-flex';
 }
 </script>
 </body>
