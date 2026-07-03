@@ -1870,6 +1870,29 @@
         "deployedAt": "2026-07-03T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 96,
+      "version": "v2.96",
+      "timestamp": "2026-07-03T04:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣優先度設定（Priority Setting: High / Normal / Low）",
+          "description": "習慣の追加・編集モーダルに優先度選択行（.pri-row）を追加。「🔴 高」「普通」「🔵 低」の3段階ボタン（.pri-btn）で優先度を設定できる。選択中のボタンはsel-high/sel-normal/sel-lowクラスでビジュアルフィードバック。selPriVal変数とselPri()関数で状態管理。saveHabit()でh.priority（'high'/'low'のみ、'normal'はキー削除）をLocalStorageに保存。_hCard()で高優先=🔴 高優先バッジ（.pri-high-badge）、低優先=低優先バッジ（.pri-low-badge）を完了前のカードに表示。コンパクトビューではバッジを非表示（body.compact .pri-high-badge,.pri-low-badge{display:none}）。優先度順ソートボタン「🔴 優先度順」（#sort-pri-btn）でsortPri変数をトグル、高→普通→低の順に並べ替え（オフライン習慣は末尾）。Pキーショートカットで即時トグル可能。sortPri/sortStreak/sortUndoneは相互排他でどれか1つのみ有効。rh_sort_prefに'pri'を追加しリロード後も優先度ソートを復元。ダーク・ライト・コンパクト各テーマ対応のCSSを追加。"
+        },
+        {
+          "type": "feature",
+          "title": "Web Share API によるネイティブシェア対応",
+          "description": "shareDailyCard()（📱ボタン）をWeb Share API対応に更新。navigator.share&&navigator.canShare({text})が利用可能な場合（主にモバイルブラウザ）はnavigator.share({text,title:'今日の習慣記録'})でOSネイティブのシェアシートを表示。未対応環境（PCブラウザ等）では従来どおりnavigator.clipboard.writeText()でクリップボードコピーし「今日の達成をコピーしました！」バナーを表示、クリップボードAPIも失敗した場合はalert(text)にフォールバック。モバイルユーザーがLINE・Twitter・メモ帳等に直接シェアできるようになり、SNS投稿・友人への共有の摩擦が大幅に減少。"
+        }
+      ],
+      "notes": "Cycle 96は「習慣の重み付け管理」と「ネイティブシェア」の2軸改善。優先度設定はCycle 6（フォーカスモード）・Cycle 45（習慣重要度★）とは異なり、習慣単位で3段階の優先度を設定し視覚バッジとソートで日々の取り組み順を明確化する機能。sortPriはCycle 7（未完了順）・Cycle 93（ストリーク順）と完全に排他的で混乱を防ぐ。LocalStorage構造はh.priority追加（オプション）とrh_sort_pref='pri'追加のみで後方完全互換（既存習慣はpriority未設定=普通扱い）。Web Share APIはCycle 28（コピー共有）の自然な進化で、モバイルでは体験が雲泥の差になる改善。既存のcanShare確認でAPIが未サポートな環境ではサイレントにクリップボードへフォールバックするため退行なし。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T04:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
