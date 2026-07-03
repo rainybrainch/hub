@@ -1852,6 +1852,24 @@
         "deployedAt": "2026-07-03T17:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 95,
+      "version": "v2.95",
+      "timestamp": "2026-07-03T02:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "週次チャートナビゲーション（Week Chart Navigation）",
+          "description": "週間バーチャートに「← 今週 →」ナビゲーションボタン（.wn-row）を追加。_cwoグローバル変数（chart week offset）で現在表示中の週オフセット（0=今週、1=先週、最大12週前）を管理。shiftWChart(d)で週を切り替え、_syncWNav()でボタンの有効/無効状態とラベル（今週/先週/N週前）をスカイ色で更新。renderChart()内でbase=_cwo*7としてdateAgo(i+base)を使用し過去週のデータを表示。isToday判定もi===0&&_cwo===0に変更し過去週では「今日」ハイライトが出ないよう修正。週ビュー以外（月・折線）に切り替えると_cwoをリセット。既存のshowChartDayPopup（Cycle 82）との組み合わせで過去週のバーもクリックして詳細確認可能。ダーク・ライト両テーマ対応CSS追加。"
+        }
+      ],
+      "notes": "Cycle 95は「チャートの時系列探索性向上」の単独改善。Cycle 1以来の週間バーチャートは今週のみ表示だったが、_cwoオフセット導入により最大12週前（約3ヶ月）のデータを遡って確認できるようになった。Cycle 82で追加されたshowChartDayPopup（日別詳細ポップアップ）と自然に連携し、過去週のバーをクリックしてもその日の習慣詳細を確認できる。LocalStorage構造変更なし・後方完全互換。_syncWNav()の← →ボタン制御により誤操作（今週からさらに未来へ、12週以上前へ）を防ぐ。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T02:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
