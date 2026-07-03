@@ -254,6 +254,22 @@
     /* Cycle 72: new habit start toast */
     .nh-toast{position:fixed;bottom:152px;left:50%;transform:translateX(-50%) translateY(8px);background:linear-gradient(135deg,rgba(91,200,232,.92),rgba(155,109,214,.82));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:8px 18px;border-radius:30px;box-shadow:0 6px 24px rgba(91,200,232,.4);z-index:440;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
     .nh-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 73: due time deadline badge */
+    .due-badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:6px;line-height:1.5;flex-shrink:0;border:1px solid transparent;display:inline-flex;align-items:center;gap:2px}
+    .due-badge.soon{color:var(--gold);background:rgba(245,200,66,.12);border-color:rgba(245,200,66,.25)}
+    .due-badge.urgent{color:var(--red);background:rgba(232,53,74,.10);border-color:rgba(232,53,74,.22);animation:urgentPulse 1.8s ease-in-out infinite}
+    .due-badge.past{color:rgba(232,53,74,.55);background:rgba(232,53,74,.07);border:1px dashed rgba(232,53,74,.2)}
+    @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.55}}
+    body.compact .due-badge{display:none}
+    /* Cycle 73: due-row in modal */
+    .due-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .due-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:30px}
+    #due-inp{background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;flex:1}
+    #due-inp:focus{border-color:rgba(232,53,74,.35)}
+    body.light #due-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    /* Cycle 73: evening reminder toast */
+    .eve-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:linear-gradient(135deg,rgba(155,109,214,.92),rgba(91,200,232,.82));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:9px 20px;border-radius:30px;box-shadow:0 8px 28px rgba(155,109,214,.4);z-index:448;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
+    .eve-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
     /* Cycle 13: compact view mode */
     body.compact .habit{padding:8px 12px}
@@ -1601,6 +1617,12 @@
       <button class="rec-time-clr" type="button" onclick="document.getElementById('rec-time-inp').value=''" title="クリア">✕</button>
       <span style="font-size:10px;color:var(--muted);flex:1">推奨実行時刻（任意）</span>
     </div>
+    <div class="due-row">
+      <span class="due-row-lbl">⏰ 締切</span>
+      <input id="due-inp" type="time" title="締切時刻（任意）：時間が近づくとバッジで警告">
+      <button class="rec-time-clr" type="button" onclick="document.getElementById('due-inp').value=''" title="クリア">✕</button>
+      <span style="font-size:10px;color:var(--muted);flex:1">締切時刻（任意）</span>
+    </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
@@ -1608,6 +1630,7 @@
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 <div class="milestone-toast" id="milestone-toast"></div>
 <div class="shield-toast" id="shield-toast"></div>
+<div class="eve-toast" id="eve-toast"></div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -2450,6 +2473,16 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const soon=diff>=-15&&diff<=30;
     return`<span class="rec-time-badge${soon?' soon':''}" data-rec-id="${h.id}">⏰${h.recTime}</span>`;
   })();
+  // Cycle 73: deadline due-time badge
+  const dueBadge=(()=>{
+    if(!h.dueTime||isDone||isPaused||isWeekendOff)return'';
+    const[dh,dm]=h.dueTime.split(':').map(Number);
+    const n=new Date();const diff=(dh*60+dm)-(n.getHours()*60+n.getMinutes());
+    if(diff<0)return`<span class="due-badge past">⏰締切</span>`;
+    if(diff<=15)return`<span class="due-badge urgent">⏰${diff}分!</span>`;
+    if(diff<=60)return`<span class="due-badge soon">⏰${diff}分</span>`;
+    return`<span class="due-badge">⏰${h.dueTime}</span>`;
+  })();
   const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span>${toughBadge}</div>`:`<span class="habit-name">${esc(h.name)}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
@@ -2488,7 +2521,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${dueBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3303,6 +3336,7 @@ function openModal(id=null){
     const durEl=document.getElementById('dur-inp');if(durEl)durEl.value=(h&&h.duration>=1)?h.duration:'';
     const whyEl=document.getElementById('why-inp');if(whyEl)whyEl.value=h&&h.why?h.why:'';
     const rtEl=document.getElementById('rec-time-inp');if(rtEl)rtEl.value=h&&h.recTime?h.recTime:'';
+    const dtEl=document.getElementById('due-inp');if(dtEl)dtEl.value=h&&h.dueTime?h.dueTime:'';
     toggleTough(!!(h&&h.tough));
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
@@ -3319,6 +3353,7 @@ function openModal(id=null){
     const durElN=document.getElementById('dur-inp');if(durElN)durElN.value='';
     const whyElN=document.getElementById('why-inp');if(whyElN)whyElN.value='';
     const rtElN=document.getElementById('rec-time-inp');if(rtElN)rtElN.value='';
+    const dtElN=document.getElementById('due-inp');if(dtElN)dtElN.value='';
     toggleTough(false);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
@@ -3350,10 +3385,11 @@ function saveHabit(){
   const durSave=parseInt((document.getElementById('dur-inp')||{}).value||'0');
   const whySave=((document.getElementById('why-inp')||{}).value||'').trim().substring(0,80);
   const recTimeSave=((document.getElementById('rec-time-inp')||{}).value||'').trim();
+  const dueTimeSave=((document.getElementById('due-inp')||{}).value||'').trim();
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;if(dueTimeSave)h.dueTime=dueTimeSave;else delete h.dueTime;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3366,6 +3402,7 @@ function saveHabit(){
     if(durSave>=1&&durSave<=180)nh.duration=durSave;
     if(whySave)nh.why=whySave;
     if(recTimeSave)nh.recTime=recTimeSave;
+    if(dueTimeSave)nh.dueTime=dueTimeSave;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -4065,6 +4102,38 @@ checkAnniversaries(); // Cycle 71: anniversary notifications
 setInterval(renderPaceBox,60000);
 setInterval(_updateRecTimeBadges,60000); // Cycle 68
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
+// Cycle 73: evening in-app reminder + due-badge refresh
+function _checkEveningReminder(){
+  const h=new Date().getHours(),m=new Date().getMinutes();
+  if(h!==21)return;
+  const key='rh_evening_notified_'+today();
+  if(localStorage.getItem(key))return;
+  const td=today(),dc=completions[td]||{};
+  const pending=habits.filter(hb=>!hb.archived&&!hb.paused&&isScheduled(hb,td)&&!dc[hb.id]);
+  if(!pending.length)return;
+  localStorage.setItem(key,'1');
+  const t=document.getElementById('eve-toast');
+  if(!t)return;
+  t.textContent=`🌙 まだ${pending.length}個の習慣が残っています！`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),5000);
+}
+setInterval(_checkEveningReminder,60000);
+_checkEveningReminder();
+// Cycle 73: refresh due-badges every minute
+function _updateDueBadges(){
+  document.querySelectorAll('.due-badge:not(.past)').forEach(el=>{
+    const wrap=el.closest('[data-id]');if(!wrap)return;
+    const hid=wrap.dataset.id;const hb=habits.find(h=>h.id===hid);if(!hb||!hb.dueTime)return;
+    const[dh,dm]=hb.dueTime.split(':').map(Number);
+    const n=new Date();const diff=(dh*60+dm)-(n.getHours()*60+n.getMinutes());
+    if(diff<0){el.className='due-badge past';el.textContent='⏰締切';}
+    else if(diff<=15){el.className='due-badge urgent';el.textContent=`⏰${diff}分!`;}
+    else if(diff<=60){el.className='due-badge soon';el.textContent=`⏰${diff}分`;}
+    else{el.className='due-badge';el.textContent=`⏰${hb.dueTime}`;}
+  });
+}
+setInterval(_updateDueBadges,60000);
 // ── Cycle 24: PWA theme-color meta tag sync ──
 function syncThemeColor(){
   const mc=document.getElementById('meta-theme-color');

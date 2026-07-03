@@ -1151,6 +1151,29 @@
         "deployedAt": "2026-07-03T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 73,
+      "version": "v2.73",
+      "timestamp": "2026-07-03T01:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣の締め切り時刻バッジ（Due Time Countdown Badge）",
+          "description": "習慣ごとに「締切時刻」（dueTime）を設定できる機能を追加。編集モーダルに「⏰ 締切」時刻入力フィールド（#due-inp）を追加（推奨実行時刻とは別フィールド）。_hCard()に.due-badge要素を生成するロジックを追加：残り60分超→グレー時刻表示、残り60分以内→ゴールド「⏰N分」（.soon）、残り15分以内→赤点滅「⏰N分!」（.urgent）、締切過ぎ→赤破線「⏰締切」（.past）。毎分_updateDueBadges()がDOM上のバッジをリレンダーなしで更新する軽量設計。コンパクトモードでは非表示。LocalStorageキー変更なし（h.dueTimeをrh_habitsに格納）。"
+        },
+        {
+          "type": "feature",
+          "title": "21時インアップ夕方リマインダートースト",
+          "description": "毎日21時ちょうどに未完了習慣がある場合、「🌙 まだN個の習慣が残っています！」のインアップトーストを5秒表示する機能を追加。_checkEveningReminder()を60秒インターバルで実行。LocalStorage（rh_evening_notified_YYYY-MM-DD）に当日通知済みフラグを保存し1日1回のみ表示。アーカイブ済み・一時停止・当日スケジュール外の習慣は除外して正確な未完了数をカウント。パープル→スカイのグラデーション（.eve-toast）でUIを統一。ブラウザ通知許可不要でPWA/モバイルでも動作。"
+        }
+      ],
+      "notes": "Cycle 73は「時間管理UX強化」の2軸改善。締め切り時刻バッジはCycle 68（推奨実行時刻）との相補的機能で、「いつやるべきか（recTime）」に加えて「いつまでにやるべきか（dueTime）」を可視化。緊急度に応じた3段階の視覚フィードバックが習慣の優先度判断を支援。夕方リマインダーはCycle 23（ブラウザプッシュ通知リマインダー）とは独立したインアプリ通知で、通知許可なしで動作するためすべてのユーザーが恩恵を受けられる。21時は多くのユーザーの就寝前ルーティーンに合わせた設定。どちらも既存データ構造と完全後方互換（rh_habitsのdueTimeフィールド追加・rh_evening_notified_DATE新規追加のみ）。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
