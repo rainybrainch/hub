@@ -1394,6 +1394,46 @@
         "deployedAt": "2026-07-02T07:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 79,
+      "version": "v2.79",
+      "timestamp": "2026-07-03T01:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "カテゴリー別SVGドーナツチャートウィジェット（🍩 donut-box）",
+          "description": "今日の習慣達成状況をカテゴリーごとにSVGドーナツチャートで可視化する新ウィジェット（donut-box）を追加。streak-rowの直上に配置。学習（水色）・運動（緑）・創作（紫）・自己改善（金）の4カテゴリーを扇形セグメントで表現し、各セグメントは薄い色（全体）と濃い色（達成済み）の2層で達成率を視覚化。中央に今日の全体達成率（%）を表示。右側に凡例（カテゴリー名・N/M達成数）をグリッド配置。ウィジェット設定から表示/非表示切替可能。フォーカスモード・コンパクトビュー時は非表示。LocalStorage変更なし・後方完全互換。",
+          "files": ["habit.html"],
+          "details": [
+            "renderDonutChart(): カテゴリー別にSVGアーク（path要素）を生成、背景層(opacity .16)と達成層(opacity .9)の2段階で達成率を視覚化",
+            ".donut-box / .donut-inner / .donut-svg-wrap / .donut-center-text / .donut-legend のCSS追加",
+            "WIDGET_DEFS に w_donut キーを追加（ウィジェット表示管理対応）",
+            "4カテゴリー固定: 学習=#5BC8E8 / 運動=#4CAF7D / 創作=#9B6DD6 / 自己改善=#F5C842",
+            "body.focus-mode .donut-box{display:none!important} + body.compact .donut-box{display:none}",
+            "習慣が0件のカテゴリーはセグメントから除外（totalH===0なら非表示）"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "ストリーク行インラインスパークライン（過去7日達成率推移）",
+          "description": "streak-rowの末尾に過去7日間の全体達成率推移をSVGミニ折れ線グラフとして追加。幅52px・高さ18pxのコンパクトなポリラインチャートで、左=6日前・右=今日の順に達成率の推移を可視化。今日のドットは達成率に応じて緑（100%）・金（50%以上）・水色（50%未満）で色分け。過去7日全て0%の場合は非表示。ホバー時にtooltipで各日の達成率を確認可能。LocalStorage変更なし・後方完全互換。",
+          "files": ["habit.html"],
+          "details": [
+            "renderSparkline(): 過去7日(dateAgo(0)〜dateAgo(6))のdayRate()を計算してSVGポリラインを生成",
+            ".sparkline-wrap / .sparkline-wrap:hover のCSS追加（ライト/ダーク両対応）",
+            "末端ドット（今日）の色: 100%→var(--green) / 50%以上→var(--gold) / それ以下→var(--sky)",
+            "past 7日全て0%のとき el.style.display='none' で非表示",
+            "title属性に「過去7日の達成率: N%→N%→...」形式でツールチップ表示"
+          ]
+        }
+      ],
+      "notes": "Cycle 79は「データ可視化の多角化」と「ストリーク行の情報密度向上」の2軸改善。ドーナツチャートはCycle 4のプログレスリング（全体達成率）を補完するカテゴリー分解視点を提供。スパークラインはstreak-rowにコンパクトなトレンド視覚化を追加し、過去1週間のモメンタムを瞬時に把握できるようにする。どちらもLocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

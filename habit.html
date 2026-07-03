@@ -1384,6 +1384,28 @@
     .habit.high-prio:not(.done):not(.paused){border-left-width:3px;border-left-color:rgba(232,53,74,.6)!important}
     .prio-lbl{font-size:9px;padding:2px 6px;background:rgba(232,53,74,.15);color:var(--red);border-radius:10px;font-weight:700;flex-shrink:0}
     body.compact .prio-lbl{display:none}
+
+    /* Cycle 79: category donut chart widget */
+    .donut-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .donut-inner{display:flex;align-items:center;gap:14px}
+    .donut-svg-wrap{position:relative;width:86px;height:86px;flex-shrink:0}
+    .donut-center-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+    .donut-center-pct{font-family:"Dela Gothic One",sans-serif;font-size:15px;line-height:1}
+    .donut-center-lbl{font-size:8px;color:var(--muted);letter-spacing:.06em;margin-top:2px}
+    .donut-legend{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+    .donut-leg-item{display:flex;align-items:center;gap:4px}
+    .donut-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .donut-leg-name{flex:1;color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .donut-leg-val{font-size:10px;font-weight:700}
+    body.light .donut-box{border-color:rgba(0,0,0,.08)}
+    body.compact .donut-box{display:none}
+    body.focus-mode .donut-box{display:none!important}
+
+    /* Cycle 79: sparkline in streak row */
+    .sparkline-wrap{display:inline-flex;align-items:center;padding:3px 7px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:default;vertical-align:middle;transition:all .2s}
+    .sparkline-wrap:hover{background:rgba(255,255,255,.07)}
+    body.light .sparkline-wrap{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.09)}
+    body.light .sparkline-wrap:hover{background:rgba(0,0,0,.07)}
   </style>
 </head>
 <body>
@@ -1531,6 +1553,12 @@
     <div class="year-scroll" id="year-scroll"></div>
   </div>
 
+  <!-- Cycle 79: category donut chart widget -->
+  <div class="donut-box" id="donut-box" style="display:none">
+    <div class="chart-ttl" style="margin-bottom:12px">🍩 カテゴリー別達成状況</div>
+    <div id="donut-inner"></div>
+  </div>
+
   <div class="streak-row">
     <span class="streak-cal-wrap"><span class="streak-badge" id="streak-badge" onclick="toggleStreakCal()" title="過去30日のカレンダーを表示">🔥 0日連続達成中</span><div class="streak-cal-pop" id="streak-cal-pop"></div></span>
     <span class="shield-badge" id="shield-badge" style="display:none"></span>
@@ -1539,6 +1567,8 @@
     <span class="perf-wrap"><span class="perf-badge" id="perf-badge" style="display:none" onclick="togglePerfHistory(event)" title="クリックで過去の完璧な日を確認">✨ 0日完璧</span><div class="perf-hist-pop" id="perf-hist-pop"></div></span>
     <span class="login-streak-badge" id="login-streak-badge" style="display:none" title="連続でアプリを開いた日数">📱 1日連続</span>
     <span class="week-streak-badge" id="week-streak-badge" style="display:none" title="全習慣を週単位で達成した連続週数">🗓 0週</span>
+    <!-- Cycle 79: 7-day sparkline -->
+    <span class="sparkline-wrap" id="sparkline-wrap" style="display:none" title="過去7日の達成率推移"></span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -3090,6 +3120,8 @@ function render(){
   renderYesterdayBanner(); // Cycle 78
   renderScheduleBox(); // Cycle 69
   renderInsightCard(); // Cycle 70
+  renderDonutChart(); // Cycle 79
+  renderSparkline(); // Cycle 79
   renderChart();
   renderWeekComparison();
   renderWeekTimeBadge();
@@ -4492,6 +4524,7 @@ const WIDGET_DEFS=[
   {key:'w_mood_stats',name:'📊 気分×達成率の相関',   id:'mood-stats-box'},
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
   {key:'w_insight', name:'💡 習慣インサイト',         id:'insight-card'},
+  {key:'w_donut',   name:'🍩 カテゴリー別達成状況',   id:'donut-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
@@ -4972,6 +5005,70 @@ function renderInsightCard(){
   el.style.display='';
   const rr=document.getElementById('insight-rows');
   if(rr)rr.innerHTML=ins.map(i=>`<div class="insight-row"><span class="insight-ico">${i.ico}</span><span class="insight-txt">${i.txt}</span></div>`).join('');
+}
+
+// ── Cycle 79: category donut chart ──
+function renderDonutChart(){
+  const box=document.getElementById('donut-box');
+  if(!box)return;
+  const td=today(),dc=completions[td]||{};
+  const CATS=['学習','運動','創作','自己改善'];
+  const CH={学習:'#5BC8E8',運動:'#4CAF7D',創作:'#9B6DD6',自己改善:'#F5C842'};
+  const CC={学習:'var(--sky)',運動:'var(--green)',創作:'var(--purple)',自己改善:'var(--gold)'};
+  const data=CATS.map(cat=>{
+    const hs=habits.filter(h=>!h.archived&&!h.paused&&h.category===cat&&isScheduled(h,td)&&!isSkippedToday(h.id));
+    const done=hs.filter(h=>dc[h.id]).length;
+    return{cat,done,total:hs.length,color:CH[cat],cssColor:CC[cat]};
+  }).filter(d=>d.total>0);
+  const totalH=data.reduce((s,d)=>s+d.total,0);
+  const totalD=data.reduce((s,d)=>s+d.done,0);
+  if(!totalH){box.style.display='none';return;}
+  box.style.display='';
+  const CX=43,CY=43,R=36,RI=22;
+  let ang=-Math.PI/2;
+  function arcPts(cx,cy,r,a1,a2){
+    return`${(cx+r*Math.cos(a1)).toFixed(2)},${(cy+r*Math.sin(a1)).toFixed(2)} A ${r} ${r} 0 ${a2-a1>Math.PI?1:0} 1 ${(cx+r*Math.cos(a2)).toFixed(2)},${(cy+r*Math.sin(a2)).toFixed(2)}`;
+  }
+  const paths=data.map(d=>{
+    const sa=ang,ea=ang+(d.total/totalH)*2*Math.PI;
+    const da=ang+(d.done/d.total)*(ea-ang);
+    const gap=data.length>1?0.04:0;
+    const s=sa+gap,e=ea-gap;
+    const bgPath=`M ${(CX+R*Math.cos(s)).toFixed(2)},${(CY+R*Math.sin(s)).toFixed(2)} ${arcPts(CX,CY,R,s,e)} L ${(CX+RI*Math.cos(e)).toFixed(2)},${(CY+RI*Math.sin(e)).toFixed(2)} A ${RI} ${RI} 0 ${e-s>Math.PI?1:0} 0 ${(CX+RI*Math.cos(s)).toFixed(2)},${(CY+RI*Math.sin(s)).toFixed(2)} Z`;
+    const doneAngle=s+(da-ang>0?da-sa-gap*2:0);
+    let donePath='';
+    if(doneAngle>s+0.02){
+      donePath=`M ${(CX+R*Math.cos(s)).toFixed(2)},${(CY+R*Math.sin(s)).toFixed(2)} ${arcPts(CX,CY,R,s,doneAngle)} L ${(CX+RI*Math.cos(doneAngle)).toFixed(2)},${(CY+RI*Math.sin(doneAngle)).toFixed(2)} A ${RI} ${RI} 0 ${doneAngle-s>Math.PI?1:0} 0 ${(CX+RI*Math.cos(s)).toFixed(2)},${(CY+RI*Math.sin(s)).toFixed(2)} Z`;
+    }
+    ang=ea;
+    return`<path d="${bgPath}" fill="${d.color}" opacity=".16"/>\n    ${donePath?`<path d="${donePath}" fill="${d.color}" opacity=".9"/>`:''}`;
+  }).join('');
+  const pct=totalH?Math.round(totalD/totalH*100):0;
+  const pctColor=pct>=100?'var(--green)':pct>=50?'var(--gold)':'var(--sky)';
+  const legend=data.map(d=>`<div class="donut-leg-item"><span class="donut-leg-dot" style="background:${d.color}"></span><span class="donut-leg-name">${d.cat}</span><span class="donut-leg-val" style="color:${d.cssColor}">${d.done}/${d.total}</span></div>`).join('');
+  const inner=document.getElementById('donut-inner');
+  if(inner)inner.innerHTML=`<div class="donut-inner"><div class="donut-svg-wrap"><svg width="86" height="86" viewBox="0 0 86 86" xmlns="http://www.w3.org/2000/svg">${paths}</svg><div class="donut-center-text"><span class="donut-center-pct" style="color:${pctColor}">${pct}%</span><span class="donut-center-lbl">今日</span></div></div><div class="donut-legend">${legend}</div></div>`;
+}
+
+// ── Cycle 79: sparkline (7-day mini trend) ──
+function renderSparkline(){
+  const el=document.getElementById('sparkline-wrap');
+  if(!el)return;
+  const vals=[];
+  for(let i=6;i>=0;i--)vals.push(Math.round(dayRate(dateAgo(i))*100));
+  if(vals.every(v=>v===0)){el.style.display='none';return;}
+  el.style.display='';
+  const W=52,H=18,pad=2;
+  const pts=vals.map((v,i)=>{
+    const x=pad+(i/(vals.length-1))*(W-pad*2);
+    const y=H-pad-(v/100)*(H-pad*2);
+    return`${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const lv=vals[6];
+  const lx=(W-pad).toFixed(1),ly=(H-pad-(lv/100)*(H-pad*2)).toFixed(1);
+  const dc2=lv>=100?'var(--green)':lv>=50?'var(--gold)':'var(--sky)';
+  el.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><polyline points="${pts}" fill="none" stroke="rgba(91,200,232,.4)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${lx}" cy="${ly}" r="2.5" fill="${dc2}"/></svg>`;
+  el.title=`過去7日の達成率: ${vals.map(v=>v+'%').join(' → ')}`;
 }
 
 // ── Cycle 72: habit correlation analysis ──
