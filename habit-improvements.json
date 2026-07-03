@@ -1115,7 +1115,9 @@
           "type": "feature",
           "title": "週N回目標モード（週次目標習慣）",
           "description": "習慣ごとに「週に何回やれば目標達成か」を設定できる新モード。モーダルに「週目標」セレクトボックス（週1〜7回）を追加。週の目標回数を達成した習慣はカードに「✅ 週N回達成」バッジを表示し、FABバッジ・ヘッダーバッジ・タイトルバーのカウントから除外される（毎日やらなくてもOKと判断）。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "getMondayStr(): 任意日付から当週月曜日を計算",
             "habitWeekCount(): 今週月曜〜今日までの達成回数を計算",
@@ -1130,7 +1132,9 @@
           "type": "feature",
           "title": "連続アクセスバッジ（ログインストリーク）",
           "description": "習慣の達成ではなくアプリを開いた連続日数を追跡する新バッジ。LocalStorageのrh_last_visitとrh_login_streakで管理し、2日以上連続でアクセスした場合にストリーク行に「📱 N日連続」バッジを表示。習慣完了ストリーク（🔥）とは独立した習慣化行動の可視化。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "calcLoginStreak(): ページロード時に前回訪問日と比較してストリーク計算",
             "rh_last_visit: 最終訪問日をLocalStorageに保存",
@@ -1156,7 +1160,9 @@
           "type": "feature",
           "title": "習慣コリレーション分析ウィジェット",
           "description": "よく一緒に達成される習慣ペアを自動分析し、TOP3を相関バーで表示する新ウィジェット。習慣が2個以上かつ記録が14日以上ある場合に有効化。各ペアの共同達成率（%）を視覚的なバーとパーセンテージ表示で確認できる。ウィジェット表示設定でON/OFFも切り替え可能。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "renderHabitCorr(): 全習慣ペアの共同達成率を計算し70%以上のペアを抽出",
             ".corr-box / .corr-row / .corr-bar-fill: カード・行・アニメーションバーのCSS",
@@ -1170,7 +1176,9 @@
           "type": "feature",
           "title": "パーフェクトデイバッジ → 過去の完璧な日ポップアップ",
           "description": "ダッシュボードの✨パーフェクトデイバッジをクリックすると、過去90日分の完璧な日（全習慣達成日）を M/D（曜日）形式で一覧表示するポップアップが開く。最大15件表示、それ以上は「他N日」と表示。バッジ外クリックで自動クローズ。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "togglePerfHistory(e): バッジクリックでポップアップ開閉を切り替え",
             "_renderPerfPop(pop): 過去90日を走査し完璧な日をリスト生成",
@@ -1197,7 +1205,9 @@
           "type": "enhancement",
           "title": "ストリークマイルストーンカウントダウンバッジ",
           "description": "習慣カードのストリークバッジ（🔥N）の隣に、次のマイルストーン（7/14/21/30/50/100/200/365日）まであと何日かを示す小さなバッジを表示。達成まで7日以内に近づいたときのみ表示され、ゴールド点滅アニメーションで達成感を高める。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "_msList: マイルストーン配列 [7,14,21,30,50,100,200,365]",
             "_nextMs: 現在のストリーク以上の最初のマイルストーン",
@@ -1210,7 +1220,9 @@
           "type": "enhancement",
           "title": "習慣詳細パネル「今週 vs 先週」比較",
           "description": "📊ボタンで開く習慣詳細パネルに「今週 vs 先週」の達成回数比較を追加。今週の達成回数と先週の達成回数を並べて表示し、増減を↑↓→矢印と色（緑/赤/グレー）で直感的に把握できる。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "getMondayStr()を利用して今週月曜日を特定",
             "今週（月〜今日）と先週（前週月〜日）の達成回数をそれぞれカウント",
@@ -1282,7 +1294,9 @@
           "type": "feature",
           "title": "ウィジェット表示プリセット（ミニマル/スタンダード/フル）",
           "description": "ウィジェット設定モーダルの上部に3つのプリセットボタンを追加。⚡ミニマルはペース・グラフ・ストリークの3つのみ表示。📊スタンダードは11の主要ウィジェットを表示。🌟フルは全21ウィジェットを表示。applyWidgetPreset()がrh_widgetsを一括更新し、_renderWsetList()/render()/applyWidgetViz()を連鎖呼び出し。applyWidgetViz()をdisplay:noneだけでなく表示復元（''）にも対応するよう修正し、プリセット適用でウィジェットが正しく表示・非表示される。ウィジェット設定の操作を「全部ON/OFFした後に個別調整」から「プリセット選択→必要に応じて微調整」に改善。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             ".wset-presets: flex row コンテナ（gap 6px, margin-bottom 14px）",
             ".wset-preset-btn: 等幅ボタン（flex:1）、ダーク/ライト/Ocean テーマ対応",
@@ -1297,7 +1311,9 @@
           "type": "animation",
           "title": "習慣チェック時の絵文字フローティングアニメーション",
           "description": "習慣をチェックしたとき、チェックボックス位置から習慣の絵文字（設定なし時は✨）がふわりと浮かび上がるアニメーションを追加。Cycle 18のパーティクルバーストと同時に発火し、より視覚的な達成感を演出。spawnEmojiFloat(x, y, emoji)が.emoji-float-elを生成・bodyに追加し800ms後に自動削除。CSSのemojiFloatキーフレームでscale 0→1.4→1、translateY 0→-72pxのアーク軌跡とフェードアウトを実現。固定位置（position:fixed, z-index:550）でスクロールに影響されない。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "@keyframes emojiFloat: 0%/40%/100% でscale・translateY・opacityを変化（cubic-bezier .2,.8,.3,1）",
             ".emoji-float-el: position:fixed, pointer-events:none, z-index:550, font-size:22px",
@@ -1324,7 +1340,9 @@
           "type": "feature",
           "title": "週間完全ストリークバッジ（🗓 N週連続）",
           "description": "全習慣を週単位で100%達成した連続週数を表示する新バッジを追加。streak-row内の既存バッジ群の末尾に配置。calcWeekStreak()が直近52週を遡り、月〜日の7日間すべての有効習慣を達成した連続週数を計算。対象習慣が0件の週はスキップして連続を維持。1週以上の連続がある場合のみバッジを表示（非表示デフォルト）。renderWeekStreakBadge()がrenderStats()末尾で呼ばれるためチェック操作のたびにリアルタイム更新。グリーンカラー（--green）のピル型バッジでperf-badgeと視覚的一貫性を保持。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             ".week-streak-badge: inline-flex, green gradient background, border-radius:20px, font-size:12px",
             "body.light .week-streak-badge: より濃いグリーン背景",
@@ -1337,7 +1355,9 @@
           "type": "feature",
           "title": "推奨時刻超過バッジ（.overdueスタイル）",
           "description": "推奨実行時刻（recTime）から60分以上経過しても未完了の習慣に、赤色の脈動するoverdueスタイルを適用。既存の_updateRecTimeBadges()を拡張し、isDoneチェックを追加（完了済みはsoon/overdueを両方除去）。diff<-60（推奨時刻から60分超過）の場合はoverdue classを付与。.rec-time-badge.overdueは赤色（--red）テキスト+背景+ボーダー+rtOverdueキーフレームによる1.8秒周期のglow pulse。60分という閾値でsoon（-15〜30分）との境界を明確化し、誤った警告を防ぐ。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             ".rec-time-badge.overdue: color:var(--red), rgba(232,53,74,.1)背景, animation:rtOverdue 1.8s",
             "@keyframes rtOverdue: 50%でbox-shadow:0 0 7px rgba(232,53,74,.35)のパルス",
@@ -1363,7 +1383,9 @@
           "type": "ux",
           "title": "昨日の達成サマリーバナー（Yesterday Summary Banner）",
           "description": "毎日アプリを開いたとき、統計カードとペース指標の間に前日の達成状況をコンパクトなバナーで表示する機能を追加。「📅 XX% 昨日（曜日）N/M件達成 [アイコン]」形式で昨日のパフォーマンスを即座に確認可能。達成率に応じてアイコンを自動変換（100%=🎉、70%以上=✅、40%以上=📊、それ以下=💪）。×ボタンでdismiss可能で、非表示状態はLocalStorage（rh_yest_dis_YYYY-MM-DD）に日付別保存し翌日は再表示。フォーカスモード中は自動非表示。アーカイブ済み・一時停止中習慣は除外してアクティブ習慣のみでカウント。isScheduled()で平日のみ習慣にも正確対応。ライト/ダーク両テーマ対応（水色グラデーション）。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "renderYesterdayBanner(): dateAgo(1)で昨日を計算、アクティブ習慣の達成率を集計",
             "dismissYestBanner(): LocalStorageにdismissフラグを保存し0.22sでフェードアウト",
@@ -1377,7 +1399,9 @@
           "type": "feature",
           "title": "習慣優先度フラグ（❗ Priority Flag）",
           "description": "各習慣カードに❗ボタンを追加。クリックで習慣の優先度（habit.priority）をトグルし、LocalStorage（rh_habits内）に永続保存。高優先度の未完了習慣カードは左ボーダーが赤くなり（border-left 3px赤）、カード内に「重要」バッジを表示。❗ボタン自体もred色でハイライト。完了済み・一時停止中の習慣にはボーダー適用しない（:not(.done):not(.paused)）。priorityフィールドはboolean型でhabitオブジェクトに追加。既存データはpriority=undefinedとして後方完全互換。コンパクトモードでは「重要」ラベルを非表示にしてスペース最適化。フォーカスセクション・通常リスト両方に適用。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "togglePriority(id): h.priority=!h.priorityしてsaveH()+render()",
             "_hCard(): isPriority=!!h.priority, prioBtn, prioLblを生成",
@@ -1404,7 +1428,9 @@
           "type": "feature",
           "title": "カテゴリー別SVGドーナツチャートウィジェット（🍩 donut-box）",
           "description": "今日の習慣達成状況をカテゴリーごとにSVGドーナツチャートで可視化する新ウィジェット（donut-box）を追加。streak-rowの直上に配置。学習（水色）・運動（緑）・創作（紫）・自己改善（金）の4カテゴリーを扇形セグメントで表現し、各セグメントは薄い色（全体）と濃い色（達成済み）の2層で達成率を視覚化。中央に今日の全体達成率（%）を表示。右側に凡例（カテゴリー名・N/M達成数）をグリッド配置。ウィジェット設定から表示/非表示切替可能。フォーカスモード・コンパクトビュー時は非表示。LocalStorage変更なし・後方完全互換。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "renderDonutChart(): カテゴリー別にSVGアーク（path要素）を生成、背景層(opacity .16)と達成層(opacity .9)の2段階で達成率を視覚化",
             ".donut-box / .donut-inner / .donut-svg-wrap / .donut-center-text / .donut-legend のCSS追加",
@@ -1418,7 +1444,9 @@
           "type": "feature",
           "title": "ストリーク行インラインスパークライン（過去7日達成率推移）",
           "description": "streak-rowの末尾に過去7日間の全体達成率推移をSVGミニ折れ線グラフとして追加。幅52px・高さ18pxのコンパクトなポリラインチャートで、左=6日前・右=今日の順に達成率の推移を可視化。今日のドットは達成率に応じて緑（100%）・金（50%以上）・水色（50%未満）で色分け。過去7日全て0%の場合は非表示。ホバー時にtooltipで各日の達成率を確認可能。LocalStorage変更なし・後方完全互換。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "renderSparkline(): 過去7日(dateAgo(0)〜dateAgo(6))のdayRate()を計算してSVGポリラインを生成",
             ".sparkline-wrap / .sparkline-wrap:hover のCSS追加（ライト/ダーク両対応）",
@@ -1444,7 +1472,9 @@
           "type": "feature",
           "title": "クイックステータスフィルターチップ",
           "description": "習慣リストの上部に「未完了のみ」「ストリーク中」「要注意」の3つのフィルターチップを追加。タップするとそのステータスの習慣のみを表示し、再タップで解除。未完了=今日未完了かつスキップ・一時停止・週末除外でない習慣、ストリーク中=2日以上連続達成中の習慣、要注意=過去7日間で1度も完了していない習慣をフィルタリング。アクティブ状態はチップの色（水色/金/赤）で視覚化。該当なしの場合は専用の空メッセージを表示。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "setStatusFilter(sf): statusFilterのトグル管理とrender()呼び出し",
             "_applyStatusFilter(list,td,dc): undone/streak/warningの3モードでリストを絞り込み",
@@ -1457,7 +1487,9 @@
           "type": "feature",
           "title": "全完了達成タイムバッジ",
           "description": "その日初めて全習慣を完了した時刻をLocalStorageに保存し、streak-rowに「🏁 HH:MM完了」バッジとして表示する機能を追加。昨日の完了時刻と比較して2分以上の差がある場合は「(+N分遅め)」または「(N分早め)」のデルタラベルも表示。showBanner()（全完了祝福時）に呼び出しをフックし、rh_comp_time_YYYY-MM-DDキーでLocalStorageに記録。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "recordCompletionTime(): LocalStorageに rh_comp_time_今日 キーで HH:MM を記録（重複記録防止）",
             "renderCompDoneBadge(): 保存時刻を読み取り comp-done-badge を更新・表示",
@@ -1483,7 +1515,9 @@
           "type": "feature",
           "title": "過去14日ジャーナルアーカイブ",
           "description": "📖ジャーナルモーダルに「今日」「過去14日」の2タブを追加。アーカイブタブでは過去14日間の日付・達成率バッジ（緑/金/グレー色分け）・気分絵文字・意図メモ・ハイライトをカード形式で一覧表示。記録がない日はスキップし、全日記録なしの場合は空メッセージを表示。日祝（isDayOff）は🌴マークを付与。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "switchJournalTab(tab): タブ切り替え・表示/非表示制御",
             "_renderJournalArchive(): 過去14日のLocalStorageデータを読み取りカードHTML生成",
@@ -1497,7 +1531,9 @@
           "type": "feature",
           "title": "N日チャレンジ目標バッジ",
           "description": "習慣の追加/編集モーダルに「N日チャレンジ」入力欄を追加。targetDaysを設定した習慣のカードに「📅 12/30日」形式の進捗バッジを表示し、達成時は「🎉 30/30日」に変化。コンパクトモードではバッジを非表示。habitTotalCount()で累計達成日数を計算するため、中断・再開しても通算日数が正しく反映される。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "challBadge: _hCard()内でtargetDaysの有無・達成状況を判定してバッジHTMLを生成",
             "saveHabit(): editing時・新規時ともにtargetDaysをhオブジェクトに保存（1〜365の範囲外は削除）",
@@ -1523,7 +1559,9 @@
           "type": "feature",
           "title": "習慣「強さ」レベルシステム（Lv.1〜5）",
           "description": "累計完了回数（habitTotalCount）に基づいて各習慣にLv.1〜Lv.5の「強さ」レベルを付与。Lv.1: 1〜9回🌱芽生え、Lv.2: 10〜29回🌿成長中、Lv.3: 30〜99回🌳定着、Lv.4: 100〜364回🔥達人、Lv.5: 365回以上💎レジェンド。各習慣カードに`.habit-lv`バッジとして絵文字+レベル番号を常時表示（コンパクトモードでは非表示）。習慣チェック時にcheckHabitLevelUp()がレベルアップを検出し、Lv上昇時にグリーングラデーションのlv-toastをアニメーション表示（複数レベルアップは順番にキュー表示）。LocalStorage（rh_lv_shown）に習慣ごとの表示済みレベルを保存して重複トースト防止。ライト/ダーク両テーマ・後方完全互換。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "HABIT_LEVELS配列: lv/min/max/emoji/nameを定義",
             "habitLevel(id): habitTotalCount(id)からレベルオブジェクトを返す",
@@ -1538,7 +1576,9 @@
           "type": "ux",
           "title": "週間バーチャートのインタラクティブ日付詳細ポップアップ",
           "description": "週間バーチャート（Cycle 1）の各バーをクリック/タップすると、その日の達成習慣一覧をフローティングポップアップで表示。日付・曜日・達成率%をヘッダーに、各完了習慣を絵文字+名前+完了時刻（HH:MM）付きで一覧表示（Cycle 9のISOタイムスタンプを活用）。達成ゼロの日は「記録なし」と表示。外側クリックで自動クローズ。バーにcursor:pointerとtitleヒントを追加してクリック可能性を提示。ライト/ダーク両テーマ対応・@keyframes cdpFadeInで0.15秒フェードイン。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "showChartDayPopup(e,ds): クリックされたバーのBoundingClientRectで位置計算し固定ポップアップを動的生成",
             "_closeCdp(): document.addEventListener 'click' once:trueでポップアップを自動クローズ",
@@ -1552,6 +1592,29 @@
       "deploy": {
         "branch": "main",
         "deployedAt": "2026-07-03T05:00:00Z",
+        "status": "success"
+      }
+    },
+    {
+      "cycle": 83,
+      "version": "v2.83",
+      "timestamp": "2026-07-03T06:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "習慣カードのタップリップルエフェクト",
+          "description": "習慣カードをタップ/クリックした際に、タップ位置を中心に波紋（ripple）アニメーションが広がるエフェクトを追加。spawnRipple(card, x, y)関数がサイズ計算した.habit-rippleスパンを動的生成し、@keyframes rippleAnimで0.5s scale(0→3)+opacity(0.28→0)にフェード。.habitにposition:relative;overflow:hiddenを追加しカード境界内にクリッピング。toggle()内の全ガード条件（day-off/paused/skipped）通過後に発火するため無効操作時は非発火。ライト/ダーク両テーマ対応。550ms後にDOM自動クリーンアップ。"
+        },
+        {
+          "type": "ux",
+          "title": "統計カードのカウントアップアニメーション",
+          "description": "連続記録と累計完了数がチェック操作により増加した際に、animateCounter(id, to)関数でrequestAnimationFrameベースのカウントアップアニメーションを追加。cubic-ease-out（1-(1-t)^3）イージングで最大700ms。_statPrev辞書で前回値を記録し、値が同じ/減少時は即時更新。増加幅に応じてdurationを60ms/単位でスケールし少ない増加は速く見せる。LocalStorage変更なし。"
+        }
+      ],
+      "notes": "Cycle 83は「触感的フィードバック強化」と「数値変化の視覚化」の2軸改善。リップルエフェクトはMaterial Designの波紋フィードバックパターンで、スワイプ・タップ・ハプティクス・サウンドに続く習慣チェック時のマルチモーダルフィードバック体系に追加。evt.clientX/Yからカード内の実際のタップ位置を算出して自然な波紋演出を実現。カウントアップアニメーションは達成の積み上げ感を視覚的に強化。後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-03T06:00:00Z",
         "status": "success"
       }
     }
