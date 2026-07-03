@@ -1177,7 +1177,7 @@
 
     /* Cycle 63: focus mode - hide all dashboard widgets */
     body.focus-mode .chart-box,body.focus-mode .weekly-box,body.focus-mode .wm-box,body.focus-mode .dow-box,
-    body.focus-mode .trend-box,body.focus-mode .year-box,body.focus-mode .month-box,body.focus-mode .ranking-box,
+    body.focus-mode .trend-box,body.focus-mode .year-box,body.focus-mode .month-cal-box,body.focus-mode .month-box,body.focus-mode .ranking-box,
     body.focus-mode .challenge-box,body.focus-mode .motto-box,body.focus-mode .ach-box,body.focus-mode .ms-widget,
     body.focus-mode .intention-box,body.focus-mode .tod-box,body.focus-mode .timeline-box,body.focus-mode .mood-box,
     body.focus-mode .mood-stats-box,body.focus-mode .highlight-box,body.focus-mode .pace-box,
@@ -1277,7 +1277,7 @@
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
-      .stats,.chart-box,.dow-box,.trend-box,.year-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box,.insight-card{display:none!important}
+      .stats,.chart-box,.dow-box,.trend-box,.year-box,.month-cal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box,.insight-card{display:none!important}
       .habit{background:white!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
       .habit.done .habit-name{color:#aaa!important;text-decoration:line-through}
       .habit-cnt,.habit-streak,.habit-best,.done-time,.low-rate-lbl,.skip-lbl,.paused-lbl,.weekend-lbl,.freq-badge,.cat-dot,.habit-counter,.dur-badge,.month-copy-btn{display:none!important}
@@ -1504,6 +1504,36 @@
     #scroll-top{font-size:14px;flex-direction:column;gap:1px;line-height:1}
     .st-rate{font-size:7px;font-weight:700;font-family:'Dela Gothic One',sans-serif;line-height:1.2}
     .scroll-top.st-done{border-color:var(--green)!important;color:var(--green)!important}
+    /* Cycle 86: chart category filter chips */
+    .ccf-row{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}
+    .ccf-row::-webkit-scrollbar{display:none}
+    .ccf-chip{flex-shrink:0;padding:3px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.12);font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;background:none;font-family:"Zen Maru Gothic",sans-serif;transition:all .15s}
+    .ccf-chip:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .ccf-chip.active{border-color:transparent}
+    .ccf-chip[data-ccf="all"].active{background:var(--gold);color:var(--dark)}
+    .ccf-chip[data-ccf="学習"].active{background:var(--sky);color:var(--dark)}
+    .ccf-chip[data-ccf="運動"].active{background:var(--green);color:var(--dark)}
+    .ccf-chip[data-ccf="創作"].active{background:var(--purple);color:var(--white)}
+    .ccf-chip[data-ccf="自己改善"].active{background:var(--gold);color:var(--dark)}
+    body.light .ccf-chip:not(.active){color:rgba(0,0,0,.4);border-color:rgba(0,0,0,.12)}
+    /* Cycle 86: monthly calendar view widget */
+    .month-cal-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px;transition:background .25s,border-color .25s}
+    body.light .month-cal-box{border-color:rgba(0,0,0,.08)}
+    .month-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .month-cal-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+    .month-cal-nav{display:flex;gap:6px}
+    .month-cal-nav-btn{background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer;transition:all .15s;font-family:"Zen Maru Gothic",sans-serif}
+    .month-cal-nav-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    body.light .month-cal-nav-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.4)}
+    .month-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .month-cal-daylbl{text-align:center;font-size:9px;color:var(--muted);font-weight:700;padding:2px 0 6px}
+    .month-cal-cell{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:"Dela Gothic One",sans-serif;cursor:pointer;transition:opacity .15s;border:1px solid transparent}
+    .month-cal-cell:hover:not(.empty-cell):not(.future-cell){opacity:.75}
+    .month-cal-cell.today-cell{border-color:var(--sky)!important;box-shadow:0 0 0 1px rgba(91,200,232,.3)}
+    .month-cal-cell.empty-cell,.month-cal-cell.empty-cell:hover{cursor:default;background:transparent!important;border-color:transparent!important;opacity:1}
+    .month-cal-cell.future-cell{background:rgba(255,255,255,.04)!important;color:rgba(255,255,255,.2)!important;cursor:default;border-color:transparent!important}
+    body.light .month-cal-cell.future-cell{background:rgba(0,0,0,.04)!important;color:rgba(0,0,0,.2)!important}
+    body.light .month-cal-daylbl{color:rgba(0,0,0,.35)}
   </style>
 </head>
 <body>
@@ -1598,6 +1628,14 @@
         <button class="toggle-btn" data-view="line" onclick="setChartView('line')">折線</button>
       </div>
     </div>
+    <!-- Cycle 86: chart category filter chips -->
+    <div class="ccf-row" id="ccf-row">
+      <button class="ccf-chip active" data-ccf="all" onclick="setCcf('all')">全体</button>
+      <button class="ccf-chip" data-ccf="学習" onclick="setCcf('学習')">📚 学習</button>
+      <button class="ccf-chip" data-ccf="運動" onclick="setCcf('運動')">💪 運動</button>
+      <button class="ccf-chip" data-ccf="創作" onclick="setCcf('創作')">🎨 創作</button>
+      <button class="ccf-chip" data-ccf="自己改善" onclick="setCcf('自己改善')">✨ 自己改善</button>
+    </div>
     <div id="chart"></div>
   </div>
 
@@ -1652,6 +1690,18 @@
   <div class="year-box" id="year-box" style="display:none">
     <div class="chart-ttl">📆 年間達成カレンダー</div>
     <div class="year-scroll" id="year-scroll"></div>
+  </div>
+
+  <!-- Cycle 86: monthly calendar view -->
+  <div class="month-cal-box" id="month-cal-box" style="display:none">
+    <div class="month-cal-hdr">
+      <span class="month-cal-ttl" id="month-cal-ttl">📅 月間カレンダー</span>
+      <div class="month-cal-nav">
+        <button class="month-cal-nav-btn" onclick="monthCalNav(-1)" title="前月">‹</button>
+        <button class="month-cal-nav-btn" onclick="monthCalNav(1)" title="翌月">›</button>
+      </div>
+    </div>
+    <div class="month-cal-grid" id="month-cal-grid"></div>
   </div>
 
   <!-- Cycle 79: category donut chart widget -->
@@ -2708,7 +2758,7 @@ function renderChart(){
   if(chartView==='week'){
     c.className='chart-bars';
     for(let i=6;i>=0;i--){
-      const ds=dateAgo(i),rate=dayRate(ds),pct=Math.round(rate*100),isToday=i===0;
+      const ds=dateAgo(i),rate=_chartRate(ds),pct=Math.round(rate*100),isToday=i===0;
       const lbl=isToday?'今日':DAYS[daysAgo(i).getDay()];
       const col=document.createElement('div');
       col.className='chart-col';
@@ -2723,7 +2773,7 @@ function renderChart(){
   }else{
     c.className='heatmap';
     for(let i=29;i>=0;i--){
-      const ds=dateAgo(i),pct=dayRate(ds);
+      const ds=dateAgo(i),pct=_chartRate(ds);
       const cell=document.createElement('div');
       cell.className='hm-cell';
       const emptyBg=document.body.classList.contains('light')?'rgba(0,0,0,.06)':'rgba(255,255,255,.06)';
@@ -3165,6 +3215,63 @@ function renderYearCalendar(){
   box.style.display='';
 }
 
+// ── Cycle 86: chart category filter ──
+let _ccf='all';
+function setCcf(cat){
+  _ccf=cat;
+  document.querySelectorAll('.ccf-chip').forEach(b=>b.classList.toggle('active',b.dataset.ccf===cat));
+  renderChart();
+}
+function dayCatRate(dateStr,cat){
+  if(cat==='all')return dayRate(dateStr);
+  if(isDayOff(dateStr))return 1;
+  const active=habits.filter(h=>!h.paused&&!h.archived&&h.category===cat&&isScheduled(h,dateStr));
+  if(!active.length)return 0;
+  const skipIds=dateStr===today()?getSkipIds():[];
+  const rel=active.filter(h=>!skipIds.includes(h.id));
+  if(!rel.length)return 1;
+  const dc=completions[dateStr]||{};
+  return rel.filter(h=>dc[h.id]).length/rel.length;
+}
+function _chartRate(ds){return _ccf==='all'?dayRate(ds):dayCatRate(ds,_ccf);}
+
+// ── Cycle 86: monthly calendar view ──
+let _mcalOffset=0;
+function monthCalNav(dir){_mcalOffset=Math.min(0,_mcalOffset+dir);renderMonthCalView();}
+function renderMonthCalView(){
+  const box=document.getElementById('month-cal-box'),grid=document.getElementById('month-cal-grid');
+  if(!box||!grid||!habits.length){if(box)box.style.display='none';return;}
+  box.style.display='';
+  const isLight=document.body.classList.contains('light');
+  const now=new Date();
+  const targetDate=new Date(now.getFullYear(),now.getMonth()+_mcalOffset,1);
+  const year=targetDate.getFullYear(),month=targetDate.getMonth();
+  const ttl=document.getElementById('month-cal-ttl');
+  if(ttl)ttl.textContent=`📅 ${year}年${month+1}月`;
+  const firstDow=(new Date(year,month,1).getDay()+6)%7; // Mon=0
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const td=today();
+  const todayDate=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const emptyBg=isLight?'rgba(0,0,0,.05)':'rgba(255,255,255,.05)';
+  const cellBg=r=>{if(r===0)return emptyBg;if(r<0.5)return'rgba(76,175,125,.3)';if(r<1)return'rgba(76,175,125,.65)';return'#4CAF7D';};
+  const DLBLS=['月','火','水','木','金','土','日'];
+  let html=DLBLS.map(d=>`<div class="month-cal-daylbl">${d}</div>`).join('');
+  for(let i=0;i<firstDow;i++)html+=`<div class="month-cal-cell empty-cell"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cellDate=new Date(year,month,d);
+    const isFuture=cellDate>todayDate;
+    const isToday=ds===td;
+    const r=isFuture?null:dayRate(ds);
+    const bg=isFuture?'':cellBg(r);
+    const cls=`month-cal-cell${isToday?' today-cell':''}${isFuture?' future-cell':''}`;
+    const title=isFuture?`${month+1}/${d}`:`${month+1}/${d} ${r!==null?Math.round(r*100):0}%達成`;
+    const onclick=isFuture?'':`onclick="showDayDetail('${ds}')"`;
+    html+=`<div class="${cls}" style="background:${bg}" title="${title}" ${onclick}>${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
 /// ── Cycle 66: relative completion time helper ──
 function relTime(isoStr){
   if(!isoStr||typeof isoStr!=='string')return '';
@@ -3449,6 +3556,7 @@ function render(){
   renderMonthlyTrend();
   renderWeekMatrix(); // Cycle 48
   renderYearCalendar();
+  renderMonthCalView(); // Cycle 86
   renderMonthStats();
   renderWeeklyRanking();
   renderHabitCorr(); // Cycle 72
@@ -4922,6 +5030,7 @@ const WIDGET_DEFS=[
   {key:'w_dow',    name:'📈 曜日別平均達成率',        id:'dow-box'},
   {key:'w_trend',  name:'📉 月別達成率トレンド',      id:'trend-box'},
   {key:'w_year',   name:'📆 年間達成カレンダー',      id:'year-box'},
+  {key:'w_month_cal', name:'📅 月間カレンダー',       id:'month-cal-box'},
   {key:'w_streak', name:'🔥 ストリークバッジ',        id:'streak-row'},
   {key:'w_month',  name:'📅 月次サマリー',            id:'month-box'},
   {key:'w_ranking',name:'🏅 週間ランキング',          id:'ranking-box'},
