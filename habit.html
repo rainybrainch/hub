@@ -1432,6 +1432,16 @@
     body.light .insight-txt{color:var(--dark)}
     body.light .insight-row{border-bottom-color:rgba(0,0,0,.05)}
     body.compact .insight-card{display:none}
+    /* Cycle 103: category balance radar chart */
+    .radar-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
+    .radar-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .radar-content{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center}
+    .radar-legend{display:flex;flex-direction:column;gap:7px;min-width:90px}
+    .radar-leg-item{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700}
+    .radar-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    body.light .radar-box{border-color:rgba(0,0,0,.08)}
+    body.compact .radar-box{display:none}
+    body.focus-mode .radar-box{display:none!important}
     /* Cycle 71: weekly N-times target mode */
     .wk-goal-met{display:inline-flex;align-items:center;gap:3px;background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.3);border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--green);flex-shrink:0}
     body.light .wk-goal-met{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.35)}
@@ -1963,6 +1973,11 @@
     <div class="insight-body" id="insight-body">
       <div class="insight-rows" id="insight-rows"></div>
     </div>
+  </div>
+
+  <div class="radar-box" id="radar-box" style="display:none">
+    <div class="radar-ttl">🕸 カテゴリーバランス（過去7日間）</div>
+    <div class="radar-content" id="radar-content"></div>
   </div>
 
   <div class="weekly-box" id="weekly-box">
@@ -3854,7 +3869,10 @@ function renderPaceBox(){
   let etaHtml='';
   if(remMins>0){const ed=new Date(now.getTime()+remMins*60000);etaHtml=`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--sky);font-size:14px">${String(ed.getHours()).padStart(2,'0')}:${String(ed.getMinutes()).padStart(2,'0')}</span><span class="pace-lbl">完了予測</span></div>`;}
   const estHtml=remEstStr?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--muted)">${remEstStr}</span><span class="pace-lbl">残り推定</span></div>${etaHtml}`:'';
-  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${estHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
+  // Cycle 103: show today's cumulative completed time when all habits done
+  const doneMins=remaining===0?active.filter(h=>dc[h.id]&&parseInt(h.duration)>=1).reduce((s,h)=>s+(parseInt(h.duration)||0),0):0;
+  const doneHtml=doneMins>0?`<div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:var(--green)">${doneMins>=60?Math.floor(doneMins/60)+'h'+(doneMins%60?String(doneMins%60)+'m':''):doneMins+'m'}</span><span class="pace-lbl">今日の累計</span></div>`:'';
+  el.innerHTML=`<div class="pace-item"><span class="pace-val" style="color:${paceColor}">${timeStr}</span><span class="pace-lbl">今日の残り</span></div><div class="pace-sep"></div><div class="pace-item"><span class="pace-val" style="color:${paceColor}">${remaining}件</span><span class="pace-lbl">未完了</span></div>${estHtml}${doneHtml}<div class="pace-sep"></div><span class="pace-msg">${msg}</span>`;
 }
 
 // ── Cycle 69: today's time schedule widget ──
@@ -4052,6 +4070,49 @@ function toggleYFix(id,ds){
   renderStats();updateProgressFooter();updateDocTitle();updateHeaderBadge();
 }
 
+// ── Cycle 103: category balance radar chart ──
+function renderRadarChart(){
+  const box=document.getElementById('radar-box');
+  const wrap=document.getElementById('radar-content');
+  if(!box||!wrap)return;
+  const cats=['学習','運動','創作','自己改善'];
+  const colors={'学習':'#5BC8E8','運動':'#4CAF7D','創作':'#9B6DD6','自己改善':'#F5C842'};
+  const hasCat=cats.some(cat=>habits.some(h=>h.category===cat&&!h.archived));
+  if(!hasCat){box.style.display='none';return;}
+  const rates=cats.map(cat=>{
+    let total=0,days=0;
+    for(let i=6;i>=0;i--){
+      const ds=dateAgo(i);
+      const hs=habits.filter(h=>h.category===cat&&!h.archived&&!h.paused&&isScheduled(h,ds));
+      if(!hs.length)continue;
+      const dc=completions[ds]||{};
+      total+=hs.filter(h=>dc[h.id]).length/hs.length;
+      days++;
+    }
+    return days>0?total/days:0;
+  });
+  box.style.display='';
+  const S=140,cx=S/2,cy=S/2,R=48;
+  const angles=cats.map((_,i)=>-Math.PI/2+i*(Math.PI/2));
+  const grid=[.25,.5,.75,1].map(p=>{
+    const pts=angles.map(a=>`${cx+R*p*Math.cos(a)},${cy+R*p*Math.sin(a)}`).join(' ');
+    return `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+  }).join('');
+  const axes=angles.map(a=>`<line x1="${cx}" y1="${cy}" x2="${cx+R*Math.cos(a)}" y2="${cy+R*Math.sin(a)}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`).join('');
+  const dpts=angles.map((a,i)=>`${cx+R*rates[i]*Math.cos(a)},${cy+R*rates[i]*Math.sin(a)}`).join(' ');
+  const poly=`<polygon points="${dpts}" fill="rgba(91,200,232,.12)" stroke="rgba(91,200,232,.6)" stroke-width="1.5" stroke-linejoin="round"/>`;
+  const dots=angles.map((a,i)=>{if(rates[i]===0)return '';const x=cx+R*rates[i]*Math.cos(a),y=cy+R*rates[i]*Math.sin(a);return `<circle cx="${x}" cy="${y}" r="3.5" fill="${colors[cats[i]]}" stroke="rgba(13,17,23,.6)" stroke-width="1.2"/>`;}).join('');
+  const lo=15;
+  const lblAnc=['middle','start','middle','end'];
+  const lblDy=[0,4,0,4];
+  const lbls=angles.map((a,i)=>{
+    const x=cx+(R+lo)*Math.cos(a),y=cy+(R+lo)*Math.sin(a);
+    return `<text x="${x}" y="${y}" dy="${lblDy[i]}" text-anchor="${lblAnc[i]}" font-size="7.5" font-weight="700" fill="${colors[cats[i]]}">${cats[i]}</text>`;
+  }).join('');
+  const legend=cats.map((cat,i)=>`<div class="radar-leg-item"><span class="radar-leg-dot" style="background:${colors[cat]}"></span><span style="color:${colors[cat]}">${cat}</span><span style="color:var(--muted);margin-left:auto;padding-left:8px">${Math.round(rates[i]*100)}%</span></div>`).join('');
+  wrap.innerHTML=`<div class="radar-svg-wrap"><svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" style="overflow:visible">${grid}${axes}${poly}${dots}${lbls}</svg></div><div class="radar-legend">${legend}</div>`;
+}
+
 function render(){
   renderHeader();
   renderStats();
@@ -4062,6 +4123,7 @@ function render(){
   renderDayTimeline(); // Cycle 88
   renderInsightCard(); // Cycle 70
   renderTimeInvest(); // Cycle 99
+  renderRadarChart(); // Cycle 103
   renderDonutChart(); // Cycle 79
   renderSparkline(); // Cycle 79
   renderChart();
@@ -5883,6 +5945,7 @@ const WIDGET_DEFS=[
   {key:'w_donut',   name:'🍩 カテゴリー別達成状況',   id:'donut-box'},
   {key:'w_tomorrow',name:'🌅 明日の準備メモ',          id:'tomorrow-box'},
   {key:'w_timeinvest', name:'⏱ 累計投資時間',         id:'time-invest-box'},
+  {key:'w_radar',     name:'🕸 カテゴリーバランス',    id:'radar-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}

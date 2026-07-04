@@ -2043,6 +2043,30 @@
         "deployedAt": "2026-07-04T07:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 103,
+      "version": "2.103",
+      "timestamp": "2026-07-04T08:00:00Z",
+      "theme": "バランス可視化 + 達成感強化",
+      "improvements": [
+        {
+          "type": "feature",
+          "title": "カテゴリーバランスSVGレーダーチャート（🕸 Category Balance Radar Chart）",
+          "description": "過去7日間の学習/運動/創作/自己改善カテゴリー別平均達成率を4軸SVGレーダーチャートで可視化する新ウィジェット。WIDGET_DEFSに{key:'w_radar', name:'🕸 カテゴリーバランス', id:'radar-box'}を追加しウィジェット設定から表示/非表示を管理。renderRadarChart()関数がcats=['学習','運動','創作','自己改善']に対しdateAgo(0)〜dateAgo(6)の7日分でisScheduled()で対象習慣を絞り込み、completions[ds]参照で完了率を算出。SVG座標はS=140px正方形、4軸を90°間隔(angles[-π/2, 0, π/2, π])で配置、R=48pxの最大半径。グリッド線は25/50/75/100%の4段階polygonとして描画。達成率ポリゴンはfill:rgba(91,200,232,.12)＋stroke:rgba(91,200,232,.6)で塗り、各カテゴリーの達成値位置に色付きdot(r=3.5)を表示。カテゴリーラベルは外側(R+15px)に学習=上(middle/dy0)、運動=右(start/dy4)、創作=下(middle/dy0)、自己改善=左(end/dy4)で配置。右側の凡例欄に色ドット+カテゴリー名+達成率%を縦並びで表示。対象カテゴリーの習慣が1件もない場合はbox.style.display='none'で非表示。コンパクトモード・フォーカスモード時は自動非表示。ライト/ダーク両テーマ対応CSS。"
+        },
+        {
+          "type": "enhancement",
+          "title": "ペースボックスに今日の累計投資時間表示（今日の累計）",
+          "description": "renderPaceBox()のremainingが0（全習慣完了）のとき、durationが1分以上の完了済み習慣の合計時間を計算し、ペースボックス内にグリーンで「今日の累計」を追加表示。doneMins=remaining===0?active.filter(h=>dc[h.id]&&parseInt(h.duration)>=1).reduce((s,h)=>s+parseInt(h.duration)||0,0):0で算出し、doneMinが0より大きい場合のみdoneHtmlとして<div class='pace-item'>を生成。60分以上は「1h30m」形式、未満は「45m」形式で表示。全習慣完了時の達成感を数値で強化し、毎日積み上げた時間の可視化で継続モチベーションを向上。"
+        }
+      ],
+      "notes": "Cycle 103は「バランスの可視化」と「達成感の定量化」をテーマとした改善。レーダーチャートは4象限の習慣カテゴリーを同一画面で比較できる唯一の可視化手段で、どのカテゴリーが偏っているかを直感的に把握できる。運動習慣だけ達成率が低い・創作が今週できていないなど、個別習慣では気づきにくいカテゴリー間の不均衡を発見するのに有効。SVGで完全にインラインで描画するため追加ライブラリなし。累計投資時間はBJ Foggのセレブレーション理論に基づき、全完了時の達成感を数値（時間）で強化する。LocalStorage構造に変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T08:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
