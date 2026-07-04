@@ -276,6 +276,13 @@
     body.compact .sec-progress{display:none}
     body.compact .chk{width:20px;height:20px;border-radius:6px}
 
+    /* Cycle 106: search keyword highlight */
+    .search-hl{background:rgba(245,200,66,.38);color:inherit;border-radius:2px;padding:0 1px;font-style:normal}
+    body.light .search-hl{background:rgba(245,200,66,.55)}
+    /* Cycle 106: category tab uncompleted count badge */
+    .tab-cnt{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;font-size:9px;font-weight:900;background:rgba(232,53,74,.85);color:#fff;border-radius:8px;padding:0 4px;margin-left:4px;line-height:1;vertical-align:middle}
+    .tab.active .tab-cnt,.tab-cnt.zero{display:none}
+
     /* Cycle 14: real-time search filter */
     .search-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;position:relative}
     .search-inp{flex:1;background:var(--dark2);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 34px 8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s}
@@ -3449,6 +3456,41 @@ function _allTimeRateRank(h){
   if(rate>=0.5)return`<span class="rate-rank rank-c" title="全期間達成率: ${Math.round(rate*100)}%（Cランク）">C</span>`;
   return'';
 }
+// Cycle 106: search keyword highlight
+function hlSearch(text,q){
+  if(!q)return esc(text);
+  const parts=[],lw=text.toLowerCase(),lq=q.toLowerCase();
+  let pos=0;
+  while(pos<text.length){
+    const idx=lw.indexOf(lq,pos);
+    if(idx===-1){parts.push(esc(text.slice(pos)));break;}
+    parts.push(esc(text.slice(pos,idx)));
+    parts.push(`<mark class="search-hl">${esc(text.slice(idx,idx+q.length))}</mark>`);
+    pos=idx+q.length;
+  }
+  return parts.join('');
+}
+// Cycle 106: category tab uncompleted count badges
+function updateTabCounts(){
+  const td=today(),dc=completions[td]||{};
+  ['all','学習','運動','創作','自己改善'].forEach(cat=>{
+    const btn=document.querySelector(`.tab[data-cat="${cat}"]`);
+    if(!btn)return;
+    const n=habits.filter(h=>{
+      if(h.archived||h.paused)return false;
+      if(!isScheduled(h,td))return false;
+      if(isSkippedToday(h.id))return false;
+      if(dc[h.id])return false;
+      if(cat!=='all'&&h.category!==cat)return false;
+      return true;
+    }).length;
+    let badge=btn.querySelector('.tab-cnt');
+    if(!badge){badge=document.createElement('span');badge.className='tab-cnt';btn.appendChild(badge);}
+    badge.textContent=n;
+    badge.classList.toggle('zero',n===0);
+  });
+}
+
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const tc=h.targetCount||1;const isCounter=tc>1;
   const ctrCount=isCounter?getHabitCount(h.id):0;
@@ -3502,7 +3544,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const soon=diff>=-15&&diff<=30;
     return`<span class="rec-time-badge${soon?' soon':''}" data-rec-id="${h.id}">⏰${h.recTime}</span>`;
   })();
-  const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${esc(h.name)}</span>${toughBadge}</div>`:`<span class="habit-name">${esc(h.name)}</span>`;
+  const nameRowHtml=(h.emoji||h.tough)?`<div class="habit-name-row">${emojiSpan}<span class="habit-name">${hlSearch(h.name,searchQuery)}</span>${toughBadge}</div>`:`<span class="habit-name">${hlSearch(h.name,searchQuery)}</span>`;
   const isStarred=focusIds.includes(h.id);
   const starBtn=`<button class="star-btn${isStarred?' starred':''}" onclick="toggleFocus('${h.id}',event)" aria-label="フォーカス">${isStarred?'★':'☆'}</button>`;
   const pausedLbl=isPaused?'<span class="paused-lbl">一時停止</span>':'';
@@ -4188,6 +4230,7 @@ function render(){
   renderStreakGoalBadge(); // Cycle 92
   renderLifetimeBadge(); // Cycle 98: cumulative time investment badge
   renderWeekMiniCal();   // Cycle 98: this-week 7-dot indicator
+  updateTabCounts();     // Cycle 106: uncompleted count badges on category tabs
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
