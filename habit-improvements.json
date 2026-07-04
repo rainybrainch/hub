@@ -2150,7 +2150,9 @@
           "type": "ux",
           "title": "スクロールプログレスバー（読み進みインジケーター）",
           "description": "ページ最上部に3pxの細いグラデーションバー（sky→gold）を固定表示し、スクロール量に応じて幅が変化するリーディングプログレスバーを追加。`#scroll-prog`（.scroll-prog）要素をbody先頭に配置し、passiveスクロールイベントリスナーで`scrollTop/(scrollHeight-clientHeight)*100`%をリアルタイム反映。transition:width .08s linearで滑らかにアニメーション。z-index:9999でヘッダーより前面に表示。pointer-events:noneで操作に影響なし。習慣が多い場合（スクロールが必要な画面）でどこまで確認したかを直感的に把握できる。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             ".scroll-prog: position:fixed,top:0,left:0,height:3px,z-index:9999,pointer-events:none",
             "background:linear-gradient(90deg,var(--sky),var(--gold))",
@@ -2163,7 +2165,9 @@
           "type": "feature",
           "title": "ピン留め機能（習慣をカテゴリー先頭に固定）",
           "description": "各習慣カードに📌ボタン（.pin-btn）を追加し、クリックでその習慣を同カテゴリーの先頭に固定表示できる機能を実装。togglePin(id)がh.pinnedをトグル（true/削除）してsaveH()+render()で即座に反映。renderList()のカテゴリーソート後に`[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)]`でピン済みを先頭へ移動。他のソートモード（優先度順・ストリーク順・未完了順・シャッフル・所要時間順）と組み合わせ可能で、そのソート内でさらにピン済みが先頭に来る仕組み。ピン状態は.habit.pinnedクラスを付与しゴールド細枠(outline)で視覚フィードバック。h.pinnedはLocalStorage rh_habitsに永続化（trueのみ保存、解除時にはキー削除で後方互換）。コンパクトモード時はボタン非表示。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             ".pin-btn: star-btn/prio-btn と同等の透明ボタンスタイル",
             ".pin-btn.on: color:var(--gold) でアクティブ状態表示",
@@ -2191,7 +2195,9 @@
           "type": "feature",
           "title": "OLEDブラックモード（バッテリー節約・純黒背景）",
           "description": "設定モーダルに「🖥 ディスプレイ」セクションを追加し、OLED/AMOLED端末向けの純黒背景モードトグルを実装。`body.oled`クラスを付与するとダークモード時に背景が#000（真黒）、カード類が#0a0a0aに変化しOLEDピクセルをオフにしてバッテリー消費を削減。light/ocean テーマ時は`:not(.light):not(.theme-ocean)`セレクターにより無効化されダークモード専用機能として動作。設定はLocalStorage`rh_oled`('1'/'0')に永続化し、`applyOled()`がページ読み込み時と設定モーダルオープン時に自動同期。トグルスイッチUIはCSS純粋実装（checkbox+labelパターン）でJS onchangeハンドラー`toggleOled(this.checked)`を呼び出す。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "CSS: body.oled:not(.light):not(.theme-ocean){background:#000;--dark2:#0a0a0a;--dark3:#111}",
             "CSS: .hdr, .modal, .snackbar, .wset-modal に#0a0a0aオーバーライド（暗モード専用）",
@@ -2220,7 +2226,9 @@
           "type": "feature",
           "title": "↓達成率ソートボタン（要注意習慣を上に浮上）",
           "description": "ソートバーに「↓達成率」ボタンを追加。クリックすると30日達成率の低い順（昇順）に習慣を並べ替え、最も継続できていない習慣を最上部に表示する。既存の他ソート（未完了順・ストリーク順・優先度順・シャッフル・⏱短い順）と排他的に動作し、アクティブ状態はLocalStorage('rh_sort_lowrate')に保存。ページリロード後も自動復元。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "globals: sortLowRate=false を既存ソートフラグ群に追加",
             "HTML: sort-lowrate-btn ボタンをsort-dur-btn直後に追加",
@@ -2234,7 +2242,9 @@
           "type": "feature",
           "title": "習慣詳細パネルに累計投資時間スタット追加",
           "description": "_habitDetailHtml()内で、習慣に所要時間(h.duration)が設定されかつ累計達成回数(total)が1以上の場合に「累計投資時間」スタットを算出・表示。計算式: total × duration (分) → Xh Ym形式（例:2h30m / 45m / 3h）。既存の平均完了時刻スタットの直後に配置し、hd-stat-timeクラスで等幅フォント表示。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "_habitDetailHtml(): h.duration&&total>0 の場合 totalTimeStat を計算",
             "累計分数=total*parseInt(h.duration); hh=floor(mins/60); mm=mins%60",
@@ -2306,7 +2316,9 @@
           "type": "feature",
           "title": "最終達成日バッジ（X日前）",
           "description": "未達成習慣カードに「最後にいつ達成したか」を示すバッジを追加。lastCompletedDays(id)が過去90日を遡り最後の達成日を検索。未達成かつ2日以上前に達成した場合のみ「X日前」バッジを表示（当日達成済み・1日前は非表示）。wpBadgeの直後に配置し、既存バッジ群と視覚的に一貫したpill型スタイル（.last-done-badge）。コンパクトモードでは非表示。アーカイブ・一時停止習慣は_hCard自体が呼ばれないため自動的に除外。LocalStorage構造変更なし・後方完全互換。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "CSS: .last-done-badge — muted色テキスト、rgba(255,255,255,.06)背景、border 1px solid rgba(255,255,255,.1)、border-radius:6px",
             "CSS: body.light .last-done-badge — rgba(0,0,0,.05)背景、rgba(0,0,0,.1)ボーダー",
@@ -2320,7 +2332,9 @@
           "type": "animation",
           "title": "アクセントカラー対応コンフェッティ",
           "description": "全習慣達成時に発火するlaunchConfetti()が現在のアクセントカラー設定を反映するよう改善。_accentMapでaccent-blue/green/purple/roseと対応カラーコードをマッピング。body.classListから現在のアクセントキーを検出し_primaryカラーを決定（設定なし時はデフォルト金色#F5C842）。colsアレイの先頭に_primaryを2回追加することでアクセントカラーの紙吹雪が他色の約2倍の頻度で出現し、選択したテーマとの視覚的一体感を演出。ライト/ダーク両モード対応。LocalStorage変更なし。",
-          "files": ["habit.html"],
+          "files": [
+            "habit.html"
+          ],
           "details": [
             "launchConfetti(): const _accentMap={'accent-blue':'#5BC8E8','accent-green':'#4CAF7D','accent-purple':'#9B6DD6','accent-rose':'#E892A8'}",
             "const _accentKey=Object.keys(_accentMap).find(c=>document.body.classList.contains(c))",
@@ -2347,13 +2361,17 @@
           "type": "feature",
           "title": "感謝日記ウィジェット（🙏 今日の感謝）",
           "description": "ハイライトボックス（Cycle 50）の直後に「🙏 今日の感謝」コラプシブルウィジェットを追加。LocalStorageキー：rh_grat_YYYY-MM-DD。120文字のtextareaで当日の感謝事項を記録。ヘッダーにプレビューテキスト表示。ボディ展開時に過去3日分の感謝記録（grat-hist）をコンパクト表示。全習慣達成時（3箇所のcelebration block）にopenGratWidget()を呼び出し、rh_grat_auto_YYYY-MMフラグで1日1回だけ自動展開。WIDGET_DEFS配列に{key:'w_grat', name:'🙏 感謝日記', id:'grat-box'}を追加しウィジェット設定から非表示化も可能。renderGratWidget()をrender()に追加。アクセントカラー：var(--sky)。ライト/ダーク両テーマ対応。",
-          "files": ["habit.html"]
+          "files": [
+            "habit.html"
+          ]
         },
         {
           "type": "ux",
           "title": "今日の注目習慣（📌 Auto Focus Habit of the Day）",
           "description": "習慣リストの上部に、その日最も注意が必要な習慣を自動ハイライトする「📌 今日の注目」バナーを追加。_getFocusHabit()が未完了のアクティブ習慣を対象に、最後に完了した日数（lastDays × 3）と過去7日の達成率低さ（(7-done7) × 2）のスコアリングで最も優先度が高い習慣を選択。選択された習慣カードにfocus-todayクラスを付与し、ゴールドボーダーのグロー（box-shadow）で視覚的に際立たせる。バナークリックで当該習慣へスムーズスクロール。✕ボタンで当日dismiss（rh_focus_dis_YYYY-MM-DDで保存）。全完了時・dismiss時は自動非表示。renderFocusHabit()をrender()末尾に追加。",
-          "files": ["habit.html"]
+          "files": [
+            "habit.html"
+          ]
         }
       ],
       "notes": "Cycle 113は「感情・精神面のウェルビーイング強化」と「習慣注目ガイダンス」の2軸改善。感謝日記は心理学的に実証されたポジティブ心理学のツール（感謝日記法）をアプリに統合。ハイライト（今日の振り返り）が「出来事の記録」なら感謝日記は「ポジティブな視点の記録」と役割が明確に分離。全習慣達成という最高潮のモーメントに自動展開することで、達成感と感謝の感情を自然に結びつける設計。今日の注目習慣はCycle 107のピン留め（手動固定）とは異なり、データ駆動での自動選択。直近で最も後回しにされている習慣を浮上させることで、習慣全体のバランスを改善するガイダンス機能として動作。両改善ともLocalStorage変更なし（新規キー追加のみ）・後方完全互換。",
@@ -2372,19 +2390,52 @@
           "type": "ux",
           "title": "達成率マイルストーントースト（25%/50%/75%）",
           "description": "習慣を完了するたびに今日の達成率が25%/50%/75%の閾値を超えた際、上部に色付きのマイクロトーストを表示。25%=⚡ゴールドグラデーション、50%=🔥スカイ×グリーン、75%=🌟パープル×スカイのグラデーション背景。PROG_MILESTONES配列でメッセージ・背景を定義。_progMileShown[today][pct]フラグで1日1回のみ表示。todayRate()===100の全達成時は表示しない（全達成バナーが優先）。checkProgressMilestone()をtoggle()末尾の!wasCompletedブロック後に呼び出し。.prog-mile-toast CSS：position:fixed、top:76px、cubicベジェのスライドイン、z-index:446（first-check-toastより1上位）。",
-          "files": ["habit.html"]
+          "files": [
+            "habit.html"
+          ]
         },
         {
           "type": "ux",
           "title": "タフ習慣専用サウンドエフェクト（Tough Habit Victory Sound）",
           "description": "「タフ」フラグ付き習慣（tough:true）の完了時に、通常のsine単音（playTick）ではなく上昇アルペジオ（playToughTick）を再生。C5→E5→G5→C6の4音を70ms間隔で順次鳴らし、達成感を音で表現。toggle()内のplayTick()呼び出しを(_hh&&_hh.tough?playToughTick:playTick)()に変更。既存の振動パターン（vib([30,20,30])）や16パーティクルバーストと組み合わさって、タフ習慣の完了をより特別な体験にする。playToughTick()はplayTick()と同様のWeb Audio API実装（AudioContext生成→sine波→gainノード）。",
-          "files": ["habit.html"]
+          "files": [
+            "habit.html"
+          ]
         }
       ],
       "notes": "Cycle 114は「達成プロセスの感情的フィードバック強化」の2軸改善。達成率マイルストーントーストは全達成（100%）以外にも途中の25%・50%・75%という節目でフィードバックを提供し、長い習慣リストを持つユーザーがゴールまでの道のりを感じられるようにする。first-check-toast（今日のスタート！）→25%トースト→50%トースト→75%トースト→全達成バナーという段階的なモチベーション設計が完成。タフ習慣サウンドはCycle 47のタフ習慣パーティクル強化・Cycle 83のリップルフィードバックに続く3つ目のタフ習慣特別演出で、視覚・触覚・聴覚の3チャンネルが揃う。LocalStorage構造変更なし・完全後方互換。",
       "deploy": {
         "branch": "main",
         "deployedAt": "2026-07-04T19:00:00Z",
+        "status": "success"
+      }
+    },
+    {
+      "cycle": 115,
+      "version": "v2.115",
+      "timestamp": "2026-07-04T20:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "iCalエクスポート（.ics ファイル — Googleカレンダー/Apple Calendar対応）",
+          "description": "📤エクスポートボタンのexportData()をconfirm()2択からprompt()4択（1:JSON / 2:CSV / 3:ICS / 4:MD）に拡張。新規_exportICS()関数がRFC 5545準拠のiCalendarファイルを生成してダウンロード。対象は推奨時刻（h.recTime）が設定されたアクティブ習慣のみ。各習慣をVEVENTとして出力：DTSTART（Asia/Tokyo TZID指定）、DURATION（h.durationまたはデフォルト15分）、SUMMARY（絵文字+習慣名）、DESCRIPTION（メモまたはwhy）、RRULE（毎日=FREQ=DAILY / 平日のみ=FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR）。Google Calendar・Apple Calendar・Outlookへ直接インポート可能。",
+          "files": [
+            "habit.html"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "Markdownレポートダウンロード（habit-report-YYYY-MM-DD.md）",
+          "description": "新規_exportMarkdown()関数でカテゴリー別にMarkdown表形式の習慣統計レポートを生成・ダウンロード。ヘッダー（生成日・習慣数）、カテゴリーごとのセクション（## カテゴリー名）、各習慣の30日達成率・連続日数・累計日数を| 列 | 形式で出力。一時停止中習慣は_(停止中)_と明記。Notion/Obsidian/Typoraなどのマークダウンエディタに直接インポート可能。habitFix30()/habitStreak()/habitTotalCount()の既存関数を再利用するため追加計算コストゼロ。",
+          "files": [
+            "habit.html"
+          ]
+        }
+      ],
+      "notes": "Cycle 115はデータ出力形式の拡張2軸改善。iCalエクスポートはCycle 5のJSONバックアップ・Cycle 25のCSVエクスポートに続く3番目の出力形式。Markdownエクスポートはサードパーティのナレッジ管理ツール（Notion/Obsidian）への統合を可能にする機能。LocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T20:00:00Z",
         "status": "success"
       }
     }
