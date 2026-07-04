@@ -2362,6 +2362,31 @@
         "deployedAt": "2026-07-04T18:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 114,
+      "version": "v2.114",
+      "timestamp": "2026-07-04T19:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "達成率マイルストーントースト（25%/50%/75%）",
+          "description": "習慣を完了するたびに今日の達成率が25%/50%/75%の閾値を超えた際、上部に色付きのマイクロトーストを表示。25%=⚡ゴールドグラデーション、50%=🔥スカイ×グリーン、75%=🌟パープル×スカイのグラデーション背景。PROG_MILESTONES配列でメッセージ・背景を定義。_progMileShown[today][pct]フラグで1日1回のみ表示。todayRate()===100の全達成時は表示しない（全達成バナーが優先）。checkProgressMilestone()をtoggle()末尾の!wasCompletedブロック後に呼び出し。.prog-mile-toast CSS：position:fixed、top:76px、cubicベジェのスライドイン、z-index:446（first-check-toastより1上位）。",
+          "files": ["habit.html"]
+        },
+        {
+          "type": "ux",
+          "title": "タフ習慣専用サウンドエフェクト（Tough Habit Victory Sound）",
+          "description": "「タフ」フラグ付き習慣（tough:true）の完了時に、通常のsine単音（playTick）ではなく上昇アルペジオ（playToughTick）を再生。C5→E5→G5→C6の4音を70ms間隔で順次鳴らし、達成感を音で表現。toggle()内のplayTick()呼び出しを(_hh&&_hh.tough?playToughTick:playTick)()に変更。既存の振動パターン（vib([30,20,30])）や16パーティクルバーストと組み合わさって、タフ習慣の完了をより特別な体験にする。playToughTick()はplayTick()と同様のWeb Audio API実装（AudioContext生成→sine波→gainノード）。",
+          "files": ["habit.html"]
+        }
+      ],
+      "notes": "Cycle 114は「達成プロセスの感情的フィードバック強化」の2軸改善。達成率マイルストーントーストは全達成（100%）以外にも途中の25%・50%・75%という節目でフィードバックを提供し、長い習慣リストを持つユーザーがゴールまでの道のりを感じられるようにする。first-check-toast（今日のスタート！）→25%トースト→50%トースト→75%トースト→全達成バナーという段階的なモチベーション設計が完成。タフ習慣サウンドはCycle 47のタフ習慣パーティクル強化・Cycle 83のリップルフィードバックに続く3つ目のタフ習慣特別演出で、視覚・触覚・聴覚の3チャンネルが揃う。LocalStorage構造変更なし・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T19:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

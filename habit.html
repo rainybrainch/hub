@@ -1940,6 +1940,9 @@
     .user-name-inp::placeholder{color:var(--muted)}
     body.light .user-name-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
     body.light .user-name-inp::placeholder{color:rgba(0,0,0,.35)}
+    /* Cycle 114: progress milestone micro-toast */
+    .prog-mile-toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);font-family:"Dela Gothic One",sans-serif;font-size:13px;padding:8px 20px;border-radius:30px;z-index:446;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.3);text-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .prog-mile-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   </style>
 </head>
 <body>
@@ -1975,6 +1978,8 @@
 <div class="next-habit-toast" id="next-habit-toast"></div>
 <!-- Cycle 69: first check of day toast -->
 <div class="first-check-toast" id="first-check-toast">🌱 今日のスタート！</div>
+<!-- Cycle 114: progress milestone micro-toast -->
+<div class="prog-mile-toast" id="prog-mile-toast"></div>
 <!-- Cycle 82: habit level-up toast -->
 <div class="lv-toast" id="lv-toast"></div>
 <!-- Cycle 53: habit focus timer bar -->
@@ -2637,6 +2642,21 @@ function playTick(){
     g.gain.setValueAtTime(_volLevel,ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
     osc.start();osc.stop(ctx.currentTime+0.22);
+  }catch(e){}
+}
+// Cycle 114: triumphant ascending chord for tough habits
+function playToughTick(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=_audioCtx();
+    [[523,0],[659,0.07],[784,0.14],[1047,0.21]].forEach(([f,d])=>{
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.type='sine';const t=ctx.currentTime+d;
+      osc.frequency.setValueAtTime(f,t);
+      g.gain.setValueAtTime(_volLevel*0.6,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+      osc.start(t);osc.stop(t+0.25);
+    });
   }catch(e){}
 }
 function playCelebration(){
@@ -4393,7 +4413,7 @@ function toggle(id,evt){
     // Cycle 69: first check of the day toast
     const prevDone=habits.filter(h=>h.id!==id&&!!(completions[td]||{})[h.id]).length;
     if(prevDone===0)showFirstCheckToast();
-    playTick();vib(50);checkHabitMilestone(id);checkHabitLevelUp(id);triggerCombo(); // Cycle 82: level check
+    (_hh&&_hh.tough?playToughTick:playTick)();vib(50);checkHabitMilestone(id);checkHabitLevelUp(id);triggerCombo(); // Cycle 82: level check; Cycle 114: tough sound
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);spawnEmojiFloat(r.left+r.width/2,r.top,_hh&&_hh.emoji?_hh.emoji:'✨');}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
@@ -4416,6 +4436,8 @@ function toggle(id,evt){
   }else if(todayRate()<100){
     celebrated=false;
   }
+  // Cycle 114: progress milestone toast on completion
+  if(!wasCompleted)checkProgressMilestone();
 }
 
 // ── Cycle 69: first check of the day celebration ──
@@ -4428,6 +4450,29 @@ function showFirstCheckToast(){
   if(!el)return;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── Cycle 114: progress milestone micro-toast (25%/50%/75%) ──
+let _progMileShown={};
+const PROG_MILESTONES=[
+  {pct:25,msg:'⚡ 25%達成！',bg:'linear-gradient(135deg,rgba(245,200,66,.95),rgba(232,130,50,.85))'},
+  {pct:50,msg:'🔥 折り返し！',bg:'linear-gradient(135deg,rgba(91,200,232,.95),rgba(76,175,125,.85))'},
+  {pct:75,msg:'🌟 あと一息！',bg:'linear-gradient(135deg,rgba(155,109,214,.95),rgba(91,200,232,.85))'}
+];
+function checkProgressMilestone(){
+  const td=today();
+  if(!_progMileShown[td])_progMileShown[td]={};
+  const rate=todayRate();
+  if(rate>=100)return;
+  const hit=PROG_MILESTONES.find(m=>rate>=m.pct&&!_progMileShown[td][m.pct]);
+  if(!hit)return;
+  _progMileShown[td][hit.pct]=true;
+  const el=document.getElementById('prog-mile-toast');
+  if(!el)return;
+  el.textContent=hit.msg;
+  el.style.background=hit.bg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2000);
 }
 
 // ── Cycle 82: Habit level system ──
