@@ -1197,6 +1197,29 @@
         "deployedAt": "2026-07-03T02:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 75,
+      "version": "v2.75",
+      "timestamp": "2026-07-04T00:00:00Z",
+      "changes": [
+        {
+          "type": "accessibility",
+          "title": "prefers-reduced-motion CSS対応",
+          "description": "@media (prefers-reduced-motion: reduce) メディアクエリを追加。OSの「視差効果を減らす」設定がONのユーザーに対し、全CSS animation/transitionを0.01msに短縮し実質無効化。confettiキャンバス（#cfv）もdisplay:noneで非表示。前庭障害（三半規管の疾患）やてんかんなど動きに敏感なユーザーへの配慮。JavaScriptコード変更なし・CSSのみの実装でパフォーマンス影響ゼロ。全ブラウザのmodernバージョンが対応する標準仕様。"
+        },
+        {
+          "type": "feature",
+          "title": "あいうえお順ソートボタン追加",
+          "description": "ソートエリアに「あ順」ボタンを追加（Cycle 7の「未完了を上に」・Cycle 23の「並び替え」・Cycle 37の「全折」・Cycle 68の「🎲」ボタンに続く5番目）。クリックでsortAlpha変数をトグルし、各カテゴリー内の習慣をJavaScriptのlocaleCompare('ja')で日本語あいうえお順にソート。一時停止・完了・未完了のグループ分けを維持したまま、各グループ内でアルファベット/あいうえお順を適用する二段階ソート設計。設定はLocalStorage（rh_sort_alpha）に永続保存しページリロード後も維持。「未完了を上に」ソートと独立して動作し組み合わせ可能（未完了グループ内をあ順、完了グループ内をあ順）。ボタンはアクティブ時に水色（.sort-btn.active）で強調表示。"
+        }
+      ],
+      "notes": "Cycle 75は「アクセシビリティ」と「使いやすさ」の2軸改善。prefers-reduced-motionはW3C WAI-ARIAのベストプラクティスであり、特に多数のアニメーション（confetti・パーティクルバースト・バウンス・グロー等）が蓄積されたCycle 75時点でのアプリにとって重要な対応。OSレベルの設定に自動追従することでユーザーが個別に機能をOFFにする手間を不要にする。あいうえお順ソートは習慣数が増加したユーザー（10件以上）が特定の習慣を素早く探す際に有用。Cycle 14の検索フィルター（名前検索）とは異なり、常時表示しながら名前順で習慣を確認できる永続的な表示順設定として機能。localeCompare('ja')による日本語対応で「ア行→カ行→…」の正確な五十音順ソートを実現。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T00:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
