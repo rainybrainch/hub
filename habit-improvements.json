@@ -2438,6 +2438,35 @@
         "deployedAt": "2026-07-04T20:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 116,
+      "version": "v2.116",
+      "timestamp": "2026-07-04T21:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "今月達成率マイクロバー（Monthly Achievement Rate Micro-bar）",
+          "description": "各習慣カードの名前行下部に今月1日〜今日の達成率を示す極細プログレスバー（3px高）を追加。habitMonthRate(id)が当月の各日のcompletions[YYYY-MM-DD][id]を走査して達成率（0〜100%）を算出。バーの塗りつぶし色はカスタムアクセントカラー（h.color）またはカテゴリー色。.habit-month-bar-fillにwidth:${rate}%をインラインで適用し、cubicベジェトランジション（.6s）で滑らかなアニメーション。一時停止中・週末お休みの習慣には非表示（monthBar=''）。コンパクトモードでも非表示（body.compact .habit-month-bar{display:none}）。ライトモード対応（rgba(0,0,0,.07)背景）。",
+          "files": [
+            "habit.html"
+          ]
+        },
+        {
+          "type": "ux",
+          "title": "今日の完了順位バッジ（Today Completion Rank Badge）",
+          "description": "タイムスタンプ付きで完了した習慣に「#1」「#2」のような完了順バッジを表示。todayCompletionRank(id)がcompletions[today()]からtypeof v==='string'のエントリーのみ抽出してタイムスタンプ昇順ソートし、そのインデックス+1を返す。1番目に完了した習慣は.compl-rank-badge[data-rank=\"1\"]でvar(--sky)（青）、それ以降はvar(--gold)（金）で表示。timeBadge（完了時刻）の隣に配置し、今日最初に取り組んだ習慣を一目で確認できる。タイムスタンプなし（true）での完了はランクバッジ非表示（後方互換）。",
+          "files": [
+            "habit.html"
+          ]
+        }
+      ],
+      "notes": "Cycle 116は「習慣カードの情報密度と達成フィードバックの向上」の2軸改善。今月達成率マイクロバーはCycle 74のカウンタープログレスバーの概念を個人月次達成率に応用したもので、habit-info div内の視覚的なデータ表示を強化する。今日の完了順位バッジはCycle 112のlast-done-badge（最後に達成した日）と対になる機能で、「今日の達成」に焦点を当てた時系列フィードバック。両改善ともLocalStorage構造変更なし・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T21:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
