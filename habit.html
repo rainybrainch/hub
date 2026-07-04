@@ -1835,6 +1835,19 @@
     .hd-dow-day{font-size:8px;color:var(--muted);font-weight:700;line-height:1}
     .hd-dow-pct{font-size:7px;color:var(--muted);line-height:1}
     body.light .hd-dow-row{border-top-color:rgba(0,0,0,.06)}
+    /* Cycle 105: tomorrow habits preview card */
+    .tmw-preview-card{background:linear-gradient(135deg,rgba(76,175,125,.08),rgba(91,200,232,.05));border:1px solid rgba(76,175,125,.22);border-radius:14px;padding:14px 16px;margin-top:8px;animation:fadeSlideIn .4s ease}
+    .tmw-prev-hdr{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+    .tmw-prev-cnt{font-family:"Dela Gothic One",sans-serif;font-size:26px;color:var(--green);line-height:1}
+    .tmw-prev-cats{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+    .tmw-prev-cat{padding:2px 8px;border-radius:10px;border:1px solid;font-size:10px;font-weight:700}
+    .tmw-prev-emojis{font-size:14px;margin-top:6px;letter-spacing:2px}
+    body.light .tmw-preview-card{border-color:rgba(76,175,125,.3)}
+    body.compact .tmw-preview-card{display:none}
+    @media print{.tmw-preview-card{display:none}}
+    /* Cycle 105: stats overlay time column */
+    .smt-time{color:var(--sky);font-family:"Dela Gothic One",sans-serif;font-size:11px}
+    .smt-time-foot{color:var(--gold);font-family:"Dela Gothic One",sans-serif;font-size:12px;font-weight:700}
   </style>
 </head>
 <body>
@@ -2200,6 +2213,7 @@
   <!-- Cycle 66: category progress pills -->
   <div class="cat-pills" id="cat-pills" style="display:none"></div>
   <div id="list"></div>
+  <div id="tmw-preview" style="display:none"></div>
 </div>
 
 <button class="scroll-top" id="scroll-top" onclick="scrollToTop()" aria-label="ページ上部へ">↑</button>
@@ -4161,6 +4175,7 @@ function render(){
   _renderCtxFilter102(); // Cycle 102
   renderCatPills(); // Cycle 66
   renderChallenge();
+  renderTmwPreview(); // Cycle 105: tomorrow habits preview
   updateFabBadge();
   updateProgressFooter();
   updateDocTitle();
@@ -6920,6 +6935,7 @@ function _renderStatsOvl(){
   const wrap=document.getElementById('stats-ovl-wrap');if(!wrap)return;
   const all=habits.filter(h=>!h.archived);
   if(!all.length){wrap.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px">習慣がありません</p>';return;}
+  let totalTimeMin=0;
   const rows=all.map(h=>{
     const pct30=Math.round(habitFix30(h.id)/30*100);
     const strk=habitStreak(h.id);
@@ -6929,14 +6945,20 @@ function _renderStatsOvl(){
     const bc=pct30>=80?'var(--green)':pct30>=50?'var(--gold)':'var(--red)';
     const em=h.emoji?h.emoji+' ':'';
     const lbl=h.paused?`<span style="font-size:8px;padding:1px 4px;background:rgba(255,255,255,.07);border-radius:3px;color:var(--muted);margin-left:3px">停止</span>`:'';
+    const durMin=(h.duration||0)*total;
+    totalTimeMin+=durMin;
+    const timeStr=durMin<=0?'-':durMin<60?durMin+'m':Math.floor(durMin/60)+'h'+(durMin%60?Math.floor(durMin%60)+'m':'');
     return `<tr>
       <td><div class="smt-name-cell"><span style="width:6px;height:6px;border-radius:50%;background:${cc};flex-shrink:0;display:inline-block"></span><span class="smt-name-txt">${em}${esc(h.name)}</span>${lbl}</div></td>
       <td style="text-align:right"><span class="smt-bar"><span class="smt-bar-f" style="width:${pct30}%;background:${bc}"></span></span><span class="smt-pct ${cls}">${pct30}%</span></td>
       <td style="text-align:center;font-family:'Dela Gothic One',sans-serif;font-size:12px;color:${strk>0?'var(--gold)':'var(--muted)'}">${strk>0?'🔥'+strk:'-'}</td>
       <td style="text-align:center;color:var(--muted);font-family:'Dela Gothic One',sans-serif;font-size:12px">${total}</td>
+      <td style="text-align:center"><span class="smt-time">${timeStr}</span></td>
     </tr>`;
   }).join('');
-  wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const footTimeStr=totalTimeMin<=0?'-':totalTimeMin<60?totalTimeMin+'m':Math.floor(totalTimeMin/60)+'h'+(totalTimeMin%60?Math.floor(totalTimeMin%60)+'m':'');
+  const footRow=`<tr style="border-top:1px solid rgba(255,255,255,.1)"><td colspan="4" style="text-align:right;color:var(--muted);font-size:10px;padding-top:6px">合計投資時間</td><td style="text-align:center;padding-top:6px"><span class="smt-time-foot">${footTimeStr}</span></td></tr>`;
+  wrap.innerHTML=`<table class="smt"><thead><tr><th>習慣</th><th style="text-align:right">30日達成率</th><th style="text-align:center">連続</th><th style="text-align:center">累計</th><th style="text-align:center">⏱時間</th></tr></thead><tbody>${rows}${footRow}</tbody></table>`;
 }
 
 // ── Cycle 98: lifetime habit investment time ──
@@ -6992,6 +7014,34 @@ function renderWeekMiniCal(){
   }
   dotsEl.innerHTML=dots.join('');
   wrap.style.display='inline-flex';
+}
+
+// ── Cycle 105: tomorrow habits preview card ──
+function renderTmwPreview(){
+  const el=document.getElementById('tmw-preview');if(!el)return;
+  const todayStr=today();
+  const active=habits.filter(h=>!h.archived&&!h.paused);
+  const todayDone=active.filter(h=>isScheduled(h,todayStr)&&!isSkippedToday(h.id));
+  const todayScheduled=active.filter(h=>isScheduled(h,todayStr));
+  const allDoneToday=todayScheduled.length>0&&todayDone.filter(h=>completions[todayStr]&&completions[todayStr][h.id]).length>=todayScheduled.length;
+  if(!allDoneToday){el.style.display='none';return;}
+  const tmw=new Date();tmw.setDate(tmw.getDate()+1);
+  const tmwStr=toStr(tmw);
+  const tmwHabits=active.filter(h=>isScheduled(h,tmwStr));
+  if(!tmwHabits.length){el.style.display='none';return;}
+  const catMap={};
+  tmwHabits.forEach(h=>{
+    const cat=h.category||'その他';
+    if(!catMap[cat])catMap[cat]={count:0,color:h.color||(CAT_COLORS[cat]||'#888')};
+    catMap[cat].count++;
+  });
+  const catPills=Object.entries(catMap).map(([cat,info])=>`<span class="tmw-prev-cat" style="color:${info.color};border-color:${info.color};background:${info.color}18">${cat} ${info.count}</span>`).join('');
+  const emojis=tmwHabits.filter(h=>h.emoji).slice(0,8).map(h=>h.emoji).join('');
+  const dayNames=['日','月','火','水','木','金','土'];
+  const tmwDayName=dayNames[tmw.getDay()];
+  el.className='tmw-preview-card';
+  el.style.display='block';
+  el.innerHTML=`<div class="tmw-prev-hdr">明日(${tmwDayName})の習慣</div><div class="tmw-prev-cnt">${tmwHabits.length}<span style="font-size:13px;font-family:inherit;color:var(--muted);margin-left:4px">件予定</span></div>${emojis?`<div class="tmw-prev-emojis">${emojis}</div>`:''}<div class="tmw-prev-cats">${catPills}</div>`;
 }
 </script>
 </body>

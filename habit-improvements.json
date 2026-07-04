@@ -2094,6 +2094,29 @@
         "deployedAt": "2026-07-04T09:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 105,
+      "version": "v2.105",
+      "timestamp": "2026-07-04T10:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "翌日習慣プレビューカード（Tomorrow Habits Preview Card）",
+          "description": "今日の全習慣を完了した時のみ、リスト下部に翌日の習慣プレビューカードを表示する renderTmwPreview() を追加。isScheduled() で明日予定の習慣をフィルタリングし、件数・カテゴリ別ピル（色付きバッジ）・最大8件の絵文字・曜日名を表示。.tmw-preview-card にfadeSlideInアニメーション付きグラデーション背景。カテゴリごとに h.color または CAT_COLORS でピル色分け。コンパクトモード・印刷時は非表示。今日の達成習慣が0件 or 明日の習慣が0件の場合は非表示（非侵害的設計）。render() 内 renderChallenge() 直後に呼び出し。LocalStorage 新規キー不要。"
+        },
+        {
+          "type": "ui",
+          "title": "統計オーバーレイ ⏱時間列 & 合計投資時間フッター",
+          "description": "_renderStatsOvl() の統計テーブルに5列目「⏱時間」を追加。各習慣の h.duration × habitTotalCount(id) で累計投資分を計算し、60分未満は「Xm」・60分以上は「Xh Ym」形式（.smt-time、var(--sky)色）で表示。duration が 0 の習慣は「-」表示。tbody 末尾にフッター行「合計投資時間 / 総合計」を追加し .smt-time-foot（var(--gold)色）でハイライト。既存の4列（習慣・30日達成率・連続・累計）はそのまま維持。LocalStorage 構造変更なし・habitTotalCount() と h.duration の参照のみ。"
+        }
+      ],
+      "notes": "Cycle 105は「完了後のモチベーション維持」と「統計情報の深化」をテーマとした改善。翌日プレビューカードは全習慣完了という達成感のピーク時に翌日の計画を提示することで、翌日への準備意欲（forward momentum）を刺激する設計。Cycle 73の renderTomorrowBox()（翌日準備メモ）とは異なり、実際のスケジュールデータから自動生成されるため手入力不要。統計テーブルの時間列はCycle 98のライフタイムバッジ（全習慣合計値の一行表示）とは異なり、習慣ごとの個別時間投資を比較可能にするもので、「どの習慣に最も時間を使っているか」の分析を支援。合計フッターはCycle 98との数値一貫性を保つ。LocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T10:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
