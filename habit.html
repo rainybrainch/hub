@@ -1072,6 +1072,32 @@
     body.light .highlight-box{border-color:rgba(76,175,125,.25);background:linear-gradient(135deg,rgba(76,175,125,.09),rgba(76,175,125,.03))}
     body.light .hl-preview.has-text{color:#1a1a2e}
     body.light .hl-inp{color:#1a1a2e;border-top-color:rgba(76,175,125,.15)}
+    /* Cycle 113: gratitude journal widget */
+    .grat-box{background:linear-gradient(135deg,rgba(91,200,232,.07),rgba(91,200,232,.02));border:1px solid rgba(91,200,232,.18);border-radius:14px;padding:12px 16px;margin-bottom:16px;transition:all .3s}
+    .grat-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .grat-ico{font-size:15px;flex-shrink:0}
+    .grat-ttl{font-size:12px;font-weight:700;color:var(--sky)}
+    .grat-preview{font-size:11px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+    .grat-preview.has-text{color:var(--white)}
+    .grat-chev{font-size:10px;color:var(--muted);transition:transform .25s;display:inline-block;flex-shrink:0}
+    .grat-chev.open{transform:rotate(180deg)}
+    .grat-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+    .grat-body.open{max-height:180px}
+    .grat-inp{width:100%;background:none;border:none;border-top:1px solid rgba(91,200,232,.12);color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;padding:10px 0 4px;outline:none;resize:none;line-height:1.5;display:block}
+    .grat-inp::placeholder{color:var(--muted)}
+    .grat-hist{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+    .grat-hist-item{font-size:10px;color:var(--muted);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.4}
+    .grat-hist-date{font-size:9px;opacity:.6;margin-right:4px}
+    body.light .grat-box{border-color:rgba(91,200,232,.25);background:linear-gradient(135deg,rgba(91,200,232,.09),rgba(91,200,232,.03))}
+    body.light .grat-preview.has-text{color:#1a1a2e}
+    body.light .grat-inp{color:#1a1a2e;border-top-color:rgba(91,200,232,.15)}
+    body.light .grat-hist-item{border-bottom-color:rgba(0,0,0,.04)}
+    /* Cycle 113: focus habit highlight */
+    .focus-habit-hdr{display:flex;align-items:center;gap:6px;padding:7px 12px;background:linear-gradient(135deg,rgba(245,200,66,.1),rgba(245,200,66,.04));border:1px solid rgba(245,200,66,.22);border-radius:10px;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--gold);cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
+    .focus-habit-hdr .focus-dismiss{margin-left:auto;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;transition:color .15s}
+    .focus-habit-hdr .focus-dismiss:hover{color:var(--gold)}
+    .habit.focus-today{box-shadow:0 0 0 2px rgba(245,200,66,.35),0 2px 12px rgba(245,200,66,.1)!important}
+    body.light .focus-habit-hdr{border-color:rgba(200,160,0,.28);color:rgba(160,120,0,.9)}
 
     /* Cycle 51: mood × achievement correlation widget */
     .mood-stats-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .25s,border-color .25s}
@@ -2226,6 +2252,20 @@
     </div>
   </div>
 
+  <!-- Cycle 113: gratitude journal widget -->
+  <div class="grat-box" id="grat-box">
+    <div class="grat-hdr" onclick="toggleGrat()">
+      <span class="grat-ico">🙏</span>
+      <span class="grat-ttl">今日の感謝</span>
+      <span class="grat-preview" id="grat-preview">感謝を3つ記録...</span>
+      <span class="grat-chev" id="grat-chev">▼</span>
+    </div>
+    <div class="grat-body" id="grat-body">
+      <textarea class="grat-inp" id="grat-inp" placeholder="今日感謝していること（最大120文字）" maxlength="120" rows="2" oninput="onGratInput(this.value)"></textarea>
+      <div class="grat-hist" id="grat-hist"></div>
+    </div>
+  </div>
+
   <!-- Cycle 73: tomorrow's prep note -->
   <div class="tomorrow-box" id="tomorrow-box">
     <div class="tomorrow-hdr" onclick="toggleTomorrow()">
@@ -2903,7 +2943,7 @@ function incrCtr(id,evt){
     celebrated=false;
   }
   render();
-  if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();}
+  if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();openGratWidget();}
 }
 function decrCtr(id){
   const cur=getHabitCount(id);if(cur<=0)return;
@@ -4300,6 +4340,7 @@ function render(){
   renderMoodWidget();
   renderMoodStats(); // Cycle 51
   renderHighlightBox();
+  renderGratWidget(); // Cycle 113
   renderTomorrowBox();
   renderList();
   _renderCtxFilter102(); // Cycle 102
@@ -4319,6 +4360,7 @@ function render(){
   renderLifetimeBadge(); // Cycle 98: cumulative time investment badge
   renderWeekMiniCal();   // Cycle 98: this-week 7-dot indicator
   updateTabCounts();     // Cycle 106: uncompleted count badges on category tabs
+  renderFocusHabit();    // Cycle 113
 }
 
 // ── Cycle 26: FAB remaining-task badge ──
@@ -4370,6 +4412,7 @@ function toggle(id,evt){
     showBanner();
     launchConfetti();
     playCelebration();
+    openGratWidget(); // Cycle 113: auto-open gratitude journal on completion
   }else if(todayRate()<100){
     celebrated=false;
   }
@@ -6094,7 +6137,7 @@ function batchComplete(cat,e){
     if(anyNew){playTick();vib([30,20,30]);}
   }
   saveC();render();
-  if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();}
+  if(todayRate()===100&&!celebrated){celebrated=true;showBanner();launchConfetti();playCelebration();openGratWidget();}
 }
 // ── Cycle 32: scroll to top; Cycle 85: rate display ──
 function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
@@ -6169,6 +6212,7 @@ const WIDGET_DEFS=[
   {key:'w_mood',     name:'😊 今日の気分',           id:'mood-box'},
   {key:'w_mood_stats',name:'📊 気分×達成率の相関',   id:'mood-stats-box'},
   {key:'w_highlight',name:'⭐ 今日のハイライト',     id:'highlight-box'},
+  {key:'w_grat',    name:'🙏 感謝日記',              id:'grat-box'},
   {key:'w_insight', name:'💡 習慣インサイト',         id:'insight-card'},
   {key:'w_donut',   name:'🍩 カテゴリー別達成状況',   id:'donut-box'},
   {key:'w_tomorrow',name:'🌅 明日の準備メモ',          id:'tomorrow-box'},
@@ -6460,6 +6504,92 @@ function renderHighlightBox(){
   const inp=document.getElementById('hl-inp');
   if(prv){prv.textContent=txt||'今日の振り返りを記録...';prv.classList.toggle('has-text',!!txt);}
   if(inp&&inp.value!==txt)inp.value=txt;
+}
+
+// ── Cycle 113: gratitude journal ──
+function gratKey(){return'rh_grat_'+today();}
+function getGrat(){return localStorage.getItem(gratKey())||'';}
+function saveGrat(v){if(v)localStorage.setItem(gratKey(),v);else localStorage.removeItem(gratKey());}
+function toggleGrat(){
+  const body=document.getElementById('grat-body');
+  const chev=document.getElementById('grat-chev');
+  if(!body)return;
+  const open=body.classList.toggle('open');
+  if(chev)chev.classList.toggle('open',open);
+  if(open){const inp=document.getElementById('grat-inp');if(inp)setTimeout(()=>inp.focus(),200);}
+}
+function onGratInput(v){
+  saveGrat(v.trim());
+  const prv=document.getElementById('grat-preview');
+  if(prv){prv.textContent=v.trim()||'感謝を3つ記録...';prv.classList.toggle('has-text',!!v.trim());}
+}
+function openGratWidget(){
+  const key='rh_grat_auto_'+today();
+  if(localStorage.getItem(key))return;
+  localStorage.setItem(key,'1');
+  const body=document.getElementById('grat-body');
+  const chev=document.getElementById('grat-chev');
+  if(body&&!body.classList.contains('open')){body.classList.add('open');if(chev)chev.classList.add('open');}
+}
+function renderGratWidget(){
+  const txt=getGrat();
+  const prv=document.getElementById('grat-preview');
+  const inp=document.getElementById('grat-inp');
+  if(prv){prv.textContent=txt||'感謝を3つ記録...';prv.classList.toggle('has-text',!!txt);}
+  if(inp&&inp.value!==txt)inp.value=txt;
+  const hist=document.getElementById('grat-hist');
+  if(!hist)return;
+  const rows=[];
+  for(let i=1;i<=3;i++){
+    const ds=dateAgo(i);
+    const v=localStorage.getItem('rh_grat_'+ds);
+    if(v)rows.push(`<div class="grat-hist-item"><span class="grat-hist-date">${ds.slice(5)}</span>${esc(v)}</div>`);
+  }
+  hist.innerHTML=rows.join('');
+}
+
+// ── Cycle 113: focus habit of the day ──
+function _focusDismissKey(){return'rh_focus_dis_'+today();}
+function _getFocusHabit(){
+  const td=today(),dc=completions[td]||{};
+  const candidates=habits.filter(h=>!h.archived&&!h.paused&&isScheduled(h,td)&&!isSkippedToday(h.id)&&!dc[h.id]&&!isWeeklyGoalMet(h));
+  if(!candidates.length)return null;
+  // Score by recency of last completion (longer ago = higher score) and low 7-day rate
+  function score(h){
+    let lastDays=30;
+    for(let i=1;i<=30;i++){if((completions[dateAgo(i)]||{})[h.id]){{lastDays=i;break;}}}
+    let done7=0;for(let i=1;i<=7;i++){if((completions[dateAgo(i)]||{})[h.id])done7++;}
+    return lastDays*3+(7-done7)*2;
+  }
+  return candidates.sort((a,b)=>score(b)-score(a))[0];
+}
+function renderFocusHabit(){
+  const dismissed=localStorage.getItem(_focusDismissKey());
+  const box=document.getElementById('focus-habit-hdr');
+  if(dismissed){if(box)box.style.display='none';return;}
+  const h=_getFocusHabit();
+  if(!h){if(box)box.style.display='none';document.querySelectorAll('.habit.focus-today').forEach(el=>el.classList.remove('focus-today'));return;}
+  // Show header banner
+  let hdr=box;
+  if(!hdr){
+    hdr=document.createElement('div');
+    hdr.id='focus-habit-hdr';hdr.className='focus-habit-hdr';
+    const listEl=document.getElementById('list');
+    if(listEl)listEl.parentNode.insertBefore(hdr,listEl);
+  }
+  hdr.style.display='';
+  hdr.innerHTML=`<span>📌</span><span>今日の注目: ${esc((h.emoji||'')+' '+h.name)}</span><button class="focus-dismiss" onclick="event.stopPropagation();dismissFocusHabit()" title="今日は非表示" type="button">✕</button>`;
+  hdr.onclick=function(e){if(e.target.classList.contains('focus-dismiss'))return;const el=document.querySelector('.habit[data-id="'+h.id+'"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});}};
+  // Apply highlight class
+  document.querySelectorAll('.habit.focus-today').forEach(el=>el.classList.remove('focus-today'));
+  const habitEl=document.querySelector(`.habit[data-id="${h.id}"]`);
+  if(habitEl)habitEl.classList.add('focus-today');
+}
+function dismissFocusHabit(){
+  localStorage.setItem(_focusDismissKey(),'1');
+  const box=document.getElementById('focus-habit-hdr');
+  if(box)box.style.display='none';
+  document.querySelectorAll('.habit.focus-today').forEach(el=>el.classList.remove('focus-today'));
 }
 
 // ── Cycle 73: tomorrow's prep note ──

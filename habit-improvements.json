@@ -2337,6 +2337,31 @@
         "deployedAt": "2026-07-04T17:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 113,
+      "version": "v2.113",
+      "timestamp": "2026-07-04T18:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "感謝日記ウィジェット（🙏 今日の感謝）",
+          "description": "ハイライトボックス（Cycle 50）の直後に「🙏 今日の感謝」コラプシブルウィジェットを追加。LocalStorageキー：rh_grat_YYYY-MM-DD。120文字のtextareaで当日の感謝事項を記録。ヘッダーにプレビューテキスト表示。ボディ展開時に過去3日分の感謝記録（grat-hist）をコンパクト表示。全習慣達成時（3箇所のcelebration block）にopenGratWidget()を呼び出し、rh_grat_auto_YYYY-MMフラグで1日1回だけ自動展開。WIDGET_DEFS配列に{key:'w_grat', name:'🙏 感謝日記', id:'grat-box'}を追加しウィジェット設定から非表示化も可能。renderGratWidget()をrender()に追加。アクセントカラー：var(--sky)。ライト/ダーク両テーマ対応。",
+          "files": ["habit.html"]
+        },
+        {
+          "type": "ux",
+          "title": "今日の注目習慣（📌 Auto Focus Habit of the Day）",
+          "description": "習慣リストの上部に、その日最も注意が必要な習慣を自動ハイライトする「📌 今日の注目」バナーを追加。_getFocusHabit()が未完了のアクティブ習慣を対象に、最後に完了した日数（lastDays × 3）と過去7日の達成率低さ（(7-done7) × 2）のスコアリングで最も優先度が高い習慣を選択。選択された習慣カードにfocus-todayクラスを付与し、ゴールドボーダーのグロー（box-shadow）で視覚的に際立たせる。バナークリックで当該習慣へスムーズスクロール。✕ボタンで当日dismiss（rh_focus_dis_YYYY-MM-DDで保存）。全完了時・dismiss時は自動非表示。renderFocusHabit()をrender()末尾に追加。",
+          "files": ["habit.html"]
+        }
+      ],
+      "notes": "Cycle 113は「感情・精神面のウェルビーイング強化」と「習慣注目ガイダンス」の2軸改善。感謝日記は心理学的に実証されたポジティブ心理学のツール（感謝日記法）をアプリに統合。ハイライト（今日の振り返り）が「出来事の記録」なら感謝日記は「ポジティブな視点の記録」と役割が明確に分離。全習慣達成という最高潮のモーメントに自動展開することで、達成感と感謝の感情を自然に結びつける設計。今日の注目習慣はCycle 107のピン留め（手動固定）とは異なり、データ駆動での自動選択。直近で最も後回しにされている習慣を浮上させることで、習慣全体のバランスを改善するガイダンス機能として動作。両改善ともLocalStorage変更なし（新規キー追加のみ）・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T18:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
