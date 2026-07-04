@@ -2016,6 +2016,33 @@
         "deployedAt": "2026-07-04T06:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 102,
+      "timestamp": "2026-07-04T07:00:00Z",
+      "version": "v2.102",
+      "changes": [
+        "習慣コンテキストタグ（📍 場所・文脈）：習慣編集モーダルに場所・文脈タグを追加（🏠 自宅 / 💼 仕事 / 🏋️ ジム / 🌅 朝 / 🌙 夜 / 🚗 移動中）。設定済み習慣カードに紫バッジで表示。コンテキストタグを持つ習慣が存在する場合に📍フィルター行を自動表示し、タグボタンクリックで絞り込み可能。LocalStorage rh_habits に h.ctxTag として永続化。",
+        "シャッフル表示ボタン（🔀）：ソート行に「🔀 シャッフル」ボタンを追加。クリックするとカテゴリー内の習慣表示順をランダムに並び替え（Math.random() ベースの _shuffleMap で安定した順序を維持）。再クリックで異なるシャッフルに切り替え。他のソートモード（未完了順・ストリーク順・優先度順）とは相互排他。LocalStorage永続化なし（セッション限定）。"
+      ],
+      "improvements": [
+        {
+          "type": "feature",
+          "title": "習慣コンテキストタグ（Context/Location Tags）",
+          "description": "習慣オブジェクトに新フィールド ctxTag（文字列）を追加。習慣の追加・編集モーダルに「📍 場所・文脈（任意）」セクションを追加し、7種類のプリセットボタン（なし / 🏠 自宅 / 💼 仕事 / 🏋️ ジム / 🌅 朝 / 🌙 夜 / 🚗 移動中）で文脈を設定。selCtxVal102変数とselCtx102()関数で選択状態を管理し、モーダルopen/close時に正確に復元。saveHabit()でctxTagをLocalStorageに永続化（未設定時はキー削除で後方互換）。設定済み習慣のカードには紫グラデーションのctx-badgeを表示。_renderCtxFilter102()がctxTagを持つ習慣が1件以上ある場合に自動的にctx-filter-row（📍フィルターチップ行）を表示し、チップクリックでsetCtxFilter102()を呼び出して絞り込み。同じタグを再クリックでフィルター解除。render()末尾から呼び出しフィルター行を常に最新状態に保つ。コンパクトモード・印刷時はバッジ非表示。ライト/ダーク両テーマ対応CSS追加。"
+        },
+        {
+          "type": "feature",
+          "title": "シャッフル表示モード（Shuffle Display Mode）",
+          "description": "ソート行に「🔀 シャッフル」ボタン（#sort-shuffle-btn）を追加。toggleSortShuffle()がsortShuffleフラグをトグルし、ONにする際にhabitsの各id→Math.random()値を_shuffleMapに格納。renderList()内でsortShuffleが有効なとき _shuffleMap[a.id] - _shuffleMap[b.id] でカテゴリー内の習慣をシャッフル順に並べる。再クリックで新しいランダム値を再生成し異なる並び順に切り替え可能。sortPri/sortStreak/sortUndoneとは完全に排他（どれかがONになると他はOFF）。sortPriのtoggle内にもsortShuffleを無効化するコードを追加。LocalStorageへの永続化なし（ページリロードで元の順序に戻る）。セッション中のみ有効で一時的な「習慣盲目」防止ツールとして機能。"
+        }
+      ],
+      "notes": "Cycle 102は「文脈の可視化」と「表示順の新鮮さ」の2軸改善。コンテキストタグはBJ Foggのタイニーハビット理論で重要な「場所的なアンカー（Location Anchor）」をデジタル化したもの。どこで・何をする習慣かを明示することで実行意図の具体性を高め、場所ごとの習慣を瞬時に絞り込める。_renderCtxFilter102()が習慣に設定されたタグを自動集計して表示するため、未設定の場合はUIに影響なく後方完全互換。シャッフル表示は毎日同じ順番で見続けることで生じる「習慣スキャン盲目（Habit Scan Blindness）」を防ぐ機能。心理学的には新規性効果（Novelty Effect）でアテンションが均等化され、見落としがちな中段の習慣への注意が向きやすくなる。LocalStorage構造はh.ctxTagの追加のみで既存データに影響なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T07:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
