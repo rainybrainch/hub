@@ -1220,6 +1220,29 @@
         "deployedAt": "2026-07-04T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 76,
+      "version": "v2.76",
+      "timestamp": "2026-07-04T01:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣の優先度（⭐重要）フラグ追加",
+          "description": "習慣に「優先度」フィールド（h.priority）を追加。モーダルに「優先」行（普通 / ⭐重要）ボタンを実装し、Cycle 47のtough-rowパターンを踏襲。⭐重要フラグが設定された習慣は習慣カードの名前横に「⭐重要」バッジ（.priority-badge）を赤系で表示。ソートエリアに「⭐重要を上に」ボタンを追加し、sortPriority変数で切り替え。LocalStorage（rh_sort_priority）に設定を永続保存。sortUndone・sortAlphaと独立して動作し組み合わせ可能。編集時は既存の優先度設定を正しく復元。"
+        },
+        {
+          "type": "feature",
+          "title": "LocalStorage使用量メーター + 古データクリーンアップ",
+          "description": "ウィジェット設定モーダル（⚙️）にLocalStorage使用量メーターを追加（.storage-row）。全キー×バリューのバイト数を計算しKB表示、5MB上限に対する使用率をプログレスバーで可視化。「400日超の古い完了データを削除」ボタンで400日以前のcompletionsデータを自動クリーンアップし、saveC()で即時保存。削除件数をボタンテキストでフィードバック表示後2秒で使用量表示を再計算・更新。ダーク/ライトモード両対応のCSS。長期ユーザーが蓄積した不要な過去データを手動で削減できる実用的な機能。"
+        }
+      ],
+      "notes": "Cycle 76は「タスク管理強化」と「データ管理」の2軸改善。優先度フラグはCycle 47（tough難度）と同一パターンで実装し、コードの一貫性を維持。⭐重要バッジは赤系（--red: #E8354A）で視認性を高め、nameRowHtml内にtoughBadgeと並べて表示。ソート機能はsortUndone・sortAlpha・sortPriorityの3フラグが独立動作し、組み合わせでカスタムソートが可能な設計。LocalStorageメーターは主に長期ユーザー（1年以上利用）向けの機能で、completionsデータが膨大になるケースに対応。400日閾値は1年（365日）を超えた分を削除するための余裕を持たせた値。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T01:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
