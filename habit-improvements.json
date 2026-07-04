@@ -2210,6 +2210,46 @@
         "deployedAt": "2026-07-04T13:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 109,
+      "version": "v2.109",
+      "timestamp": "2026-07-04T14:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "↓達成率ソートボタン（要注意習慣を上に浮上）",
+          "description": "ソートバーに「↓達成率」ボタンを追加。クリックすると30日達成率の低い順（昇順）に習慣を並べ替え、最も継続できていない習慣を最上部に表示する。既存の他ソート（未完了順・ストリーク順・優先度順・シャッフル・⏱短い順）と排他的に動作し、アクティブ状態はLocalStorage('rh_sort_lowrate')に保存。ページリロード後も自動復元。",
+          "files": ["habit.html"],
+          "details": [
+            "globals: sortLowRate=false を既存ソートフラグ群に追加",
+            "HTML: sort-lowrate-btn ボタンをsort-dur-btn直後に追加",
+            "renderList(): else if(sortLowRate) ブランチ追加 — habitFix30()で30日達成回数を取得し昇順ソート",
+            "toggleSortLowRate(): 他ソートフラグをリセットしsort-lowrate-btnのactiveクラスを切替",
+            "既存5つのsort toggle関数: sortLowRate=false + sort-lowrate-btn.classList.remove('active') を追加",
+            "init: localStorage.getItem('rh_sort_lowrate')==='1' で起動時に状態復元"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "習慣詳細パネルに累計投資時間スタット追加",
+          "description": "_habitDetailHtml()内で、習慣に所要時間(h.duration)が設定されかつ累計達成回数(total)が1以上の場合に「累計投資時間」スタットを算出・表示。計算式: total × duration (分) → Xh Ym形式（例:2h30m / 45m / 3h）。既存の平均完了時刻スタットの直後に配置し、hd-stat-timeクラスで等幅フォント表示。",
+          "files": ["habit.html"],
+          "details": [
+            "_habitDetailHtml(): h.duration&&total>0 の場合 totalTimeStat を計算",
+            "累計分数=total*parseInt(h.duration); hh=floor(mins/60); mm=mins%60",
+            "tlabel: hh>0&&mm>0→Xh Ym / hh>0&&mm===0→Xh / hh===0→Xm",
+            "return文: ${avgTimeStat}の直後に${totalTimeStat}を追加",
+            "title属性に「N分の合計投資時間」ツールチップを付与"
+          ]
+        }
+      ],
+      "notes": "Cycle 109は「見落とし防止」と「努力の可視化」という2つの動機づけ軸を改善。↓達成率ソートは達成率が低い習慣を意識的に上位に並べることで、日々流れてしまいがちな苦手習慣への注意を促す。habitFix30()は既存関数を再利用するため追加コストゼロ。累計投資時間スタットは「これまで〇時間継続してきた」という努力の総量を可視化し、習慣継続のモチベーション維持に貢献する。duration未設定・達成回数ゼロの習慣では表示されず余計なノイズを出さない設計。既存LocalStorage構造への変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T14:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
