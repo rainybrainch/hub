@@ -1990,6 +1990,32 @@
         "deployedAt": "2026-07-04T05:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 101,
+      "timestamp": "2026-07-04T06:00:00Z",
+      "version": "v2.101",
+      "changes": [
+        "検索履歴機能：検索欄をフォーカスすると過去5件の検索ワードをチップ表示し、タップで再適用。LocalStorage rh_search_hist に保存。クリア時に自動保存。",
+        "習慣リンクURL設定：習慣編集モーダルにURLフィールド（🔗 URL）を追加。設定済みの習慣カードには外部リンクボタン（🔗）を表示し、別タブで開く。"
+      ],
+      "improvements": [
+        {
+          "type": "feature",
+          "area": "search",
+          "description": "検索履歴チップUI＋LocalStorage永続化（rh_search_hist）"
+        },
+        {
+          "type": "feature",
+          "area": "habit-modal",
+          "description": "習慣へのURL添付機能＋カード上の🔗ボタン"
+        }
+      ],
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T06:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

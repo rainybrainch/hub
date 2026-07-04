@@ -289,6 +289,22 @@
     body.light .search-clear{color:rgba(0,0,0,.3)}
     body.light .search-clear:hover{color:#1a1a2e}
 
+    /* Cycle 101: search history chips */
+    .search-hist{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .search-hist-chip{padding:3px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-size:11px;cursor:pointer;transition:all .15s;line-height:1.6}
+    .search-hist-chip:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    body.light .search-hist-chip{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.45)}
+    body.light .search-hist-chip:hover{color:#1a1a2e;border-color:rgba(0,0,0,.3)}
+    /* Cycle 101: habit link URL */
+    .link-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+    .link-row-lbl{font-size:13px;color:var(--muted);flex-shrink:0;width:40px}
+    .link-inp{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--white);padding:8px 12px;font-size:13px;font-family:"Zen Maru Gothic",sans-serif;outline:none;transition:border-color .2s}
+    .link-inp:focus{border-color:rgba(91,200,232,.45)}
+    body.light .link-inp{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.12);color:#1a1a2e}
+    body.light .link-inp:focus{border-color:rgba(91,200,232,.6)}
+    .habit-link-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:rgba(91,200,232,.12);border:1px solid rgba(91,200,232,.2);font-size:13px;text-decoration:none;flex-shrink:0;transition:all .15s}
+    .habit-link-btn:hover{background:rgba(91,200,232,.25);border-color:rgba(91,200,232,.4)}
+
     /* Cycle 14: week-over-week comparison badge */
     .week-cmp{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;letter-spacing:.03em}
     .week-cmp.up{color:var(--green);background:rgba(76,175,125,.12);border:1px solid rgba(76,175,125,.2)}
@@ -1334,7 +1350,7 @@
 
     /* Cycle 46: print optimization */
     @media print{
-      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,#combo-toast{display:none!important}
+      .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.search-hist,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,.habit-link-btn,#combo-toast{display:none!important}
       body{background:white!important;color:black!important;padding-bottom:0}
       .wrap{max-width:100%!important;padding:10px 16px!important}
       .stats,.chart-box,.dow-box,.trend-box,.year-box,.month-cal-box,.tod-box,.timeline-box,.ranking-box,.month-box,.ms-widget,.challenge-box,.pace-box,.streak-row,.motto-box,.intention-box,.weekly-box,.ach-box,.mood-box,.mood-stats-box,.highlight-box,.schedule-box,.insight-card{display:none!important}
@@ -2124,9 +2140,11 @@
     </span>
   </div>
   <div class="search-row">
-    <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" maxlength="30">
+    <input class="search-inp" id="search-inp" type="text" placeholder="🔍 習慣を検索..." oninput="onSearch(this.value)" onfocus="renderSearchHist()" maxlength="30">
     <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none" aria-label="検索をクリア">✕</button>
   </div>
+  <!-- Cycle 101: search history -->
+  <div class="search-hist" id="search-hist" style="display:none"></div>
   <!-- Cycle 73: quick status filter chips -->
   <div class="status-chips" id="status-chips">
     <button class="status-chip" data-sf="undone" onclick="setStatusFilter('undone')">🔲 未完了のみ</button>
@@ -2244,6 +2262,11 @@
     <div class="chain-row" id="chain-row">
       <span class="chain-row-lbl">→ 次の習慣</span>
       <select class="chain-select" id="chain-select"><option value="">— なし —</option></select>
+    </div>
+    <!-- Cycle 101: habit link URL -->
+    <div class="link-row">
+      <span class="link-row-lbl">🔗 URL</span>
+      <input class="link-inp" id="link-inp" type="url" placeholder="https://... （任意）" maxlength="200">
     </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
@@ -3433,6 +3456,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const infoBtnHtml=`<button class="info-btn${_expandedHabits.has(h.id)?' open':''}" onclick="toggleHabitDetail('${h.id}',event)" title="28日間の達成履歴" aria-label="詳細">📊</button>`;
   // Cycle 53: focus timer button
   const timerBtn=!isDone&&!isPaused&&!isWeekendOff?`<button class="timer-btn" onclick="event.stopPropagation();startTimer('${h.id}')" title="${h.duration?h.duration+'分タイマー':'25分タイマー（ポモドーロ）'}" aria-label="タイマー開始">▶</button>`:'';
+  // Cycle 101: habit link button
+  const linkBtnHtml=h.link?`<a class="habit-link-btn" href="${esc(h.link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="${esc(h.link)}" aria-label="リンクを開く">🔗</a>`:'';
   // Cycle 49: duplicate habit button
   const copyBtnHtml=`<button class="copy-btn" onclick="event.stopPropagation();copyHabit('${h.id}')" title="この習慣を複製" aria-label="複製">📋</button>`;
   // Cycle 54: archive button
@@ -3470,7 +3495,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 99: chain badge — show when this habit links to another
   const chainH=h.chainTo?habits.find(x=>x.id===h.chainTo&&!x.archived&&!x.paused):null;
   const chainBadge=chainH?`<span class="chain-badge" title="完了後の次の習慣: ${esc(chainH.name)}">→ ${chainH.emoji||''}${esc(chainH.name.substring(0,8)+(chainH.name.length>8?'…':''))}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -4483,6 +4508,8 @@ function openModal(id=null){
     // Cycle 99: populate and restore chain select
     _populateChainSelect(id);
     const chainSel99=document.getElementById('chain-select');if(chainSel99&&h)chainSel99.value=h.chainTo||'';
+    // Cycle 101: populate link URL
+    const lnEl=document.getElementById('link-inp');if(lnEl)lnEl.value=h&&h.link?h.link:'';
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -4504,6 +4531,8 @@ function openModal(id=null){
     selPri('normal');
     // Cycle 99: populate chain select (new habit mode)
     _populateChainSelect(null);
+    // Cycle 101: clear link URL for new habit
+    const lnElN=document.getElementById('link-inp');if(lnElN)lnElN.value='';
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -4538,7 +4567,8 @@ function saveHabit(){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const chainToSave99=((document.getElementById('chain-select')||{}).value||'').trim();
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal==='custom'&&selCustomDays.length>0){h.customDays=[...selCustomDays];delete h.frequency;}else{delete h.customDays;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;}if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;if(selPriVal!=='normal')h.priority=selPriVal;else delete h.priority;if(chainToSave99)h.chainTo=chainToSave99;else delete h.chainTo;}
+    const linkSave101=((document.getElementById('link-inp')||{}).value||'').trim();
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal==='custom'&&selCustomDays.length>0){h.customDays=[...selCustomDays];delete h.frequency;}else{delete h.customDays;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;}if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;if(selPriVal!=='normal')h.priority=selPriVal;else delete h.priority;if(chainToSave99)h.chainTo=chainToSave99;else delete h.chainTo;if(linkSave101)h.link=linkSave101;else delete h.link;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -4556,6 +4586,7 @@ function saveHabit(){
     const wkTSaveN=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSaveN>=1&&wkTSaveN<=7)nh.weeklyTarget=wkTSaveN;
     const tdSaveN=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSaveN>=1&&tdSaveN<=365)nh.targetDays=tdSaveN;
     const chainToSaveN99=((document.getElementById('chain-select')||{}).value||'').trim();if(chainToSaveN99)nh.chainTo=chainToSaveN99;
+    const linkSaveN101=((document.getElementById('link-inp')||{}).value||'').trim();if(linkSaveN101)nh.link=linkSaveN101;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -4764,13 +4795,42 @@ function onSearch(val){
   searchQuery=val.trim().toLowerCase();
   const clr=document.getElementById('search-clear');
   if(clr)clr.style.display=searchQuery?'block':'none';
+  const histEl=document.getElementById('search-hist');
+  if(histEl&&searchQuery)histEl.style.display='none';
   renderList();
 }
 function clearSearch(){
   const inp=document.getElementById('search-inp');
+  const prev=(inp&&inp.value||'').trim();
+  if(prev)_saveSearchHist(prev);
   if(inp)inp.value='';
   onSearch('');
   if(inp)inp.focus();
+}
+// ── Cycle 101: search history ──
+function _searchHist(){try{return JSON.parse(localStorage.getItem('rh_search_hist')||'[]');}catch(e){return[];}}
+function _saveSearchHist(q){
+  if(!q||q.length<2)return;
+  let h=_searchHist().filter(s=>s!==q);
+  h.unshift(q);
+  h=h.slice(0,5);
+  localStorage.setItem('rh_search_hist',JSON.stringify(h));
+}
+function renderSearchHist(){
+  const el=document.getElementById('search-hist');
+  if(!el)return;
+  const inp=document.getElementById('search-inp');
+  if(inp&&inp.value.trim()){el.style.display='none';return;}
+  const h=_searchHist();
+  if(!h.length){el.style.display='none';return;}
+  el.innerHTML=h.map(q=>`<button class="search-hist-chip" onclick="applySearchHist('${esc(q)}')" title="${esc(q)}">${esc(q)}</button>`).join('');
+  el.style.display='flex';
+}
+function applySearchHist(q){
+  const inp=document.getElementById('search-inp');
+  if(inp){inp.value=q;onSearch(q);}
+  const el=document.getElementById('search-hist');
+  if(el)el.style.display='none';
 }
 
 // ── Cycle 14: week-over-week comparison ──
