@@ -212,6 +212,11 @@
     body.light .habit-best{color:rgba(180,140,0,.7);background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.3)}
     body.compact .habit-best{display:none}
 
+    /* Cycle 112: last completed day badge */
+    .last-done-badge{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;line-height:1.5}
+    body.light .last-done-badge{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.compact .last-done-badge{display:none}
+
     /* Cycle 82: habit level badge */
     .habit-lv{font-size:10px;font-weight:700;flex-shrink:0;padding:2px 5px;border-radius:6px;line-height:1.5;border:1px solid}
     .habit-lv.lv1{color:#7ec850;background:rgba(126,200,80,.1);border-color:rgba(126,200,80,.25)}
@@ -3556,6 +3561,16 @@ function updateTabCounts(){
   });
 }
 
+// Cycle 112: days since last completion (returns null if never done, 0 if done today)
+function lastCompletedDays(id){
+  for(let i=1;i<=90;i++){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    if(completions[ds]&&completions[ds][id])return i;
+  }
+  return null;
+}
+
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const tc=h.targetCount||1;const isCounter=tc>1;
   const ctrCount=isCounter?getHabitCount(h.id):0;
@@ -3582,6 +3597,9 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const trendBadge=trend!=='none'?`<span class="trend-badge ${trend}" title="${trend==='up'?'先週より好調↑':'先週より低調↓'}">${trend==='up'?'↑好調':'↓低調'}</span>`:'';
   const wp=habitWeekProgress(h.id);
   const wpBadge=wp?`<span class="week-prog ${wp.done===wp.total?'wk-good':wp.done*2>=wp.total?'wk-ok':'wk-low'}" title="今週（月〜今日）の達成状況">今週 ${wp.done}/${wp.total}</span>`:'';
+  // Cycle 112: last completed day badge — only shown when uncompleted and ≥2 days since last done
+  const _lcd=!isDone?lastCompletedDays(h.id):null;
+  const lastDoneBadge=_lcd!==null&&_lcd>=2?`<span class="last-done-badge" title="最後に達成したのは${_lcd}日前">${_lcd}日前</span>`:'';
   const rateRankBadge=_allTimeRateRank(h);
   // Cycle 71: weekly target mode
   const wkGoalMet=isWeeklyGoalMet(h);
@@ -3679,7 +3697,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const chainBadge=chainH?`<span class="chain-badge" title="完了後の次の習慣: ${esc(chainH.name)}">→ ${chainH.emoji||''}${esc(chainH.name.substring(0,8)+(chainH.name.length>8?'…':''))}</span>`:'';
   // Cycle 102: context tag badge
   const ctxBadge102=h.ctxTag?`<span class="ctx-badge">${esc(h.ctxTag)}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -5214,7 +5232,11 @@ function launchConfetti(){
   const canvas=document.getElementById('cfv');
   const ctx=canvas.getContext('2d');
   canvas.width=innerWidth;canvas.height=innerHeight;
-  const cols=document.body.classList.contains('light')?['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#333333']:['#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff'];
+  // Cycle 112: accent-color-aware confetti — primary color reflects current accent theme
+  const _accentMap={'accent-blue':'#5BC8E8','accent-green':'#4CAF7D','accent-purple':'#9B6DD6','accent-rose':'#E892A8'};
+  const _accentKey=Object.keys(_accentMap).find(c=>document.body.classList.contains(c));
+  const _primary=_accentKey?_accentMap[_accentKey]:'#F5C842';
+  const cols=document.body.classList.contains('light')?[_primary,_primary,'#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#333333']:[_primary,_primary,'#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff'];
   const ps=Array.from({length:130},()=>({
     x:Math.random()*canvas.width,
     y:-20-Math.random()*80,

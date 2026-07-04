@@ -2296,6 +2296,47 @@
         "deployedAt": "2026-07-04T16:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 112,
+      "version": "v2.112",
+      "timestamp": "2026-07-04T17:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "最終達成日バッジ（X日前）",
+          "description": "未達成習慣カードに「最後にいつ達成したか」を示すバッジを追加。lastCompletedDays(id)が過去90日を遡り最後の達成日を検索。未達成かつ2日以上前に達成した場合のみ「X日前」バッジを表示（当日達成済み・1日前は非表示）。wpBadgeの直後に配置し、既存バッジ群と視覚的に一貫したpill型スタイル（.last-done-badge）。コンパクトモードでは非表示。アーカイブ・一時停止習慣は_hCard自体が呼ばれないため自動的に除外。LocalStorage構造変更なし・後方完全互換。",
+          "files": ["habit.html"],
+          "details": [
+            "CSS: .last-done-badge — muted色テキスト、rgba(255,255,255,.06)背景、border 1px solid rgba(255,255,255,.1)、border-radius:6px",
+            "CSS: body.light .last-done-badge — rgba(0,0,0,.05)背景、rgba(0,0,0,.1)ボーダー",
+            "CSS: body.compact .last-done-badge{display:none}",
+            "JS: lastCompletedDays(id) — iで1〜90を遡りcompletions[ds][id]が存在すればiを返す",
+            "JS: _hCard内 _lcd / lastDoneBadge — isDoneの場合nullで非表示、_lcd>=2の場合のみバッジ生成",
+            "return HTML: ${wpBadge}の直後に${lastDoneBadge}を追加"
+          ]
+        },
+        {
+          "type": "animation",
+          "title": "アクセントカラー対応コンフェッティ",
+          "description": "全習慣達成時に発火するlaunchConfetti()が現在のアクセントカラー設定を反映するよう改善。_accentMapでaccent-blue/green/purple/roseと対応カラーコードをマッピング。body.classListから現在のアクセントキーを検出し_primaryカラーを決定（設定なし時はデフォルト金色#F5C842）。colsアレイの先頭に_primaryを2回追加することでアクセントカラーの紙吹雪が他色の約2倍の頻度で出現し、選択したテーマとの視覚的一体感を演出。ライト/ダーク両モード対応。LocalStorage変更なし。",
+          "files": ["habit.html"],
+          "details": [
+            "launchConfetti(): const _accentMap={'accent-blue':'#5BC8E8','accent-green':'#4CAF7D','accent-purple':'#9B6DD6','accent-rose':'#E892A8'}",
+            "const _accentKey=Object.keys(_accentMap).find(c=>document.body.classList.contains(c))",
+            "const _primary=_accentKey?_accentMap[_accentKey]:'#F5C842'",
+            "light mode cols: [_primary,_primary,'#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#333333']",
+            "dark mode cols: [_primary,_primary,'#F5C842','#5BC8E8','#4CAF7D','#9B6DD6','#E8354A','#ffffff']",
+            "_primaryを2回配置することで約25%の紙吹雪がアクセントカラーで表示される"
+          ]
+        }
+      ],
+      "notes": "Cycle 112は「習慣状況の即時把握」と「アクセントテーマ統一感」の2軸改善。最終達成日バッジはCycle 85の連続ミスアラート（💢 X日ミス中）とは異なり、スケジュール外・一時停止を考慮せず純粋に「最後に達成した日からの経過日数」をシンプルに表示する。特に週次・不定期習慣で「そういえばいつやったっけ？」という疑問にすぐ答えられる補助情報として機能する。アクセントカラーコンフェッティはCycle 33で追加したアクセントカラー選択機能との連動を強化し、青テーマなら青い紙吹雪・緑テーマなら緑の紙吹雪が舞うことで達成祝いの演出をテーマと一体化させる。両改善ともLocalStorage構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T17:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
