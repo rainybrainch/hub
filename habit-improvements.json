@@ -2140,6 +2140,47 @@
         "deployedAt": "2026-07-04T11:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 107,
+      "version": "v2.107",
+      "timestamp": "2026-07-04T12:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "スクロールプログレスバー（読み進みインジケーター）",
+          "description": "ページ最上部に3pxの細いグラデーションバー（sky→gold）を固定表示し、スクロール量に応じて幅が変化するリーディングプログレスバーを追加。`#scroll-prog`（.scroll-prog）要素をbody先頭に配置し、passiveスクロールイベントリスナーで`scrollTop/(scrollHeight-clientHeight)*100`%をリアルタイム反映。transition:width .08s linearで滑らかにアニメーション。z-index:9999でヘッダーより前面に表示。pointer-events:noneで操作に影響なし。習慣が多い場合（スクロールが必要な画面）でどこまで確認したかを直感的に把握できる。",
+          "files": ["habit.html"],
+          "details": [
+            ".scroll-prog: position:fixed,top:0,left:0,height:3px,z-index:9999,pointer-events:none",
+            "background:linear-gradient(90deg,var(--sky),var(--gold))",
+            "transition:width .08s linear for smooth animation",
+            "IIFE scroll listener: scrollTop/(scrollHeight-clientHeight)*100%, passive:true",
+            "<div id=\"scroll-prog\"> inserted after progress-footer div in body"
+          ]
+        },
+        {
+          "type": "feature",
+          "title": "ピン留め機能（習慣をカテゴリー先頭に固定）",
+          "description": "各習慣カードに📌ボタン（.pin-btn）を追加し、クリックでその習慣を同カテゴリーの先頭に固定表示できる機能を実装。togglePin(id)がh.pinnedをトグル（true/削除）してsaveH()+render()で即座に反映。renderList()のカテゴリーソート後に`[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)]`でピン済みを先頭へ移動。他のソートモード（優先度順・ストリーク順・未完了順・シャッフル・所要時間順）と組み合わせ可能で、そのソート内でさらにピン済みが先頭に来る仕組み。ピン状態は.habit.pinnedクラスを付与しゴールド細枠(outline)で視覚フィードバック。h.pinnedはLocalStorage rh_habitsに永続化（trueのみ保存、解除時にはキー削除で後方互換）。コンパクトモード時はボタン非表示。",
+          "files": ["habit.html"],
+          "details": [
+            ".pin-btn: star-btn/prio-btn と同等の透明ボタンスタイル",
+            ".pin-btn.on: color:var(--gold) でアクティブ状態表示",
+            ".habit.pinned: outline:1px solid rgba(245,200,66,.28) でゴールド細枠",
+            "togglePin(id): h.pinned=!h.pinned; if(!h.pinned)delete h.pinned; saveH();render()",
+            "renderList()カテゴリーソート後: ch=[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)]",
+            "_hCard()内: pinBtnHtml を prioBtn の直後に追加",
+            "body.compact .pin-btn{display:none} でコンパクトモード対応"
+          ]
+        }
+      ],
+      "notes": "Cycle 107は「スクロール位置の可視化」と「習慣表示順の個人化」の2軸改善。スクロールプログレスバーはページ最上部に常時表示されるシンプルなリーディングインジケーターで、習慣数が多いユーザーや縦長ページでスクロール量を把握するのに有用。sky→goldのグラデーションが既存デザインシステムと統合され、ヘッダーより前面（z-index:9999）に表示されるため常に視認可能。ピン留め機能はCycle 78の優先フラグ（❗高/通常/低）とは異なり、「カテゴリー内の表示順」を直接制御するもの。毎日必ず最初にやりたい習慣（朝のルーティン先頭など）を固定するユースケースに対応。既存のすべてのソートモードと組み合わせ可能（ソート後にピン済みがさらに先頭へ）で、優先度フラグとの二重管理も可能。LocalStorage構造はh.pinnedフィールド追加のみで既存データに影響なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T12:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

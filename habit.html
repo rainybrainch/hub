@@ -526,6 +526,9 @@
     .progress-footer-fill{height:100%;width:0;transition:width .5s cubic-bezier(.34,1.56,.64,1),background .5s}
     body.light .progress-footer{background:rgba(0,0,0,.08)}
 
+    /* Cycle 107: page scroll reading progress bar */
+    .scroll-prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--sky),var(--gold));width:0%;z-index:9999;transition:width .08s linear;pointer-events:none}
+
     /* Cycle 28: habit template picker in modal */
     .tmpl-section{margin-bottom:14px}
     .tmpl-toggle{font-size:11px;color:var(--muted);cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:6px;user-select:none;width:100%;background:none;border:none;font-family:"Zen Maru Gothic",sans-serif;letter-spacing:.05em;text-align:left}
@@ -1548,6 +1551,13 @@
     .prio-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
     .prio-btn:hover{color:var(--red);background:rgba(232,53,74,.1)}
     .prio-btn.on{color:var(--red)}
+    /* Cycle 107: pin button */
+    .pin-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
+    .pin-btn:hover{color:var(--gold);background:rgba(245,200,66,.1)}
+    .pin-btn.on{color:var(--gold)}
+    body.light .pin-btn{color:rgba(0,0,0,.18)}
+    body.compact .pin-btn{display:none}
+    .habit.pinned{outline:1px solid rgba(245,200,66,.28);outline-offset:-1px}
     .habit.high-prio:not(.done):not(.paused){border-left-width:3px;border-left-color:rgba(232,53,74,.6)!important}
     .prio-lbl{font-size:9px;padding:2px 6px;background:rgba(232,53,74,.15);color:var(--red);border-radius:10px;font-weight:700;flex-shrink:0}
     body.compact .prio-lbl{display:none}
@@ -1860,6 +1870,7 @@
 <body>
 
 <div class="progress-footer" id="progress-footer"><div class="progress-footer-fill" id="progress-footer-fill"></div></div>
+<div id="scroll-prog" class="scroll-prog"></div>
 <canvas id="cfv"></canvas>
 
 <header class="hdr">
@@ -3581,6 +3592,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const isPriority=!!h.priority;
   const prioBtn=`<button class="prio-btn${isPriority?' on':''}" onclick="event.stopPropagation();togglePriority('${h.id}')" title="${isPriority?'優先度を解除':'重要フラグを設定'}" aria-label="優先度">❗</button>`;
   const prioLbl=isPriority&&!isDone?'<span class="prio-lbl">重要</span>':'';
+  // Cycle 107: pin button
+  const pinBtnHtml=`<button class="pin-btn${h.pinned?' on':''}" onclick="event.stopPropagation();togglePin('${h.id}')" title="${h.pinned?'ピンを外す':'カテゴリー先頭に固定'}" aria-label="ピン留め">📌</button>`;
   const detailContent=_expandedHabits.has(h.id)?_habitDetailHtml(h.id):'';
   // Cycle 74: counter progress bar
   const ctrPct=tc>0?Math.min(100,Math.round(ctrCount/tc*100)):0;
@@ -3612,7 +3625,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const chainBadge=chainH?`<span class="chain-badge" title="完了後の次の習慣: ${esc(chainH.name)}">→ ${chainH.emoji||''}${esc(chainH.name.substring(0,8)+(chainH.name.length>8?'…':''))}</span>`:'';
   // Cycle 102: context tag badge
   const ctxBadge102=h.ctxTag?`<span class="ctx-badge">${esc(h.ctxTag)}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3682,6 +3695,8 @@ function renderList(){
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       return aOff&&!bOff?1:!aOff&&bOff?-1:0;
     });
+    // Cycle 107: pinned habits float to top of their category
+    ch=[...ch.filter(h=>h.pinned),...ch.filter(h=>!h.pinned)];
     const col=CAT_COLORS[cat],done=ch.filter(h=>dc[h.id]).length;
     const pct=ch.length?Math.round(done/ch.length*100):0;
     const isClosed=!!catCol[cat];
@@ -6857,6 +6872,13 @@ function togglePriority(id){
   h.priority=!h.priority;
   saveH();render();
 }
+// ── Cycle 107: pin habit to category top ──
+function togglePin(id){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  h.pinned=!h.pinned;
+  if(!h.pinned)delete h.pinned;
+  saveH();render();
+}
 // ── Cycle 73: quick status filter chips ──
 function setStatusFilter(sf){
   statusFilter=(statusFilter===sf)?'':sf;
@@ -7086,6 +7108,17 @@ function renderTmwPreview(){
   el.style.display='block';
   el.innerHTML=`<div class="tmw-prev-hdr">明日(${tmwDayName})の習慣</div><div class="tmw-prev-cnt">${tmwHabits.length}<span style="font-size:13px;font-family:inherit;color:var(--muted);margin-left:4px">件予定</span></div>${emojis?`<div class="tmw-prev-emojis">${emojis}</div>`:''}<div class="tmw-prev-cats">${catPills}</div>`;
 }
+
+// ── Cycle 107: scroll reading progress bar ──
+(function(){
+  const sp=document.getElementById('scroll-prog');
+  if(!sp)return;
+  window.addEventListener('scroll',function(){
+    const de=document.documentElement;
+    const max=de.scrollHeight-de.clientHeight;
+    sp.style.width=(max>0?Math.min(de.scrollTop/max*100,100):0)+'%';
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
