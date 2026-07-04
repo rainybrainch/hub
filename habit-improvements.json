@@ -2181,6 +2181,35 @@
         "deployedAt": "2026-07-04T12:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 108,
+      "version": "v2.108",
+      "timestamp": "2026-07-04T13:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "OLEDブラックモード（バッテリー節約・純黒背景）",
+          "description": "設定モーダルに「🖥 ディスプレイ」セクションを追加し、OLED/AMOLED端末向けの純黒背景モードトグルを実装。`body.oled`クラスを付与するとダークモード時に背景が#000（真黒）、カード類が#0a0a0aに変化しOLEDピクセルをオフにしてバッテリー消費を削減。light/ocean テーマ時は`:not(.light):not(.theme-ocean)`セレクターにより無効化されダークモード専用機能として動作。設定はLocalStorage`rh_oled`('1'/'0')に永続化し、`applyOled()`がページ読み込み時と設定モーダルオープン時に自動同期。トグルスイッチUIはCSS純粋実装（checkbox+labelパターン）でJS onchangeハンドラー`toggleOled(this.checked)`を呼び出す。",
+          "files": ["habit.html"],
+          "details": [
+            "CSS: body.oled:not(.light):not(.theme-ocean){background:#000;--dark2:#0a0a0a;--dark3:#111}",
+            "CSS: .hdr, .modal, .snackbar, .wset-modal に#0a0a0aオーバーライド（暗モード専用）",
+            "CSS: .oled-sw / .oled-sw-slider — checkbox非表示+スライダーアニメーション付きトグルスイッチ",
+            "HTML: <div class='wset-section-lbl'>🖥 ディスプレイ</div> + oled-toggle-row を設定モーダルに追加",
+            "JS: applyOled() — localStorage読み取り→body.oled切り替え→チェックボックス同期",
+            "JS: toggleOled(on) — localStorage書き込み→body.oled即時反映",
+            "init: applyOled() を initTheme() 直後に実行",
+            "openWidgetSettings(): applyOled() 呼び出し追加でモーダルオープン時に状態同期"
+          ]
+        }
+      ],
+      "notes": "Cycle 108はOLED/AMOLED端末向け省電力機能。スマートフォンのOLEDディスプレイは黒ピクセルをオフにするため真黒背景がバッテリー消費を大幅削減する。Cycle 31のダークモード（--dark1:#1a1a2eをベース色として使用）・Cycle 59のoceanテーマに続く3番目の表示モード拡張だが、既存テーマの「色味」とは独立した「輝度（明度）最適化」のレイヤーとして実装。light/oceanテーマ適用中は自動的に無効化されるため、テーマ変更時の表示崩れを防ぐ。LocalStorage rh_oled フィールド追加のみで既存データに影響なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T13:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

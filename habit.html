@@ -1006,6 +1006,25 @@
     body.theme-ocean .streak-badge{background:linear-gradient(135deg,rgba(45,204,176,.15),rgba(31,175,150,.1));border-color:rgba(45,204,176,.3)}
     body.theme-ocean .streak-badge.fire{box-shadow:0 0 16px rgba(45,204,176,.3);border-color:rgba(45,204,176,.6)}
 
+    /* Cycle 108: OLED black mode */
+    body.oled:not(.light):not(.theme-ocean){background:#000;--dark2:#0a0a0a;--dark3:#111}
+    body.oled:not(.light):not(.theme-ocean) .hdr{background:rgba(0,0,0,.97);border-bottom-color:rgba(255,255,255,.04)}
+    body.oled:not(.light):not(.theme-ocean) .modal{background:#0a0a0a}
+    body.oled:not(.light):not(.theme-ocean) .snackbar{background:#0a0a0a}
+    body.oled:not(.light):not(.theme-ocean) .wset-modal{background:#0a0a0a}
+    .oled-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+    .oled-toggle-lbl{font-size:12px;font-weight:700;color:var(--white)}
+    .oled-toggle-sub{font-size:10px;color:var(--muted);margin-top:1px}
+    .oled-toggle-info{flex:1}
+    .oled-sw{position:relative;display:inline-block;width:38px;height:21px;flex-shrink:0}
+    .oled-sw input{opacity:0;width:0;height:0}
+    .oled-sw-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.12);border-radius:21px;transition:.25s}
+    .oled-sw-slider:before{position:absolute;content:"";height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+    .oled-sw input:checked+.oled-sw-slider{background:var(--gold)}
+    .oled-sw input:checked+.oled-sw-slider:before{transform:translateX(17px)}
+    body.light .oled-sw-slider{background:rgba(0,0,0,.15)}
+    body.light .oled-toggle-lbl{color:#1a1a2e}
+
     /* Cycle 49: habit duplicate button */
     .copy-btn{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:13px;padding:4px 5px;border-radius:6px;transition:all .15s;flex-shrink:0;line-height:1}
     .copy-btn:hover{color:var(--sky);background:rgba(91,200,232,.1)}
@@ -2438,6 +2457,12 @@
     <div class="stor-row">
       <div class="stor-info" id="stor-info">計算中...</div>
       <button class="stor-clean" onclick="cleanOldData()" title="90日以前の完了データを削除">🗑 90日前を削除</button>
+    </div>
+    <!-- Cycle 108: OLED black mode -->
+    <div class="wset-section-lbl">🖥 ディスプレイ</div>
+    <div class="oled-toggle-row">
+      <div class="oled-toggle-info"><div class="oled-toggle-lbl">OLEDブラックモード</div><div class="oled-toggle-sub">OLED/AMOLEDのバッテリーを節約（真黒背景）</div></div>
+      <label class="oled-sw"><input type="checkbox" id="oled-chk" onchange="toggleOled(this.checked)"><span class="oled-sw-slider"></span></label>
     </div>
     <button class="wset-close" onclick="closeWidgetSettings()">閉じる（ESCでも）</button>
   </div>
@@ -4813,6 +4838,18 @@ function initTheme(){
   });
   updateThemeBtn();
 }
+
+// ── Cycle 108: OLED black mode ──
+function applyOled(){
+  const on=localStorage.getItem('rh_oled')==='1';
+  document.body.classList.toggle('oled',on);
+  const chk=document.getElementById('oled-chk');
+  if(chk)chk.checked=on;
+}
+function toggleOled(on){
+  localStorage.setItem('rh_oled',on?'1':'0');
+  document.body.classList.toggle('oled',on);
+}
 function toggleTheme(){
   const b=document.body;
   const isLight=b.classList.contains('light');
@@ -5717,6 +5754,7 @@ function _updateGoldenTimeBadges(){
 // ── init ──
 load();
 initTheme();
+applyOled(); // Cycle 108: OLED black mode
 initFontSize();
 updateSoundBtn();
 initVolume();
@@ -6057,7 +6095,7 @@ function applyWidgetViz(){
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
-  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();renderStorInfo();el.classList.add('open');
+  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();renderStorInfo();applyOled();el.classList.add('open');
 }
 function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
 function showSnack(msg){
