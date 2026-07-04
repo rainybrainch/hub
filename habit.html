@@ -1737,6 +1737,30 @@
     .wmc-dot.wfuture{background:rgba(255,255,255,.08)}
     body.light .wmc-dot.wfuture{background:rgba(0,0,0,.08)}
     body.light .wmc-dot.wtoday{background:rgba(91,200,232,.15);border-color:var(--sky)}
+    /* Cycle 99: habit chain badge */
+    .chain-badge{font-size:9px;color:var(--sky);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:6px;line-height:1.5;letter-spacing:.03em}
+    body.light .chain-badge{background:rgba(91,200,232,.12);border-color:rgba(91,200,232,.3)}
+    body.compact .chain-badge{display:none}
+    /* Cycle 99: chain completion toast */
+    .chain-toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(10px);background:linear-gradient(135deg,rgba(91,200,232,.93),rgba(91,200,232,.72));color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:8px 20px;border-radius:30px;box-shadow:0 6px 24px rgba(91,200,232,.4);z-index:438;opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 40px);text-align:center}
+    .chain-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    /* Cycle 99: chain select in modal */
+    .chain-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .chain-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:40px}
+    .chain-select{flex:1;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:13px;outline:none;transition:border-color .15s;cursor:pointer}
+    .chain-select:focus{border-color:rgba(91,200,232,.4)}
+    body.light .chain-select{background:#f0f0f0;color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    /* Cycle 99: time investment widget */
+    .time-invest-box{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 16px;margin-bottom:20px;transition:background .25s,border-color .25s}
+    .time-invest-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .time-invest-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .time-invest-item{text-align:center;padding:10px 6px;background:rgba(255,255,255,.03);border-radius:10px}
+    .time-invest-val{font-family:"Dela Gothic One",sans-serif;font-size:21px;color:var(--sky);line-height:1;margin-bottom:3px}
+    .time-invest-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em}
+    body.light .time-invest-box{border-color:rgba(0,0,0,.08)}
+    body.light .time-invest-item{background:rgba(0,0,0,.03)}
+    body.focus-mode .time-invest-box{display:none!important}
+    @media print{.time-invest-box,.chain-toast{display:none!important}}
   </style>
 </head>
 <body>
@@ -1919,6 +1943,12 @@
   <div class="trend-box" id="trend-box" style="display:none">
     <div class="chart-ttl">📉 月別達成率トレンド</div>
     <div class="trend-rows" id="trend-rows"></div>
+  </div>
+
+  <!-- Cycle 99: time investment widget -->
+  <div class="time-invest-box" id="time-invest-box" style="display:none">
+    <div class="time-invest-ttl">⏱ 習慣への投資時間</div>
+    <div class="time-invest-grid" id="time-invest-grid"></div>
   </div>
 
   <!-- Cycle 41: year calendar -->
@@ -2189,6 +2219,11 @@
       <input class="challenge-days-inp" id="challenge-days-inp" type="number" min="1" max="365" placeholder="30" title="N日チャレンジ: 累計N日達成を目標に設定（任意）">
       <span style="font-size:10px;color:var(--muted);flex:1">日チャレンジ（任意）</span>
     </div>
+    <!-- Cycle 99: habit chain -->
+    <div class="chain-row" id="chain-row">
+      <span class="chain-row-lbl">→ 次の習慣</span>
+      <select class="chain-select" id="chain-select"><option value="">— なし —</option></select>
+    </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
@@ -2196,6 +2231,7 @@
 <div class="banner" id="banner">🎉 全習慣達成！今日も最高！</div>
 <div class="milestone-toast" id="milestone-toast"></div>
 <div class="shield-toast" id="shield-toast"></div>
+<div class="chain-toast" id="chain-toast"></div>
 
 <div class="snackbar" id="snackbar">
   <span class="sb-msg" id="sb-msg"></span>
@@ -3365,7 +3401,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
     const ms=habitMissStreak(h.id);
     return ms>=3?`<span class="miss-alert-badge" title="${ms}日連続で達成できていません。今日こそ！">💢 ${ms}日ミス中</span>`:'';
   })();
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 99: chain badge — show when this habit links to another
+  const chainH=h.chainTo?habits.find(x=>x.id===h.chainTo&&!x.archived&&!x.paused):null;
+  const chainBadge=chainH?`<span class="chain-badge" title="完了後の次の習慣: ${esc(chainH.name)}">→ ${chainH.emoji||''}${esc(chainH.name.substring(0,8)+(chainH.name.length>8?'…':''))}</span>`:'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3892,6 +3931,7 @@ function render(){
   renderScheduleBox(); // Cycle 69
   renderDayTimeline(); // Cycle 88
   renderInsightCard(); // Cycle 70
+  renderTimeInvest(); // Cycle 99
   renderDonutChart(); // Cycle 79
   renderSparkline(); // Cycle 79
   renderChart();
@@ -3966,6 +4006,7 @@ function toggle(id,evt){
     // cycle 18: particle burst from checkbox position; cycle 47: 16 particles for tough habits
     if(evt){const chk=(evt.currentTarget||evt.target)?.querySelector?.('.chk');const r=chk?chk.getBoundingClientRect():null;if(r){const isTough=_hh&&_hh.tough;spawnBurst(r.left+r.width/2,r.top+r.height/2,isTough?16:8);if(isTough)vib([30,20,30]);spawnEmojiFloat(r.left+r.width/2,r.top,_hh&&_hh.emoji?_hh.emoji:'✨');}}
     showNextHabitSuggestion(id); // Cycle 60: suggest next uncompleted habit
+    showChainToast(_hh); // Cycle 99: chain toast
   }else{_showUncheckSnackbar(id,prevTs);} // Cycle 67: undo-check snackbar
   saveC();
   render();
@@ -4091,6 +4132,55 @@ function showNextHabitSuggestion(completedId){
 // ── Cycle 60: Night mode class for pulse animation ──
 function updateNightMode(){
   document.body.classList.toggle('night-mode',new Date().getHours()>=22);
+}
+
+// ── Cycle 99: Habit chain toast ──
+function showChainToast(h){
+  if(!h||!h.chainTo)return;
+  const nextH=habits.find(x=>x.id===h.chainTo&&!x.archived&&!x.paused);
+  if(!nextH)return;
+  const td=today(),dc=completions[td]||{};
+  if(dc[nextH.id])return;
+  const toast=document.getElementById('chain-toast');if(!toast)return;
+  const em=nextH.emoji?nextH.emoji+' ':'';
+  toast.textContent=`→ 次は「${em}${nextH.name}」`;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2600);
+}
+
+// ── Cycle 99: Populate chain select in modal ──
+function _populateChainSelect(editingId){
+  const sel=document.getElementById('chain-select');if(!sel)return;
+  const opts=habits.filter(h=>!h.archived&&!h.paused&&h.id!==editingId);
+  sel.innerHTML='<option value="">— なし —</option>'+opts.map(h=>`<option value="${h.id}">${h.emoji?h.emoji+' ':''}${esc(h.name)}</option>`).join('');
+}
+
+// ── Cycle 99: Time investment widget ─���
+function renderTimeInvest(){
+  const box=document.getElementById('time-invest-box');if(!box)return;
+  const habitsWithDur=habits.filter(h=>!h.archived&&h.duration>=1);
+  if(!habitsWithDur.length){box.style.display='none';return;}
+  const td=today();
+  const tdDate=new Date(td+'T00:00:00');
+  const dow=tdDate.getDay();
+  const diffMon=(dow===0?6:dow-1);
+  const weekDates=[];
+  for(let i=diffMon;i>=0;i--){const d=new Date(tdDate);d.setDate(d.getDate()-i);weekDates.push(d.toISOString().slice(0,10));}
+  const monthDates=[];
+  const ym=td.slice(0,7);
+  for(let d=1;d<=parseInt(td.slice(8,10));d++){monthDates.push(`${ym}-${String(d).padStart(2,'0')}`);}
+  function calcMins(dates){
+    return dates.reduce((sum,dt)=>{
+      const dc=completions[dt]||{};
+      return sum+habitsWithDur.reduce((s,h)=>(dc[h.id]?s+h.duration:s),0);
+    },0);
+  }
+  const wMin=calcMins(weekDates);
+  const mMin=calcMins(monthDates);
+  function fmt(min){const h=Math.floor(min/60),m=min%60;return h>0?(m>0?`${h}h ${m}m`:`${h}h`):`${m}m`;}
+  const grid=document.getElementById('time-invest-grid');if(!grid)return;
+  grid.innerHTML=`<div class="time-invest-item"><div class="time-invest-val">${fmt(wMin)}</div><div class="time-invest-lbl">今週</div></div><div class="time-invest-item"><div class="time-invest-val">${fmt(mMin)}</div><div class="time-invest-lbl">今月</div></div>`;
+  box.style.display='';
 }
 
 // ── Cycle 61: Daily score system ──
@@ -4324,6 +4414,9 @@ function openModal(id=null){
     const cdEl=document.getElementById('challenge-days-inp');if(cdEl)cdEl.value=(h&&h.targetDays)?h.targetDays:'';
     toggleTough(!!(h&&h.tough));
     selPri(h&&h.priority?h.priority:'normal');
+    // Cycle 99: populate and restore chain select
+    _populateChainSelect(id);
+    const chainSel99=document.getElementById('chain-select');if(chainSel99&&h)chainSel99.value=h.chainTo||'';
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -4343,6 +4436,8 @@ function openModal(id=null){
     const cdElN=document.getElementById('challenge-days-inp');if(cdElN)cdElN.value='';
     toggleTough(false);
     selPri('normal');
+    // Cycle 99: populate chain select (new habit mode)
+    _populateChainSelect(null);
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -4376,7 +4471,8 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal==='custom'&&selCustomDays.length>0){h.customDays=[...selCustomDays];delete h.frequency;}else{delete h.customDays;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;}if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;if(selPriVal!=='normal')h.priority=selPriVal;else delete h.priority;}
+    const chainToSave99=((document.getElementById('chain-select')||{}).value||'').trim();
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal==='custom'&&selCustomDays.length>0){h.customDays=[...selCustomDays];delete h.frequency;}else{delete h.customDays;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;}if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;const wkTSave=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSave>=1&&wkTSave<=7)h.weeklyTarget=wkTSave;else delete h.weeklyTarget;const tdSave=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSave>=1&&tdSave<=365)h.targetDays=tdSave;else delete h.targetDays;if(selPriVal!=='normal')h.priority=selPriVal;else delete h.priority;if(chainToSave99)h.chainTo=chainToSave99;else delete h.chainTo;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -4393,6 +4489,7 @@ function saveHabit(){
     if(recTimeSave)nh.recTime=recTimeSave;
     const wkTSaveN=parseInt((document.getElementById('wk-target-sel')||{}).value||'0');if(wkTSaveN>=1&&wkTSaveN<=7)nh.weeklyTarget=wkTSaveN;
     const tdSaveN=parseInt((document.getElementById('challenge-days-inp')||{}).value||'0');if(tdSaveN>=1&&tdSaveN<=365)nh.targetDays=tdSaveN;
+    const chainToSaveN99=((document.getElementById('chain-select')||{}).value||'').trim();if(chainToSaveN99)nh.chainTo=chainToSaveN99;
     habits.push(nh);
     _newHabitId=nh.id;
   }
@@ -5581,6 +5678,7 @@ const WIDGET_DEFS=[
   {key:'w_insight', name:'💡 習慣インサイト',         id:'insight-card'},
   {key:'w_donut',   name:'🍩 カテゴリー別達成状況',   id:'donut-box'},
   {key:'w_tomorrow',name:'🌅 明日の準備メモ',          id:'tomorrow-box'},
+  {key:'w_timeinvest', name:'⏱ 累計投資時間',         id:'time-invest-box'},
 ];
 function getWidgetViz(){try{return JSON.parse(localStorage.getItem('rh_widgets')||'{}')}catch{return{}}}
 function isWidgetOn(key){const v=getWidgetViz();return v[key]!==false}
