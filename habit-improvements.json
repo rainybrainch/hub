@@ -2273,6 +2273,29 @@
         "deployedAt": "2026-07-04T15:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 111,
+      "version": "v2.111",
+      "timestamp": "2026-07-04T16:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "ユーザー名設定とパーソナライズ挨拶",
+          "description": "⚙️ウィジェット設定モーダルに「👤 あなたの名前」セクションと入力欄を追加。最大12文字の名前をLocalStorage（rh_username）に保存。名前が設定されている場合、モットーボックスの冒頭に時刻帯に応じた挨拶を表示：0-4時は「🌃 夜更かし中」、5-11時は「🌅 おはよう」、12-17時は「☀️ こんにちは」、18-23時は「🌙 こんばんは」。名前未設定の場合は従来のメッセージのみ表示し後方互換性を維持。getUserName() / setUserName() / _renderUserNameUI()の3関数を追加し、openWidgetSettings()から_renderUserNameUI()を呼び出す。"
+        },
+        {
+          "type": "animation",
+          "title": "習慣完了時のカードフラッシュアニメーション",
+          "description": "習慣カードのチェック時に緑色のフラッシュアニメーション（habitDoneFlash）を0.55秒間表示。toggle()のrender()呼び出し直後に対象カード（#list .habit[data-id]）にjust-doneクラスを付与し、600ms後に自動除去。@keyframesで背景色とボーダー色を緑（rgba(76,175,125,...)）から始めてフェードアウトするアニメーション定義。ダーク/ライト両モード対応（habitDoneFlash / habitDoneFlashLight）。既存の紙吹雪・パーティクルバースト・ripple（Cycle 83）との相乗効果で完了の達成感を強化。"
+        }
+      ],
+      "notes": "Cycle 111は「パーソナライズ体験」と「視覚的フィードバック」の2軸改善。ユーザー名機能はシンプルなLocalStorage保存で実装し、Cycle 87のカスタムメッセージ機能と合わせてアプリのパーソナライズ度をさらに高める。カードフラッシュはrenderList()がDOMを再生成した直後のquerySelector再取得で実装。Cycle 83のrippleは波紋（ドラッグ中心から広がる半透明円）、Cycle 111のフラッシュはカード全体の緑発光という異なる視覚レイヤーとして共存する。両機能ともデータ構造変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T16:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

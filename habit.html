@@ -1896,6 +1896,19 @@
     /* Cycle 105: stats overlay time column */
     .smt-time{color:var(--sky);font-family:"Dela Gothic One",sans-serif;font-size:11px}
     .smt-time-foot{color:var(--gold);font-family:"Dela Gothic One",sans-serif;font-size:12px;font-weight:700}
+    /* Cycle 111: habit done flash animation */
+    @keyframes habitDoneFlash{0%{background:rgba(76,175,125,.3);border-color:rgba(76,175,125,.6)}60%{background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.35)}100%{background:rgba(76,175,125,.08);border-color:rgba(76,175,125,.2)}}
+    .habit.just-done{animation:habitDoneFlash .55s ease-out forwards}
+    @keyframes habitDoneFlashLight{0%{background:rgba(76,175,125,.25);border-color:rgba(76,175,125,.55)}60%{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.3)}100%{background:rgba(76,175,125,.1);border-color:rgba(76,175,125,.25)}}
+    body.light .habit.just-done{animation:habitDoneFlashLight .55s ease-out forwards}
+    /* Cycle 111: user name row in settings */
+    .user-name-row{margin-bottom:14px}
+    .user-name-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;display:block;margin-bottom:6px}
+    .user-name-inp{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:14px;outline:none;transition:border-color .15s;box-sizing:border-box}
+    .user-name-inp:focus{border-color:rgba(245,200,66,.4)}
+    .user-name-inp::placeholder{color:var(--muted)}
+    body.light .user-name-inp{color:#1a1a2e;border-color:rgba(0,0,0,.1)}
+    body.light .user-name-inp::placeholder{color:rgba(0,0,0,.35)}
   </style>
 </head>
 <body>
@@ -2471,6 +2484,9 @@
       <div class="stor-info" id="stor-info">計算中...</div>
       <button class="stor-clean" onclick="cleanOldData()" title="90日以前の完了データを削除">🗑 90日前を削除</button>
     </div>
+    <!-- Cycle 111: user name personalization -->
+    <div class="wset-section-lbl">👤 あなたの名前</div>
+    <div class="user-name-row"><input class="user-name-inp" id="user-name-inp" type="text" placeholder="名前を入力すると挨拶が変わります" maxlength="12" oninput="setUserName(this.value)"></div>
     <!-- Cycle 108: OLED black mode -->
     <div class="wset-section-lbl">🖥 ディスプレイ</div>
     <div class="oled-toggle-row">
@@ -4325,6 +4341,11 @@ function toggle(id,evt){
   }else{_showUncheckSnackbar(id,prevTs);} // Cycle 67: undo-check snackbar
   saveC();
   render();
+  // Cycle 111: flash effect on completion
+  if(!wasCompleted){
+    const flashCard=document.querySelector(`#list .habit[data-id="${id}"]`);
+    if(flashCard){flashCard.classList.add('just-done');setTimeout(()=>flashCard.classList.remove('just-done'),600);}
+  }
   // cycle 2: celebration check
   if(todayRate()===100&&!celebrated){
     celebrated=true;
@@ -5081,7 +5102,15 @@ function renderMotto(){
   else if(streak>=7)msg=`🔥 ${streak}日連続！あなたの継続力は本物です！`;
   else if(streak>=3)msg=`✨ ${streak}日連続中！この勢いを止めるな！`;
   else{const d=new Date();const pool=[...MOTTOS,..._userMottos];msg=pool[(d.getDate()+d.getMonth()*3)%pool.length];}
-  box.textContent=msg;
+  // Cycle 111: personalized greeting
+  const name=getUserName();
+  if(name){
+    const h=new Date().getHours();
+    const greet=h<5?'🌃 夜更かし中':h<12?'🌅 おはよう':h<18?'☀️ こんにちは':'🌙 こんばんは';
+    box.textContent=`${greet}、${name}さん！ ${msg}`;
+  }else{
+    box.textContent=msg;
+  }
 }
 
 // ── filter ──
@@ -6132,7 +6161,7 @@ function applyWidgetViz(){
 }
 function openWidgetSettings(){
   const el=document.getElementById('wset-ovl');if(!el)return;
-  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();renderStorInfo();applyOled();el.classList.add('open');
+  _renderWsetList();_renderUserMottoList();loadThemeSchedule();_renderStreakGoalBtns();renderStorInfo();applyOled();_renderUserNameUI();el.classList.add('open');
 }
 function closeWidgetSettings(){document.getElementById('wset-ovl')?.classList.remove('open');}
 function showSnack(msg){
@@ -7194,6 +7223,14 @@ function renderTmwPreview(){
     sp.style.width=(max>0?Math.min(de.scrollTop/max*100,100):0)+'%';
   },{passive:true});
 })();
+
+// ── Cycle 111: user name personalization ──
+function getUserName(){return localStorage.getItem('rh_username')||'';}
+function setUserName(val){val=(val||'').trim().slice(0,12);if(val)localStorage.setItem('rh_username',val);else localStorage.removeItem('rh_username');}
+function _renderUserNameUI(){
+  const el=document.getElementById('user-name-inp');if(!el)return;
+  el.value=getUserName();
+}
 </script>
 </body>
 </html>
