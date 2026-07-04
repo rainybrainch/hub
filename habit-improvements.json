@@ -2250,6 +2250,29 @@
         "deployedAt": "2026-07-04T14:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 110,
+      "version": "v2.110",
+      "timestamp": "2026-07-04T15:00:00Z",
+      "changes": [
+        {
+          "type": "ux",
+          "title": "スクロール時ヘッダー縮小（Scroll-shrink Header）",
+          "description": "window.scrollYが80pxを超えるとbody.hdr-scrolledクラスを付与し、ヘッダーをコンパクト表示に自動切り替えする機能を追加。スクロール時は.hdrのパディングを14px→8pxに縮小（.25s ease transition）、.hdr-titleのフォントサイズを18px→14pxに縮小、.hdr-dateと.backを非表示、使用頻度の低いヘッダーボタン（📋📱🖼📤📥🔔⌨⚙️🔄📖🏆）を非表示にし代わりに.hdr-progress（達成状況バッジN/M）を常時表示する。コンパクトビュー・フォーカスモード・デイオフボタンは維持。passive:trueスクロールリスナーでパフォーマンス影響ゼロ。上スクロール（scrollY≤80px）で元の完全表示に戻る。習慣数が多くスクロールが長くなったユーザーのコンテンツエリアを最大化するモバイルUX改善。"
+        },
+        {
+          "type": "ux",
+          "title": "ヘッダータイトルタップでページトップへスクロール",
+          "description": "hdr-title要素（📅 習慣トラッカー）にonclick='window.scrollTo({top:0,behavior:\"smooth\"})' を追加。スクロール後に縮小表示されたヘッダータイトルをタップするとスムーズスクロールでページ最上部に戻る機能を実装。iOSのステータスバーをタップしてページトップに戻る操作と同様のUXパターン。cursor:defaultをcursor:pointerに変更するCSSも追加（hdr-scrolled時のみpointerカーソルを表示）。scroll-topボタン（Cycle 32）の代替操作として機能し、スクロール縮小ヘッダーとの組み合わせで片手操作が完結する。"
+        }
+      ],
+      "notes": "Cycle 110は「スクロール時のスペース効率化」と「ワンタップページトップ」の2軸UX改善。スクロール縮小ヘッダーはYouTube/X(Twitter)等のモバイルアプリUXで広く採用されているパターンで、109サイクルで蓄積したヘッダーボタン（17個）の大半をスクロール中に非表示にし、コンテンツエリアを最大化する。scrollY>80pxの閾値は小さなスクロールで誤発動しないよう設定した値。hdr-progressバッジを常時表示することでスクロール中でも達成状況をヘッダーで確認可能。ヘッダータイトルタップ操作はCycle 32のscroll-topボタンとの相乗で複数の「トップへ戻る」手段を提供しモバイルでの利便性を高める。どちらもLocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T15:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

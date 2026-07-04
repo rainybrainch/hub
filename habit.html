@@ -1396,6 +1396,18 @@
     body.light .wn-btn{border-color:rgba(0,0,0,.12)}
     body.light .wn-btn:hover:not([disabled]){border-color:rgba(0,0,0,.3);color:#1a1a2e}
 
+    /* Cycle 110: scroll-shrink header — compact view when scrolled down */
+    .hdr{transition:padding .25s ease}
+    body.hdr-scrolled .hdr{padding:8px 14px}
+    body.hdr-scrolled .hdr-title{font-size:14px;transition:font-size .25s ease;cursor:pointer}
+    body.hdr-scrolled .hdr-date{display:none!important}
+    body.hdr-scrolled .back{display:none}
+    body.hdr-scrolled .hdr-btn:not(#compact-btn):not(#focus-mode-btn):not(#dayoff-btn){display:none}
+    body.hdr-scrolled .vol-wrap,.hdr-scrolled .theme-btn{display:none}
+    body.hdr-scrolled #theme-btn{display:none!important}
+    body.hdr-scrolled .hdr-progress{display:inline-flex!important}
+    .hdr-title{cursor:default;-webkit-tap-highlight-color:transparent}
+
     /* Cycle 46: print optimization */
     @media print{
       .hdr,.fab,.scroll-top,.progress-footer,.snackbar,.banner,.milestone-toast,.shield-toast,.combo-toast,.overlay,.note-ovl,.kbd-ovl,.wset-ovl,.sort-row,.tabs,.search-row,.search-hist,.ctx-filter-row,.star-btn,.pause-btn,.skip-btn,.info-btn,.edit-btn,.del-btn,.reorder-btn,.note-btn,.batch-btn,.h-dots,.sec-progress,.copy-btn,.timer-bar,.timer-btn,.archive-btn,.archived-section,.habit-link-btn,#combo-toast{display:none!important}
@@ -1894,7 +1906,7 @@
 
 <header class="hdr">
   <a href="index.html" class="back">← Hub</a>
-  <h1 class="hdr-title">📅 習慣トラッカー</h1>
+  <h1 class="hdr-title" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="タップしてページトップへ">📅 習慣トラッカー</h1>
   <button class="hdr-btn" onclick="shareWeeklySummary()" title="週間レポートをコピー">📋</button>
   <button class="hdr-btn" onclick="shareDailyCard()" title="今日の達成をシェア（コピー）">📱</button>
   <button class="hdr-btn" onclick="exportSvgCard()" title="今日の達成をSVGカードとしてダウンロード">🖼</button>
@@ -5812,6 +5824,8 @@ _updateGoldenTimeBadges(); // Cycle 92: initial golden time check
 setInterval(()=>{if(!_doneTimeAbs)document.querySelectorAll('.done-time[data-ts]').forEach(e=>{e.textContent=relTime(e.dataset.ts);});},60000); // Cycle 66
 setInterval(checkThemeSchedule,60000); // Cycle 87: auto theme by schedule
 setInterval(_checkDateChange,60000); // Cycle 93: date change detection
+// Cycle 110: scroll-shrink header — compact header when scrolled > 80px
+window.addEventListener('scroll',()=>{document.body.classList.toggle('hdr-scrolled',window.scrollY>80);},{passive:true});
 // ── Cycle 24 + 75: PWA theme-color meta tag sync ──
 function syncThemeColor(){
   const mc=document.getElementById('meta-theme-color');
