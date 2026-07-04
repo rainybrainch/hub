@@ -2067,6 +2067,33 @@
         "deployedAt": "2026-07-04T08:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 104,
+      "timestamp": "2026-07-04T09:00:00Z",
+      "version": "v2.104",
+      "changes": [
+        "所要時間ソート（⏱ 短い順）：ソートバーに「⏱ 短い順」ボタンを追加。クリックでdurationが短い習慣から順に表示（未設定の習慣は末尾）。他のソートモード（未完了順・ストリーク順・優先度順・シャッフル）と相互排他。一時停止・スケジュール外の習慣は末尾にまとめる。",
+        "曜日別達成率ミニバー（習慣詳細パネル）：📊ボタンで開く習慣詳細パネルに、過去90日分の月〜日ごとの達成率を7本のミニバーチャートで表示。達成率≥80%は緑・≥50%は水色・≥20%は金・未満は薄白。最大値を基準に相対的な高さで描画するため、弱い曜日が一目でわかる。"
+      ],
+      "improvements": [
+        {
+          "type": "feature",
+          "title": "所要時間ソート（Duration Sort）",
+          "description": "ソートバーに「⏱ 短い順」ボタン（#sort-dur-btn）を追加。toggleSortDur()がsortDurフラグをトグルし、ONのとき renderList() 内で parseInt(a.duration)||9999 - parseInt(b.duration)||9999 の昇順ソートを実行。durationが設定されていない習慣（未定義または0）はフォールバック値9999で末尾に配置。一時停止・スケジュール外の習慣は常に末尾（既存パターンと統一）。sortUndone/sortStreak/sortPri/sortShuffle との完全排他設計。各既存のtoggle関数にsortDur=falseと#sort-dur-btnのactive除去を追加。LocalStorage永続化なし（セッション限定）。"
+        },
+        {
+          "type": "feature",
+          "title": "曜日別達成率ミニバーチャート（Per-Habit DOW Mini Bar Chart in Detail Panel）",
+          "description": "_habitDetailHtml() の return 直前に、過去90日分の曜日別達成回数を集計するロジックを追加。(getDay()+6)%7 で日曜=6・月曜=0のISO曜日インデックスに変換し、_dowC[dow]（達成数）と_dowT[dow]（対象日数）を各曜日でカウント。最大達成率で正規化（_dowMax）し、各バーの高さを比率でスケール（最大24px・最小3px）。達成率に応じて色分け（≥80%:var(--green)、≥50%:var(--sky)、≥20%:var(--gold)、未満:rgba半透明白）。hd-dow-row/hd-dow-cell/hd-dow-bar-wrap/hd-dow-bar/hd-dow-day/hd-dow-pctのCSS構造でバー＋曜日ラベル＋%値を縦並びに配置。weekCmpHtmlの後、noteSec の前に${dowHtml}として挿入。既存の週比較表示と組み合わせて、どの曜日が強い/弱いを視覚的に把握可能。ライト/ダークテーマ対応（border-topカラーをbody.light用に切り替え）。"
+        }
+      ],
+      "notes": "Cycle 104は「習慣計画の効率化」と「曜日パターンの個別可視化」をテーマとした改善。所要時間ソートはGTD（Getting Things Done）の「2分以内のタスクから先にやる」原則を体現したもので、朝の限られた時間帯に短時間の習慣をまとめて処理したい場合に有用。曜日別達成率バーはdow-boxウィジェット（全習慣合算の曜日パターン）とは異なり、特定習慣の曜日傾向を個別に確認できる点が新規性。「この習慣は水曜が弱い」という気づきが継続改善につながる。過去90日というウィンドウは季節的な偏りを排除しつつ統計的有意性を確保するためのバランス。LocalStorage構造に変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-04T09:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
