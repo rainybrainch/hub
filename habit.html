@@ -1761,6 +1761,27 @@
     body.light .time-invest-item{background:rgba(0,0,0,.03)}
     body.focus-mode .time-invest-box{display:none!important}
     @media print{.time-invest-box,.chain-toast{display:none!important}}
+    /* Cycle 100: sound volume popup */
+    .vol-wrap{position:relative;display:inline-flex}
+    .vol-popup{position:absolute;top:calc(100% + 8px);right:0;background:var(--dark2);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;z-index:620;width:186px;box-shadow:0 12px 40px rgba(0,0,0,.55);opacity:0;transform:translateY(-6px) scale(.96);pointer-events:none;transition:opacity .18s,transform .2s cubic-bezier(.34,1.56,.64,1)}
+    .vol-popup.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .vol-hdr{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+    .vol-pct{color:var(--white);font-size:12px;font-variant-numeric:tabular-nums;font-weight:700}
+    .vol-slider{width:100%;cursor:pointer;accent-color:var(--gold);display:block;margin-bottom:8px}
+    .vol-toggle{width:100%;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--white);font-family:"Zen Maru Gothic",sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;text-align:left}
+    .vol-toggle.off{background:rgba(232,53,74,.08);border-color:rgba(232,53,74,.2);color:rgba(255,255,255,.5)}
+    .vol-toggle:hover{background:rgba(255,255,255,.1)}
+    body.light .vol-popup{background:#fff;border-color:rgba(0,0,0,.12)}
+    body.light .vol-pct{color:#1a1a2e}
+    body.light .vol-toggle{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1);color:#1a1a2e}
+    body.light .vol-toggle.off{background:rgba(232,53,74,.06);color:rgba(0,0,0,.4)}
+    /* Cycle 100: all-time completion rate rank badge */
+    .rate-rank{font-size:9px;font-weight:900;padding:1px 4px;border-radius:5px;flex-shrink:0;line-height:1.5;letter-spacing:.04em}
+    .rate-rank.rank-s{color:#E892A8;background:rgba(232,146,168,.12);border:1px solid rgba(232,146,168,.3)}
+    .rate-rank.rank-a{color:var(--green);background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.25)}
+    .rate-rank.rank-b{color:var(--sky);background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.25)}
+    .rate-rank.rank-c{color:var(--gold);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2)}
+    body.compact .rate-rank{display:none}
   </style>
 </head>
 <body>
@@ -1777,7 +1798,7 @@
   <button class="hdr-btn" onclick="exportData()" title="データをエクスポート（JSON/CSV）">📤</button>
   <button class="hdr-btn" onclick="importData()" title="データをインポート">📥</button>
   <button class="hdr-btn" id="reminder-btn" onclick="toggleReminder()" title="デイリーリマインダーを設定">🔔</button>
-  <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="サウンド切替"></button>
+  <div class="vol-wrap" id="vol-wrap"><button class="theme-btn" id="sound-btn" onclick="toggleVolPopup(event)" title="サウンド/音量（クリックで設定）"></button><div class="vol-popup" id="vol-popup"><div class="vol-hdr">🔊 音量 <span class="vol-pct" id="vol-pct">50%</span></div><input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="50" oninput="setVolume(this.value)"><button class="vol-toggle" id="vol-toggle" onclick="event.stopPropagation();toggleSoundFromPopup()">🔊 サウンドON</button></div></div>
   <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="テーマ切替"></button>
   <button class="hdr-btn" id="compact-btn" onclick="toggleCompactView()" title="表示モード切替">⊟</button>
   <button class="hdr-btn" onclick="resetToday()" title="今日のチェックを全て解除">🔄</button>
@@ -2391,6 +2412,7 @@ let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = 
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
+let _volLevel = parseFloat(localStorage.getItem('rh_vol')||'0.25'), _volOpen = false;
 function _audioCtx(){return new (window.AudioContext||window.webkitAudioContext)()}
 function playTick(){
   if(!soundEnabled)return;
@@ -2399,7 +2421,7 @@ function playTick(){
     osc.connect(g);g.connect(ctx.destination);
     osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(660,ctx.currentTime+0.08);
-    g.gain.setValueAtTime(0.25,ctx.currentTime);
+    g.gain.setValueAtTime(_volLevel,ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
     osc.start();osc.stop(ctx.currentTime+0.22);
   }catch(e){}
@@ -2413,7 +2435,7 @@ function playCelebration(){
       osc.connect(g);g.connect(ctx.destination);
       osc.frequency.value=f;
       const t=ctx.currentTime+i*0.12;
-      g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+      g.gain.setValueAtTime(_volLevel*0.72,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
       osc.start(t);osc.stop(t+0.35);
     });
   }catch(e){}
@@ -2427,6 +2449,35 @@ function updateSoundBtn(){
   const btn=document.getElementById('sound-btn');
   if(btn)btn.textContent=soundEnabled?'🔊':'🔇';
 }
+function initVolume(){
+  _volLevel=parseFloat(localStorage.getItem('rh_vol')||'0.25');
+  const sl=document.getElementById('vol-slider');
+  if(sl)sl.value=Math.round(_volLevel*200);
+  _updateVolLabel();
+  document.addEventListener('click',function(e){
+    if(_volOpen&&!document.getElementById('vol-wrap')?.contains(e.target)){
+      _volOpen=false;document.getElementById('vol-popup')?.classList.remove('open');
+    }
+  });
+}
+function _updateVolLabel(){
+  const p=document.getElementById('vol-pct');
+  if(p)p.textContent=Math.round(_volLevel*200)+'%';
+  const tg=document.getElementById('vol-toggle');
+  if(tg){tg.textContent=soundEnabled?'🔊 サウンドON':'🔇 サウンドOFF';tg.classList.toggle('off',!soundEnabled);}
+}
+function setVolume(v){
+  _volLevel=Math.max(0.01,Math.min(0.5,Number(v)/100*0.5));
+  localStorage.setItem('rh_vol',String(_volLevel));
+  _updateVolLabel();
+  if(soundEnabled)playTick();
+}
+function toggleVolPopup(e){
+  if(e)e.stopPropagation();
+  _volOpen=!_volOpen;
+  document.getElementById('vol-popup')?.classList.toggle('open',_volOpen);
+}
+function toggleSoundFromPopup(){toggleSound();_updateVolLabel();}
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
@@ -3288,6 +3339,20 @@ function calcLoginStreak(){
   if(badge){badge.textContent=`📱 ${streak}日連続`;badge.style.display=streak>=2?'':'none';}
 }
 
+// Cycle 100: all-time completion rate rank badge
+function _allTimeRateRank(h){
+  if(h.archived||h.paused)return'';
+  const created=h.createdAt||today();
+  const days=Math.max(1,Math.round((new Date(today()+'T00:00:00')-new Date(created+'T00:00:00'))/86400000));
+  if(days<30)return'';
+  const total=habitTotalCount(h.id);
+  const rate=total/days;
+  if(rate>=0.9)return`<span class="rate-rank rank-s" title="全期間達成率: ${Math.round(rate*100)}%（Sランク）">S</span>`;
+  if(rate>=0.75)return`<span class="rate-rank rank-a" title="全期間達成率: ${Math.round(rate*100)}%（Aランク）">A</span>`;
+  if(rate>=0.6)return`<span class="rate-rank rank-b" title="全期間達成率: ${Math.round(rate*100)}%（Bランク）">B</span>`;
+  if(rate>=0.5)return`<span class="rate-rank rank-c" title="全期間達成率: ${Math.round(rate*100)}%（Cランク）">C</span>`;
+  return'';
+}
 function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const tc=h.targetCount||1;const isCounter=tc>1;
   const ctrCount=isCounter?getHabitCount(h.id):0;
@@ -3314,6 +3379,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const trendBadge=trend!=='none'?`<span class="trend-badge ${trend}" title="${trend==='up'?'先週より好調↑':'先週より低調↓'}">${trend==='up'?'↑好調':'↓低調'}</span>`:'';
   const wp=habitWeekProgress(h.id);
   const wpBadge=wp?`<span class="week-prog ${wp.done===wp.total?'wk-good':wp.done*2>=wp.total?'wk-ok':'wk-low'}" title="今週（月〜今日）の達成状況">今週 ${wp.done}/${wp.total}</span>`:'';
+  const rateRankBadge=_allTimeRateRank(h);
   // Cycle 71: weekly target mode
   const wkGoalMet=isWeeklyGoalMet(h);
   const wkGoalBadge=wkGoalMet?`<span class="wk-goal-met" title="今週の目標達成！（${habitWeekCount(h.id)}/${h.weeklyTarget}回）">✅ 週${h.weeklyTarget}回達成</span>`:'';
@@ -3404,7 +3470,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 99: chain badge — show when this habit links to another
   const chainH=h.chainTo?habits.find(x=>x.id===h.chainTo&&!x.archived&&!x.paused):null;
   const chainBadge=chainH?`<span class="chain-badge" title="完了後の次の習慣: ${esc(chainH.name)}">→ ${chainH.emoji||''}${esc(chainH.name.substring(0,8)+(chainH.name.length>8?'…':''))}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -5352,6 +5418,7 @@ load();
 initTheme();
 initFontSize();
 updateSoundBtn();
+initVolume();
 initCompactView();
 // Cycle 91: restore hide-done state
 hideDone=localStorage.getItem('rh_hide_done')==='1';
