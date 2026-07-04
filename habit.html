@@ -420,6 +420,18 @@
     .month-copy-btn:hover{opacity:1}
     .month-chev{color:var(--muted);font-size:10px;transition:transform .25s;display:inline-block}
     .month-chev.open{transform:rotate(180deg)}
+    /* Cycle 117: monthly grade badge */
+    .month-grade-badge{font-family:"Dela Gothic One",sans-serif;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:900;flex-shrink:0;border:1px solid transparent;letter-spacing:.05em;margin-right:6px}
+    .month-grade-badge.mg-s{background:rgba(155,109,214,.18);border-color:rgba(155,109,214,.4);color:var(--purple)}
+    .month-grade-badge.mg-a{background:rgba(76,175,125,.18);border-color:rgba(76,175,125,.4);color:var(--green)}
+    .month-grade-badge.mg-b{background:rgba(91,200,232,.15);border-color:rgba(91,200,232,.35);color:var(--sky)}
+    .month-grade-badge.mg-c{background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.35);color:var(--gold)}
+    .month-grade-badge.mg-d{background:rgba(232,53,74,.12);border-color:rgba(232,53,74,.3);color:var(--red)}
+    body.light .month-grade-badge.mg-s{background:rgba(155,109,214,.1)}
+    body.light .month-grade-badge.mg-a{background:rgba(76,175,125,.1)}
+    body.light .month-grade-badge.mg-b{background:rgba(91,200,232,.08)}
+    body.light .month-grade-badge.mg-c{background:rgba(245,200,66,.08)}
+    body.light .month-grade-badge.mg-d{background:rgba(232,53,74,.07)}
     .month-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
     .month-body.open{max-height:180px}
     .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px}
@@ -1315,6 +1327,9 @@
 
     /* Cycle 62: weekly chart goal line */
     .goal-line{position:absolute;left:0;right:0;height:1px;pointer-events:none;z-index:2;background:repeating-linear-gradient(to right,rgba(245,200,66,.75) 0,rgba(245,200,66,.75) 4px,transparent 4px,transparent 8px)}
+    /* Cycle 117: previous-week ghost comparison marker */
+    .bar-ghost-line{position:absolute;left:10%;right:10%;height:2px;border-radius:1px;pointer-events:none;z-index:1;background:rgba(255,255,255,.2)}
+    body.light .bar-ghost-line{background:rgba(0,0,0,.15)}
     .goal-btn{padding:3px 8px;border-radius:8px;border:1px solid rgba(245,200,66,.35);background:rgba(245,200,66,.08);color:var(--gold);font-family:"Zen Maru Gothic",sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;flex-shrink:0;line-height:1.6;margin-right:4px}
     .goal-btn:hover{background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.55)}
     .goal-btn.off{border-color:rgba(255,255,255,.12);background:none;color:var(--muted)}
@@ -3473,7 +3488,10 @@ function renderChart(){
       col.className='chart-col';
       const goalPct=getWeeklyGoal();
       const goalLineHtml=goalPct>0?`<div class="goal-line" style="bottom:${goalPct}%"></div>`:'';
-      col.innerHTML=`<div class="bar-wrap" onclick="showChartDayPopup(event,'${ds}')" style="cursor:pointer" title="タップして詳細を表示"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%"></div>${goalLineHtml}</div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
+      // Cycle 117: previous-week ghost comparison marker
+      const prevPct=Math.round(_chartRate(dateAgo(i+base+7))*100);
+      const ghostLineHtml=prevPct>0?`<div class="bar-ghost-line" style="bottom:${prevPct}%" title="先週${prevPct}%"></div>`:'';
+      col.innerHTML=`<div class="bar-wrap" onclick="showChartDayPopup(event,'${ds}')" style="cursor:pointer" title="タップして詳細を表示"><div class="bar-fill${isToday?' today':''}" style="height:${pct}%"></div>${goalLineHtml}${ghostLineHtml}</div><span class="bar-lbl${isToday?' today':''}">${lbl}</span>`;
       c.appendChild(col);
     }
     const navRow=document.getElementById('wn-row');
@@ -5601,8 +5619,11 @@ function renderMonthStats(){
   let best=null,bestCnt=0;
   habits.forEach(h=>{if(hc[h.id]>bestCnt){bestCnt=hc[h.id];best=h;}});
   const bestHtml=best?`<div class="month-best">🏆 ${best.emoji?best.emoji+' ':''}${esc(best.name)} (${bestCnt}/${day}日)</div>`:'';
+  // Cycle 117: monthly grade badge (S≥90/A≥75/B≥60/C≥45/D)
+  const _mg=rate>=90?'S':rate>=75?'A':rate>=60?'B':rate>=45?'C':'D';
+  const monthGradeBadge=day>0?`<span class="month-grade-badge mg-${_mg.toLowerCase()}" title="今月の達成グレード">${_mg}</span>`:'';
   el.style.display='';
-  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span><button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
+  el.innerHTML=`<div class="month-hdr" onclick="toggleMonthBox()"><span class="month-hdr-ttl">📆 ${m+1}月のまとめ</span>${monthGradeBadge}<button class="month-copy-btn" onclick="event.stopPropagation();copyMonthSummary(${y},${m+1},${day},${total},${rate})" title="月間サマリーをコピー" aria-label="コピー">📋</button><span class="month-chev${_mOpen?' open':''}" id="month-chev-el">▼</span></div><div class="month-body${_mOpen?' open':''}" id="month-body-el"><div class="month-grid"><div><div class="month-val">${total}</div><div class="month-lbl">完了件数</div></div><div><div class="month-val">${rate}%</div><div class="month-lbl">達成率</div></div><div><div class="month-val">${day}</div><div class="month-lbl">経過日数</div></div></div>${bestHtml}</div>`;
 }
 
 function copyMonthSummary(y,m,day,total,rate){
