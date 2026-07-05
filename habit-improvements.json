@@ -2539,6 +2539,31 @@
         "deployedAt": "2026-07-05T00:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 120,
+      "version": "v2.120",
+      "timestamp": "2026-07-05T04:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "習慣完了難易度スタンプ（😅😊😎 Difficulty Stamp）",
+          "description": "習慣を完了すると450ms後に難易度ピッカー（😅 難しかった / 😊 ちょうどよい / 😎 簡単だった）がカード上部にフローティング表示される。選択するとcompletions[td][id+'_diff']に保存され、カードに小型バッジとして表示。バッジをタップで消去可能。ピッカーは4秒後に自動消去。showDiffPicker()・setDiff()・_clearDiff()の3関数で構成。LocalStorage上の既存completions構造に_diffサフィックスキーを追加するだけで後方完全互換。コンパクトモードでは非表示。",
+          "files": ["habit.html"]
+        },
+        {
+          "type": "feature",
+          "title": "印刷チェックリスト機能（📄 Print Checklist）",
+          "description": "ヘッダーに📄ボタンを追加。printChecklist()が#print-dateに今日の日付（例: 2026年7月5日（日））を設定しwindow.print()を呼び出���。@media printで#print-headerを表示し、今日の習慣リストをクリーンなチェックボックス形式で印刷できる。既存@media printルールを拡張し、diff-badge・habit-lv・miss-alert-badge・compl-rank-badge・ctx-badgeを印刷から除外。PDFとして保存してデジタル/アナログ両用のトラッカーとして活用可能。",
+          "files": ["habit.html"]
+        }
+      ],
+      "notes": "Cycle 120は「習慣の質的フィードバック」と「オフライン活用」の2軸改善。難易度スタンプは習慣完了という量的記録に「どれだけ大変だったか」という質的次元を加える初の機能。長期的に難易度データを蓄積することで習慣の習熟度把握や目標調整の判断材料になる。印刷チェックリストはデジタルアプリをアナログ習慣手帳として活用できる橋渡し機能で、スマホ不使用の時間帯やデスク作業時の紙チェックリストとして機能する。両機能ともLocalStorage構造変更最小・完全後方互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-05T04:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

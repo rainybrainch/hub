@@ -1975,6 +1975,25 @@
     .compl-rank-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:var(--gold);color:#1a1a2e;font-family:"Dela Gothic One",sans-serif;font-size:10px;font-weight:700;padding:0 5px;vertical-align:middle;box-shadow:0 1px 4px rgba(0,0,0,.3)}
     .compl-rank-badge[data-rank="1"]{background:var(--sky)}
     body.light .compl-rank-badge{color:#fff}
+    /* Cycle 120: difficulty stamp badge */
+    .diff-badge{font-size:11px;padding:1px 4px;border-radius:6px;flex-shrink:0;cursor:pointer;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);transition:transform .15s;line-height:1.6}
+    .diff-badge:hover{transform:scale(1.25)}
+    body.compact .diff-badge{display:none}
+    body.light .diff-badge{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    /* Cycle 120: difficulty picker floating popup */
+    .diff-picker{position:fixed;display:flex;gap:2px;background:var(--dark2);border:1px solid rgba(255,255,255,.14);border-radius:28px;padding:5px 10px;z-index:448;box-shadow:0 8px 28px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s cubic-bezier(.34,1.56,.64,1);transform:translateY(8px) scale(.88)}
+    .diff-picker.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+    .diff-pick-btn{font-size:20px;padding:2px 5px;border:none;background:none;cursor:pointer;border-radius:12px;transition:transform .15s,background .15s;line-height:1;-webkit-tap-highlight-color:transparent}
+    .diff-pick-btn:hover{transform:scale(1.35);background:rgba(255,255,255,.08)}
+    body.light .diff-picker{background:#fff;border-color:rgba(0,0,0,.12);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+    /* Cycle 120: print checklist */
+    #print-header{display:none}
+    @media print{
+      #print-header{display:block!important;padding-bottom:10px;border-bottom:2px solid #333;margin-bottom:14px}
+      #print-header .ph-title{font-size:18px;font-weight:900;color:#000}
+      #print-header .ph-date{font-size:11px;color:#555;margin-top:3px}
+      .diff-badge,.habit-lv,.miss-alert-badge,.compl-rank-badge,.ctx-badge{display:none!important}
+    }
   </style>
 </head>
 <body>
@@ -2003,6 +2022,7 @@
   <button class="hdr-btn" onclick="openYFix()" title="過去7日間の習慣を修正（Yキー）">昨</button>
   <button class="hdr-btn" onclick="openJournal()" title="今日のジャーナル（意図・気分・達成メモを一覧）">📖</button>
   <button class="hdr-btn" onclick="showPersonalBests()" title="パーソナルベスト（個人記録一覧・Bキー）">🏆</button>
+  <button class="hdr-btn" onclick="printChecklist()" title="今日の習慣チェックリストを印刷（Cycle 120）">📄</button>
   <span class="hdr-progress" id="hdr-progress" style="display:none"></span>
   <div class="hdr-date" id="hdr-date"></div>
 </header>
@@ -2014,6 +2034,9 @@
 <div class="prog-mile-toast" id="prog-mile-toast"></div>
 <!-- Cycle 82: habit level-up toast -->
 <div class="lv-toast" id="lv-toast"></div>
+<!-- Cycle 120: difficulty picker + print header -->
+<div class="diff-picker" id="diff-picker"></div>
+<div id="print-header"><div class="ph-title">📅 今日の習慣チェックリスト</div><div class="ph-date" id="print-date"></div></div>
 <!-- Cycle 53: habit focus timer bar -->
 <div class="timer-bar" id="timer-bar">
   <span class="timer-habit-name" id="timer-habit-name"></span>
@@ -3912,7 +3935,10 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const monthBar=!isPaused&&!isWeekendOff?`<div class="habit-month-bar"><div class="habit-month-bar-fill" style="width:${habitMonthRate(h.id)}%;background:${hcol||col}"></div></div>`:'';
   const _crRank=isDone?todayCompletionRank(h.id):0;
   const rankBadge=_crRank>0?`<span class="compl-rank-badge" data-rank="${_crRank}" title="今日${_crRank}番目に完了">#${_crRank}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}${monthBar}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${rankBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 120: difficulty stamp badge (tap to clear)
+  const _diffStamp=(completions[today()]||{})[h.id+'_diff'];
+  const diffBadge=isDone&&_diffStamp?`<span class="diff-badge" title="今日の難易度（タップで消去）" onclick="event.stopPropagation();_clearDiff('${h.id}')">${_diffStamp}</span>`:'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}${monthBar}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${diffBadge}${rankBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -4580,6 +4606,8 @@ function toggle(id,evt){
   if(!wasCompleted){
     const flashCard=document.querySelector(`#list .habit[data-id="${id}"]`);
     if(flashCard){flashCard.classList.add('just-done');setTimeout(()=>flashCard.classList.remove('just-done'),600);}
+    // Cycle 120: show difficulty picker 450ms after completion
+    if(evt)setTimeout(()=>showDiffPicker(id,evt),450);
   }
   // cycle 2: celebration check
   if(todayRate()===100&&!celebrated){
@@ -7589,6 +7617,41 @@ function setUserName(val){val=(val||'').trim().slice(0,12);if(val)localStorage.s
 function _renderUserNameUI(){
   const el=document.getElementById('user-name-inp');if(!el)return;
   el.value=getUserName();
+}
+
+// ── Cycle 120: difficulty stamp per completion ──
+let _diffPickerTimer=null;
+function showDiffPicker(id,evt){
+  const el=document.getElementById('diff-picker');if(!el)return;
+  const card=document.querySelector(`#list .habit[data-id="${id}"]`);
+  if(!card)return;
+  const r=card.getBoundingClientRect();
+  const left=Math.min(Math.max(r.left,8),window.innerWidth-170);
+  const top=Math.max(r.top-54,8);
+  el.style.left=left+'px';el.style.top=top+'px';
+  el.innerHTML=['😅','😊','😎'].map(e=>`<button class="diff-pick-btn" title="${e==='😅'?'難しかった':e==='😊'?'ちょうどよい':'簡単だった'}" onclick="setDiff('${id}','${e}')">${e}</button>`).join('');
+  el.classList.add('show');
+  clearTimeout(_diffPickerTimer);
+  _diffPickerTimer=setTimeout(()=>el.classList.remove('show'),4000);
+}
+function setDiff(id,emoji){
+  const td=today();
+  if(!completions[td])completions[td]={};
+  completions[td][id+'_diff']=emoji;
+  saveC();render();
+  const el=document.getElementById('diff-picker');if(el)el.classList.remove('show');
+}
+function _clearDiff(id){
+  const td=today();
+  if(completions[td])delete completions[td][id+'_diff'];
+  saveC();render();
+}
+
+// ── Cycle 120: print checklist ──
+function printChecklist(){
+  const pd=document.getElementById('print-date');
+  if(pd){const n=new Date();pd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日（'+['日','月','火','水','木','金','土'][n.getDay()]+'）';}
+  window.print();
 }
 </script>
 </body>
