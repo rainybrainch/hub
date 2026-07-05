@@ -2514,6 +2514,31 @@
         "deployedAt": "2026-07-04T23:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 119,
+      "version": "v2.119",
+      "timestamp": "2026-07-05T00:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "30日折れ線チャートに7日移動平均線オーバーレイ追加",
+          "description": "renderLineChart()のSVGに7日移動平均線（.lc-mavg）を追加。直近7日分の達成率を平均化したポリラインを金色破線（stroke-dasharray:4,3、opacity:.55）でメイン折れ線の背面に描画。ns.insertBefore(mavg,pl)でメイン線の下層に配置し視認性を維持。N>=7のガード条件付き。短期ノイズを平滑化し、習慣達成率の中期トレンドをひと目で把握できる。ダーク/ライトモード両対応（--gold / #b8860b）。",
+          "files": ["habit.html"]
+        },
+        {
+          "type": "feature",
+          "title": "平日・週末達成率比較バッジ（wd-we-badge）追加",
+          "description": "過去28日間の平日（月〜金）と週末（土日）の平均達成率を比較するバッジをstreak-rowに追加。calcDayTypeRate(weekdayOnly)が28日分のdayRate()を平日/週末で仕分けて平均を算出。差が5%超の場合「平日↑」「週末↑」のヒントテキストを付与。renderWdWeBadge()をrenderStats()から呼び出す。週単位の習慣パターンを数値で可視化し、達成率の曜日バイアスを発見しやすくする。LocalStorage変更なし、後方完全互換。",
+          "files": ["habit.html"]
+        }
+      ],
+      "notes": "Cycle 119は「データ可視化の深化」と「行動パターン分析」の2軸改善。移動平均線はCycle 57の30日折れ線チャートに7日スムージングを重ねることで短期ノイズ除去と中期トレンドの双方を1チャートで表現。平日/週末バッジはstreak-row既存バッジ群に追加し、曜日別の習慣格差を定量化する新しい分析軸を提供。両機能ともコード量最小・パフォーマンス影響なし。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-05T00:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

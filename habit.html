@@ -1256,6 +1256,12 @@
     body.light .lc-lbl{fill:rgba(0,0,0,.35)}
     .lc-pct{fill:rgba(255,255,255,.28);font-size:7px;font-family:"Dela Gothic One",sans-serif;text-anchor:end}
     body.light .lc-pct{fill:rgba(0,0,0,.28)}
+    /* Cycle 119: 7-day moving average line */
+    .lc-mavg{fill:none;stroke:var(--gold);stroke-width:1.5;stroke-dasharray:4,3;opacity:.55}
+    body.light .lc-mavg{stroke:#b8860b}
+    /* Cycle 119: weekday vs weekend achievement rate badge */
+    .wd-we-badge{font-size:10px;color:var(--purple);font-weight:700;padding:2px 7px;background:rgba(157,131,230,.1);border:1px solid rgba(157,131,230,.2);border-radius:8px;flex-shrink:0;white-space:nowrap;letter-spacing:.04em}
+    body.light .wd-we-badge{background:rgba(157,131,230,.08);border-color:rgba(157,131,230,.22)}
     /* Cycle 57: weekly time invested badge */
     .week-time-badge{font-size:10px;color:var(--sky);font-weight:700;padding:2px 7px;background:rgba(91,200,232,.1);border:1px solid rgba(91,200,232,.2);border-radius:8px;flex-shrink:0;white-space:nowrap;letter-spacing:.04em}
     body.light .week-time-badge{background:rgba(91,200,232,.08);border-color:rgba(91,200,232,.22)}
@@ -2209,6 +2215,8 @@
     <span class="lifetime-badge" id="lifetime-badge" style="display:none" title="習慣への累計投資時間（⏱所要時間設定済み習慣の合計）"></span>
     <!-- Cycle 98: week mini calendar dots -->
     <div class="wmc-wrap" id="week-mini-cal" style="display:none"><span class="wmc-lbl">今週</span><div class="wmc-dots" id="wmc-dots"></div></div>
+    <!-- Cycle 119: weekday vs weekend rate badge -->
+    <span class="wd-we-badge" id="wd-we-badge" style="display:none" title="過去28日の平日と週末の平均達成率を比較"></span>
   </div>
 
   <div class="month-box" id="month-box" style="display:none"></div>
@@ -3443,6 +3451,8 @@ function renderStats(){
   // Cycle 77: weekly perfect streak badge
   renderWeekStreakBadge();
   renderCompDoneBadge();
+  // Cycle 119: weekday vs weekend rate badge
+  renderWdWeBadge();
 }
 
 let chartView='week';
@@ -3558,6 +3568,22 @@ function renderLineChart(c){
   pl.setAttribute('class','lc-line');
   pl.setAttribute('points',pts.join(' '));
   ns.appendChild(pl);
+  // Cycle 119: 7-day moving average overlay (drawn behind main line)
+  if(N>=7){
+    const mavgPts=rates.map((r,i)=>{
+      if(i<6)return null;
+      const avg=rates.slice(i-6,i+1).reduce((a,b)=>a+b,0)/7;
+      const x=PAD_L+i/(N-1)*iW;
+      const y=PAD_T+iH*(1-avg);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).filter(Boolean);
+    if(mavgPts.length>=2){
+      const mavg=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+      mavg.setAttribute('class','lc-mavg');
+      mavg.setAttribute('points',mavgPts.join(' '));
+      ns.insertBefore(mavg,pl);
+    }
+  }
   // dots + day labels every 5 days
   rates.forEach((r,i)=>{
     const x=PAD_L+i/(N-1)*iW;
@@ -3603,6 +3629,26 @@ function renderWeekTimeBadge(){
   const h=Math.floor(min/60),m=min%60;
   badge.textContent=`⏱ 今週 ${h>0?h+'h ':''}${m>0?m+'m':''}`;
   if(chartView==='line')badge.style.display='';
+}
+
+// Cycle 119: weekday vs weekend achievement rate comparison (past 28 days)
+function calcDayTypeRate(weekdayOnly){
+  const rs=[];
+  for(let i=27;i>=0;i--){
+    const d=daysAgo(i),dow=d.getDay();
+    if(weekdayOnly?(dow>=1&&dow<=5):(dow===0||dow===6))rs.push(dayRate(dateAgo(i)));
+  }
+  if(!rs.length)return null;
+  return Math.round(rs.reduce((a,b)=>a+b,0)/rs.length*100);
+}
+function renderWdWeBadge(){
+  const el=document.getElementById('wd-we-badge');if(!el)return;
+  const wd=calcDayTypeRate(true),we=calcDayTypeRate(false);
+  if(wd===null||we===null){el.style.display='none';return;}
+  const diff=wd-we;
+  const hint=diff>5?' 平日↑':diff<-5?' 週末↑':'';
+  el.textContent=`📅 平日${wd}% 週末${we}%${hint}`;
+  el.style.display='';
 }
 
 // Cycle 19: habit card HTML builder (shared by focus section and category sections)
