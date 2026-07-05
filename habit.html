@@ -1367,6 +1367,13 @@
     .sh-score-val{flex:1;text-align:center;font-size:8px;font-family:"Dela Gothic One",sans-serif;color:var(--muted)}
     .sh-score-val.today{color:var(--sky)}
     body.light .score-hist-pop{background:#fff;border-color:rgba(0,0,0,.1);box-shadow:0 12px 40px rgba(0,0,0,.15)}
+
+    /* Cycle 79: responsive width expansion for tablet/desktop */
+    @media(min-width:600px){.wrap{max-width:560px}}
+    @media(min-width:700px){.wrap{max-width:640px}}
+    @media(min-width:820px){.wrap{max-width:720px}}
+    /* Cycle 79: wider content on desktop shifts fixed elements too */
+    @media(min-width:820px){.fab{right:calc(50% - 384px)}.scroll-top{right:calc(50% - 384px)}}
   </style>
 </head>
 <body>
@@ -2159,7 +2166,7 @@ function decrCtr(id){
 }
 
 // ── Cycle 43: daily achievement share card ──
-function shareDailyCard(){
+async function shareDailyCard(){
   const td=today(),dc=completions[td]||{};
   const now=new Date();
   const dateLabel=`${now.getMonth()+1}/${now.getDate()}（${DAYS[now.getDay()]}）`;
@@ -2181,6 +2188,13 @@ function shareDailyCard(){
   lines.push(`${doneCount}/${active.length} 達成${streak>0?' 🔥'+streak+'日連続':''}`);
   lines.push('#習慣トラッカー');
   const text=lines.join('\n');
+  // Cycle 79: Web Share API for native mobile share sheet
+  if(navigator.share){
+    try{
+      await navigator.share({title:'習慣トラッカー',text});
+      return;
+    }catch(e){if(e.name==='AbortError')return;}
+  }
   navigator.clipboard.writeText(text)
     .then(()=>{
       const b=document.getElementById('banner');

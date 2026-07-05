@@ -1289,6 +1289,29 @@
         "deployedAt": "2026-07-04T03:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 79,
+      "version": "v2.79",
+      "timestamp": "2026-07-05T00:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "Web Share API統合（ネイティブシェアシート対応）",
+          "description": "shareDailyCard()をasync関数に変更し、navigator.shareが利用可能なモバイル環境（Android Chrome・iOS Safari等）ではOS標準のシェアシートを起動するよう改善。LINE・X・Instagram・メモアプリ等に直接シェアが可能になった。ユーザーがシェアシートをキャンセル（AbortError）した場合は静かに終了。navigator.share非対応環境（PC）では従来どおりclipboard APIによるコピーにフォールバック。コード変更はshareDailyCard()のみで、シェア本文の内容・バナー通知等のロジックは完全保持。"
+        },
+        {
+          "type": "ux",
+          "title": "レスポンシブ幅拡張（タブレット・デスクトップ向け）",
+          "description": "@media(min-width:600px)→max-width:560px、@media(min-width:700px)→max-width:640px、@media(min-width:820px)→max-width:720pxの3段階レスポンシブブレークポイントを追加。従来の固定520px幅からタブレット横向き・デスクトップでのコンテンツ幅が段階的に広がり、習慣カードやウィジェットがより読みやすく表示される。820px以上ではFABとスクロールトップボタンもコンテンツ右端に合わせて位置が調整される（calc(50% - 384px)）。CSSのみの変更でJSコード変更なし・全テーマ・全モード対応。"
+        }
+      ],
+      "notes": "Cycle 79は「モバイルシェア体験」と「デスクトップ・タブレット表示品質」の2軸改善。Web Share APIはiOS 12.1+・Android Chrome 61+でサポートされ、特にホーム画面に追加してPWAとして使用するユーザーにとってシームレスなシェア体験を提供。AbortErrorのみをサイレント処理（その他のエラーはclipboardフォールバックに進む）することでエラーハンドリングを堅牢化。レスポンシブ幅はCycle 24のPWAメタタグ・Cycle 63のフォーカスモードに続くデスクトップ体験の改善。習慣数が多いユーザーやコンパクトビューをOFFにしているユーザーが、大画面で全ての情報を快適に閲覧できるようになる。FABの位置調整により820px以上でもFABがコンテンツの右外ではなく自然な位置に配置される。LocalStorage変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-05T00:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }
