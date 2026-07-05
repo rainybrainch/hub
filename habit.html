@@ -1989,6 +1989,16 @@
     .diff-pick-btn{font-size:20px;padding:2px 5px;border:none;background:none;cursor:pointer;border-radius:12px;transition:transform .15s,background .15s;line-height:1;-webkit-tap-highlight-color:transparent}
     .diff-pick-btn:hover{transform:scale(1.35);background:rgba(255,255,255,.08)}
     body.light .diff-picker{background:#fff;border-color:rgba(0,0,0,.12);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+    /* Cycle 122: difficulty distribution in habit detail panel */
+    .hd-diff-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap}
+    .hd-diff-lbl{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.06em;flex:1;white-space:nowrap}
+    .hd-diff-item{font-size:12px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.05);border-radius:8px;padding:2px 7px;white-space:nowrap}
+    body.light .hd-diff-row{border-top-color:rgba(0,0,0,.07)}
+    body.light .hd-diff-item{background:rgba(0,0,0,.05)}
+    /* Cycle 122: streak recovery badge */
+    .recovery-badge{font-size:9px;color:var(--sky);padding:2px 6px;border:1px solid rgba(91,200,232,.3);border-radius:10px;background:rgba(91,200,232,.07);flex-shrink:0;letter-spacing:.02em;font-weight:700;line-height:1.5}
+    body.light .recovery-badge{color:#0e78a0;background:rgba(91,200,232,.1);border-color:rgba(91,200,232,.35)}
+    body.compact .recovery-badge{display:none}
     /* Cycle 120: print checklist */
     #print-header{display:none}
     @media print{
@@ -3949,7 +3959,11 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 120: difficulty stamp badge (tap to clear)
   const _diffStamp=(completions[today()]||{})[h.id+'_diff'];
   const diffBadge=isDone&&_diffStamp?`<span class="diff-badge" title="今日の難易度（タップで消去）" onclick="event.stopPropagation();_clearDiff('${h.id}')">${_diffStamp}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}${monthBar}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${ctrWeekBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${diffBadge}${rankBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  // Cycle 122: recovery badge — done today, missed yesterday, done day-before-yesterday
+  const _yestDone=!!(completions[dateAgo(1)]||{})[h.id];
+  const _dayB2Done=!!(completions[dateAgo(2)]||{})[h.id];
+  const recoveryBadge=isDone&&!_yestDone&&_dayB2Done?'<span class="recovery-badge">🔄 復帰</span>':'';
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}${monthBar}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${ctrWeekBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${diffBadge}${recoveryBadge}${rankBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -5975,7 +5989,12 @@ function _habitDetailHtml(id){
   for(let di=1;di<=90;di++){const dd=daysAgo(di);const dow=(dd.getDay()+6)%7;const dds=toStr(dd);_dowT[dow]++;if((completions[dds]||{})[id])_dowC[dow]++;}
   const _dowMax=Math.max(..._dowLabels.map((_,i)=>_dowT[i]>0?_dowC[i]/_dowT[i]:0),0.01);
   const dowHtml=`<div class="hd-dow-row">${_dowLabels.map((d,i)=>{const pct=_dowT[i]>0?Math.round(_dowC[i]/_dowT[i]*100):0;const relH=Math.max(Math.round(pct/100/_dowMax*24),3);const col=pct>=80?'var(--green)':pct>=50?'var(--sky)':pct>=20?'var(--gold)':'rgba(255,255,255,.15)';return`<div class="hd-dow-cell"><div class="hd-dow-bar-wrap"><div class="hd-dow-bar" style="height:${relH}px;background:${col}"></div></div><div class="hd-dow-day">${d}</div><div class="hd-dow-pct">${pct}%</div></div>`;}).join('')}</div>`;
-  return `<div class="hd-inner">${whySec}<div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}${totalTimeStat}</div>${weekCmpHtml}${dowHtml}${noteSec}</div>`;
+  // Cycle 122: difficulty stamp distribution (past 30 days)
+  const _dc={'😅':0,'😊':0,'😎':0};
+  for(let i=0;i<30;i++){const ds=dateAgo(i);const dv=(completions[ds]||{})[id+'_diff'];if(dv&&_dc[dv]!==undefined)_dc[dv]++;}
+  const _dTot=_dc['😅']+_dc['😊']+_dc['😎'];
+  const diffSec=_dTot>=3?`<div class="hd-diff-row"><span class="hd-diff-lbl">難易度（30日）</span><span class="hd-diff-item" title="難しかった">😅 ${_dc['😅']}回</span><span class="hd-diff-item" title="ちょうどよい">😊 ${_dc['😊']}回</span><span class="hd-diff-item" title="簡単だった">😎 ${_dc['😎']}回</span></div>`:'';
+  return `<div class="hd-inner">${whySec}<div class="mini-hm">${cells.join('')}</div><div class="hd-stats"><div class="hd-stat"><div class="hd-stat-val">${total}</div><div class="hd-stat-lbl">累計達成</div></div><div class="hd-stat"><div class="hd-stat-val">${streak}</div><div class="hd-stat-lbl">現連続</div></div><div class="hd-stat"><div class="hd-stat-val">${best}</div><div class="hd-stat-lbl">最高連続</div></div><div class="hd-stat"><div class="hd-stat-val">${rate30}%</div><div class="hd-stat-lbl">30日達成率</div></div>${avgTimeStat}${totalTimeStat}</div>${weekCmpHtml}${dowHtml}${diffSec}${noteSec}</div>`;
 }
 function toggleHabitDetail(id,e){
   e.stopPropagation();
