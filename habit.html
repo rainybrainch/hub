@@ -1374,6 +1374,37 @@
     @media(min-width:820px){.wrap{max-width:720px}}
     /* Cycle 79: wider content on desktop shifts fixed elements too */
     @media(min-width:820px){.fab{right:calc(50% - 384px)}.scroll-top{right:calc(50% - 384px)}}
+
+    /* Cycle 80: routine time-slot badge on habit cards */
+    .routine-badge{display:inline-flex;align-items:center;gap:2px;font-size:10px;padding:1px 5px;border-radius:6px;font-weight:700;flex-shrink:0;letter-spacing:.02em}
+    .routine-badge.morning{background:rgba(245,200,66,.12);color:var(--gold);border:1px solid rgba(245,200,66,.25)}
+    .routine-badge.afternoon{background:rgba(91,200,232,.12);color:var(--sky);border:1px solid rgba(91,200,232,.25)}
+    .routine-badge.evening{background:rgba(155,109,214,.12);color:var(--purple);border:1px solid rgba(155,109,214,.25)}
+    @keyframes routineGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,200,66,0)}50%{box-shadow:0 0 0 3px rgba(245,200,66,.22)}}
+    .routine-badge.morning.active-window{animation:routineGlow 2s ease-in-out infinite}
+    @keyframes routineGlowAft{0%,100%{box-shadow:0 0 0 0 rgba(91,200,232,0)}50%{box-shadow:0 0 0 3px rgba(91,200,232,.22)}}
+    .routine-badge.afternoon.active-window{animation:routineGlowAft 2s ease-in-out infinite}
+    @keyframes routineGlowEve{0%,100%{box-shadow:0 0 0 0 rgba(155,109,214,0)}50%{box-shadow:0 0 0 3px rgba(155,109,214,.22)}}
+    .routine-badge.evening.active-window{animation:routineGlowEve 2s ease-in-out infinite}
+    body.compact .routine-badge{display:none}
+    /* Cycle 80: routine selector row in habit modal */
+    .routine-row{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+    .routine-row-lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;flex-shrink:0;min-width:56px}
+    .routine-btn{padding:5px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:"Zen Maru Gothic",sans-serif;transition:all .15s}
+    .routine-btn:hover{color:var(--white);border-color:rgba(255,255,255,.3)}
+    .routine-btn[data-r=""].sel{border-color:rgba(255,255,255,.3);color:var(--white);background:rgba(255,255,255,.07)}
+    .routine-btn[data-r="morning"].sel{border-color:rgba(245,200,66,.5);color:var(--gold);background:rgba(245,200,66,.1)}
+    .routine-btn[data-r="afternoon"].sel{border-color:rgba(91,200,232,.5);color:var(--sky);background:rgba(91,200,232,.1)}
+    .routine-btn[data-r="evening"].sel{border-color:rgba(155,109,214,.5);color:var(--purple);background:rgba(155,109,214,.1)}
+    body.light .routine-btn{border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.4)}
+    body.light .routine-btn:hover{color:#1a1a2e}
+    /* Cycle 80: MA7 moving average line in 30-day SVG chart */
+    .lc-ma7{fill:none;stroke:var(--gold);stroke-width:1.5;stroke-dasharray:5 3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+    .ma7-toggle{padding:3px 8px;border-radius:8px;border:1px solid rgba(245,200,66,.28);background:none;color:rgba(245,200,66,.55);font-size:10px;font-weight:700;cursor:pointer;font-family:"Zen Maru Gothic",sans-serif;transition:all .15s;flex-shrink:0;display:none;margin-left:4px}
+    .ma7-toggle:hover{background:rgba(245,200,66,.1);color:var(--gold)}
+    .ma7-toggle.active{background:rgba(245,200,66,.14);border-color:var(--gold);color:var(--gold)}
+    body.light .ma7-toggle{border-color:rgba(212,160,23,.3);color:rgba(212,160,23,.6)}
+    body.light .ma7-toggle.active{background:rgba(212,160,23,.14);border-color:var(--gold-d);color:var(--gold-d)}
   </style>
 </head>
 <body>
@@ -1470,6 +1501,7 @@
         <button class="toggle-btn" data-view="month" onclick="setChartView('month')">月</button>
         <button class="toggle-btn" data-view="line" onclick="setChartView('line')">折線</button>
         <button class="toggle-btn" data-view="radar" onclick="setChartView('radar')">レーダー</button>
+        <button class="ma7-toggle" id="ma7-toggle" onclick="toggleMA7()" title="7日移動平均ラインを表示/非表示">MA7</button>
       </div>
     </div>
     <div id="chart"></div>
@@ -1713,6 +1745,14 @@
       <button class="rec-time-clr" type="button" onclick="document.getElementById('due-inp').value=''" title="クリア">✕</button>
       <span style="font-size:10px;color:var(--muted);flex:1">締切時刻（任意）</span>
     </div>
+    <!-- Cycle 80: routine time-slot tag -->
+    <div class="routine-row">
+      <span class="routine-row-lbl">ルーティン</span>
+      <button class="routine-btn sel" data-r="" onclick="selRoutine('')" type="button">なし</button>
+      <button class="routine-btn" data-r="morning" onclick="selRoutine('morning')" type="button">🌅 朝</button>
+      <button class="routine-btn" data-r="afternoon" onclick="selRoutine('afternoon')" type="button">☀️ 午後</button>
+      <button class="routine-btn" data-r="evening" onclick="selRoutine('evening')" type="button">🌙 夜</button>
+    </div>
     <button class="modal-ok" id="modal-ok" onclick="saveHabit()" disabled>追加する</button>
   </div>
 </div>
@@ -1830,7 +1870,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, sortAlpha = false, sortPriority = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selPriority = false;
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, sortAlpha = false, sortPriority = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, selPriority = false, selRoutineVal = '';
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -1956,6 +1996,12 @@ let selColorVal='';
 function selColor(c){
   selColorVal=c;
   document.querySelectorAll('.color-swatch').forEach(b=>b.classList.toggle('sel',b.dataset.col===c));
+}
+
+// ── Cycle 80: routine time-slot selector ──
+function selRoutine(r){
+  selRoutineVal=r;
+  document.querySelectorAll('.routine-btn').forEach(b=>b.classList.toggle('sel',b.dataset.r===r));
 }
 
 // ── Cycle 15: haptic vibration feedback ──
@@ -2458,6 +2504,7 @@ function renderStats(){
 }
 
 let chartView='week';
+let showMA7=localStorage.getItem('rh_show_ma7')==='1';
 
 function setChartView(v){
   chartView=v;
@@ -2466,7 +2513,18 @@ function setChartView(v){
   if(ttl)ttl.textContent=v==='week'?'📊 週間達成率':v==='line'?'📈 30日 達成推移':v==='radar'?'🕸 カテゴリー別達成率':'📅 過去30日 ヒートマップ';
   const badge=document.getElementById('week-time-badge');
   if(badge)badge.style.display=v==='line'?'':'none';
+  const ma7Btn=document.getElementById('ma7-toggle');
+  if(ma7Btn){ma7Btn.style.display=v==='line'?'':'none';ma7Btn.classList.toggle('active',showMA7&&v==='line');}
   renderChart();
+}
+
+// Cycle 80: toggle 7-day moving average line on the 30-day line chart
+function toggleMA7(){
+  showMA7=!showMA7;
+  localStorage.setItem('rh_show_ma7',showMA7?'1':'0');
+  const btn=document.getElementById('ma7-toggle');
+  if(btn)btn.classList.toggle('active',showMA7);
+  if(chartView==='line')renderChart();
 }
 
 function renderChart(){
@@ -2530,6 +2588,21 @@ function renderLineChart(c){
     pctLbl.textContent=`${Math.round(pct*100)}`;
     ns.appendChild(pctLbl);
   });
+  // Cycle 80: 7-day moving average polyline (drawn before daily line so it's beneath)
+  if(showMA7){
+    const maPts=rates.map((r,i)=>{
+      if(i<6)return null;
+      const avg=rates.slice(i-6,i+1).reduce((s,v)=>s+v,0)/7;
+      const x=PAD_L+i/(N-1)*iW,y=PAD_T+iH*(1-avg);
+      return`${x.toFixed(1)},${y.toFixed(1)}`;
+    }).filter(Boolean);
+    if(maPts.length>=2){
+      const maPl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+      maPl.setAttribute('class','lc-ma7');
+      maPl.setAttribute('points',maPts.join(' '));
+      ns.appendChild(maPl);
+    }
+  }
   // build polyline points
   const pts=rates.map((r,i)=>{
     const x=PAD_L+i/(N-1)*iW;
@@ -2731,6 +2804,16 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const toughBadge=h.tough?`<span class="tough-badge">⚡難</span>`:'';
   const priorityBadge=h.priority?`<span class="priority-badge">⭐重要</span>`:'';
   const durBadge=h.duration?`<span class="dur-badge">⏱${h.duration}m</span>`:'';
+  // Cycle 80: routine time-slot badge
+  const routineBadge=(()=>{
+    if(!h.routine)return'';
+    const hr=new Date().getHours();
+    const RLBLS={morning:'🌅 朝',afternoon:'☀️ 午後',evening:'🌙 夜'};
+    const RWINS={morning:[5,11],afternoon:[12,17],evening:[18,23]};
+    const w=RWINS[h.routine]||[];
+    const inW=hr>=w[0]&&hr<=w[1];
+    return`<span class="routine-badge ${h.routine}${inW?' active-window':''}">${RLBLS[h.routine]||''}</span>`;
+  })();
   // Cycle 68: recommended execution time badge
   const recTimeBadge=(()=>{
     if(!h.recTime||isDone||isPaused||isWeekendOff)return'';
@@ -2787,7 +2870,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const nightRisk=!isDone&&!isPaused&&!isSkipped&&!isWeekendOff&&_hr>=22&&hs>=3?' night-risk':'';
   // Cycle 61: drag-and-drop attrs for reorder mode
   const dragAttrs=reorderMode?` draggable="true" ondragstart="onHabitDragStart('${h.id}',event)" ondragover="onHabitDragOver('${h.id}',event)" ondragleave="onHabitDragLeave('${h.id}',event)" ondrop="onHabitDrop('${h.id}',event)" ondragend="onHabitDragEnd(event)"`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" data-cat="${h.category}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${dueBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" data-cat="${h.category}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${cntBadge}${streakBadge}${bestBadge}${fixBadge}${trendBadge}${wpBadge}${freqBadge}${routineBadge}${weekendLbl}${lowRateLbl}${timeBadge}${durBadge}${recTimeBadge}${dueBadge}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${moveHtml}${timerBtn}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -3612,6 +3695,7 @@ function openModal(id=null){
     const dtEl=document.getElementById('due-inp');if(dtEl)dtEl.value=h&&h.dueTime?h.dueTime:'';
     toggleTough(!!(h&&h.tough));
     togglePriority(!!(h&&h.priority));
+    selRoutine(h&&h.routine?h.routine:'');
     if(ttl)ttl.textContent='習慣を編集';
     if(ok){ok.textContent='更新する';ok.disabled=false;}
     // Cycle 28: hide template picker in edit mode
@@ -3630,6 +3714,7 @@ function openModal(id=null){
     const dtElN=document.getElementById('due-inp');if(dtElN)dtElN.value='';
     toggleTough(false);
     togglePriority(false);
+    selRoutine('');
     if(ttl)ttl.textContent='習慣を追加';
     if(ok){ok.textContent='追加する';ok.disabled=true;}
     // Cycle 28: reset template picker state
@@ -3664,7 +3749,7 @@ function saveHabit(){
   if(editingId){
     const h=habits.find(h=>h.id===editingId);
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
-    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selPriority)h.priority=true;else delete h.priority;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;if(dueTimeSave)h.dueTime=dueTimeSave;else delete h.dueTime;}
+    if(h){h.name=name;h.category=selCatVal;if(note)h.note=note;else delete h.note;if(emoji)h.emoji=emoji;else delete h.emoji;if(selFreqVal!=='daily')h.frequency=selFreqVal;else delete h.frequency;if(selColorVal)h.color=selColorVal;else delete h.color;if(tcSave>1)h.targetCount=tcSave;else delete h.targetCount;if(selTough)h.tough=true;else delete h.tough;if(selPriority)h.priority=true;else delete h.priority;if(durSave>=1&&durSave<=180)h.duration=durSave;else delete h.duration;if(whySave)h.why=whySave;else delete h.why;if(recTimeSave)h.recTime=recTimeSave;else delete h.recTime;if(dueTimeSave)h.dueTime=dueTimeSave;else delete h.dueTime;if(selRoutineVal)h.routine=selRoutineVal;else delete h.routine;}
   }else{
     const tcSave=parseInt((document.getElementById('target-inp')||{}).value||'1');
     const nh={id:'h'+Date.now(),name,category:selCatVal,createdAt:new Date().toISOString()};
@@ -3679,6 +3764,7 @@ function saveHabit(){
     if(whySave)nh.why=whySave;
     if(recTimeSave)nh.recTime=recTimeSave;
     if(dueTimeSave)nh.dueTime=dueTimeSave;
+    if(selRoutineVal)nh.routine=selRoutineVal;
     habits.push(nh);
     _newHabitId=nh.id;
   }
