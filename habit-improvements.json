@@ -1355,8 +1355,9 @@
       "notes": "Cycle 81はCycle 80のルーティンタグ機能の自然な拡張として、フィルタリングUIを追加。タグ設定（Cycle 80）→フィルタリング（Cycle 81）の2ステップで機能が完結し、習慣数が多いユーザーが朝・午後・夜のルーティン別に素早く表示を切り替えられるようになった。チャートビュー永続化はCycle 57の折線チャート・Cycle 78のレーダーチャートを追加してきた積み重ねの仕上げ。どちらもLocalStorage追加（rh_routine_filter・rh_chart_view）のみで、既存データとの後方完全互換を保持。",
       "deploy": {
         "branch": "main",
+        "commit": "4009047",
         "deployedAt": "2026-07-05T02:00:00Z",
-        "status": "pending"
+        "status": "success"
       }
     }
   ]
