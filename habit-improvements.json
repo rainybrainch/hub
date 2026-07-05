@@ -2564,6 +2564,31 @@
         "deployedAt": "2026-07-05T04:00:00Z",
         "status": "success"
       }
+    },
+    {
+      "cycle": 121,
+      "version": "v2.121",
+      "timestamp": "2026-07-05T05:00:00Z",
+      "changes": [
+        {
+          "type": "feature",
+          "title": "⏰時刻順ソートボタン（Sort by Recommended Time）",
+          "description": "ソートボタン行に⏰時刻順ボタンを追加。推奨実行時刻（recTime）が設定された習慣を時刻の早い順に並べ替え、未設定の習慣は末尾に表示。_recMins(h)ヘルパー関数でhh:mm文字列を分単位整数に変換。sortByTimeフラグをlet変数に追加しLocalStorage(rh_sort_time)で永続化。他のソートボタンと相互排他的に動作し、既存すべてのtoggleSort*関数にsortByTimeクリア処理を追加。",
+          "files": ["habit.html"]
+        },
+        {
+          "type": "feature",
+          "title": "カウンター習慣の今週合計バッジ（Counter Weekly Total Badge）",
+          "description": "targetCount>=2のカウンター習慣カードに「週計N」バッジを追加。ctrWeekSum(id)関数が月曜から今日までの各日のLocalStorage(rh_ctr_YYYY-MM-DD)を参照して累計カウントを計算。_hCard()内でwpBadgeの直後に.ctr-week-badgeスパンを配置。CSS: 緑系・9px・border-radius:6px。コンパクトモードでは非表示。週のカウンター習慣の積み上げ進捗を一目で把握できる。",
+          "files": ["habit.html"]
+        }
+      ],
+      "notes": "Cycle 121は「時間ベース計画」と「カウンター習慣の週次可視化」の2軸改善。⏰時刻順ソートは推奨実行時刻機能（Cycle 68）との統合強化で、朝のルーティン管理などタイムライン的な習慣管理を可能にする。カウンター週計バッジはカウンター習慣の今週累計を常時表示し、日々のカウント積み上げ状況を週全体の文脈で捉えられる。既存LocalStorage構造に変更なし・後方完全互換。",
+      "deploy": {
+        "branch": "main",
+        "deployedAt": "2026-07-05T05:00:00Z",
+        "status": "success"
+      }
     }
   ]
 }

@@ -1423,6 +1423,9 @@
     body.light .week-prog.wk-ok{color:var(--gold-d);background:rgba(245,200,66,.18);border-color:rgba(245,200,66,.35)}
     body.light .week-prog.wk-good{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
     body.light .week-prog.wk-low{background:rgba(232,53,74,.07);border-color:rgba(232,53,74,.18)}
+    .ctr-week-badge{font-size:9px;color:var(--green);font-weight:700;padding:2px 5px;background:rgba(76,175,125,.1);border:1px solid rgba(76,175,125,.22);border-radius:6px;line-height:1.5;flex-shrink:0}
+    body.compact .ctr-week-badge{display:none}
+    body.light .ctr-week-badge{background:rgba(76,175,125,.15);border-color:rgba(76,175,125,.3)}
 
     /* Cycle 68: recommended execution time badge */
     .rec-time-badge{font-size:9px;color:var(--muted);font-weight:700;flex-shrink:0;padding:2px 5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;line-height:1.5}
@@ -2360,6 +2363,7 @@
     <button class="sort-btn" id="sort-shuffle-btn" onclick="toggleSortShuffle()" style="margin-left:8px" title="習慣の表示順をシャッフル（再クリックで別の並び）">🔀 シャッフル</button>
     <button class="sort-btn" id="sort-dur-btn" onclick="toggleSortDur()" style="margin-left:8px" title="所要時間が短い習慣から順に表示（未設定は末尾）">⏱ 短い順</button>
     <button class="sort-btn" id="sort-lowrate-btn" onclick="toggleSortLowRate()" style="margin-left:8px" title="30日達成率の低い順にソート（要注意習慣を上に）">↓達成率</button>
+    <button class="sort-btn" id="sort-time-btn" onclick="toggleSortTime()" style="margin-left:8px" title="推奨実行時刻の早い順にソート（未設定は末尾）">⏰時刻順</button>
     <span style="margin-left:auto;display:flex;gap:4px;align-items:center">
       <button class="font-size-btn" data-size="sm" onclick="_applyFontSize('sm',true)" title="小さいテキスト">A-</button>
       <button class="font-size-btn" data-size="normal" onclick="_applyFontSize('normal',true)" title="標準テキスト">A</button>
@@ -2684,7 +2688,7 @@ const DAYS = ['日','月','火','水','木','金','土'];
 // Cycle 11: keyword→category mapping for auto-suggest
 const CAT_KEYWORDS={'学習':['読書','英語','勉強','学習','プログラミング','コード','本','資格','テスト','語学','数学'],'運動':['走','ラン','筋トレ','ウォーク','歩','ヨガ','ストレッチ','スポーツ','水泳','自転車'],'創作':['描','絵','動画','音楽','写真','ブログ','創作','デザイン','イラスト','小説','作'],'自己改善':['瞑想','日記','睡眠','食事','節約','感謝','整理','片付','早起き']};
 
-let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, statusFilter = '', hideDone = false, sortStreak = false, sortPri = false, sortShuffle = false, sortDur = false, sortLowRate = false, _shuffleMap = {}, selCtxVal102 = '', ctxFilter102 = '';
+let habits = [], completions = {}, filter = 'all', selCatVal = '', celebrated = false, editingId = null, sortUndone = false, catAutoSel = false, searchQuery = '', reorderMode = false, rankingView = '7day', _newHabitId = null, selTough = false, statusFilter = '', hideDone = false, sortStreak = false, sortPri = false, sortShuffle = false, sortDur = false, sortLowRate = false, sortByTime = false, _shuffleMap = {}, selCtxVal102 = '', ctxFilter102 = '';
 
 // ── Cycle 12: sound effects ──
 let soundEnabled = localStorage.getItem('rh_sound') !== 'false';
@@ -3030,6 +3034,11 @@ function decrCtr(id){
   if(nxt<tc){const dc=completions[today()]||{};if(dc[id]){delete dc[id];completions[today()]=dc;saveC();celebrated=false;}}
   render();
 }
+
+// ── Cycle 121: recTime helper ──
+function _recMins(h){if(!h.recTime)return Infinity;const[rh,rm]=h.recTime.split(':').map(Number);return rh*60+rm;}
+// ── Cycle 121: counter weekly total ──
+function ctrWeekSum(id){const now=new Date();const daysFromMon=(now.getDay()+6)%7;let total=0;for(let i=0;i<=daysFromMon;i++){const d=dateAgo(daysFromMon-i);const ctr=JSON.parse(localStorage.getItem(CTK+d)||'{}');total+=ctr[id]||0;}return total;}
 
 // ── Cycle 43: daily achievement share card ──
 function shareDailyCard(){
@@ -3831,6 +3840,8 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   const trendBadge=trend!=='none'?`<span class="trend-badge ${trend}" title="${trend==='up'?'先週より好調↑':'先週より低調↓'}">${trend==='up'?'↑好調':'↓低調'}</span>`:'';
   const wp=habitWeekProgress(h.id);
   const wpBadge=wp?`<span class="week-prog ${wp.done===wp.total?'wk-good':wp.done*2>=wp.total?'wk-ok':'wk-low'}" title="今週（月〜今日）の達成状況">今週 ${wp.done}/${wp.total}</span>`:'';
+  // Cycle 121: counter weekly total badge
+  const ctrWeekBadge=(()=>{if(!isCounter)return'';const ws=ctrWeekSum(h.id);return ws>0?`<span class="ctr-week-badge" title="今週の累計カウント">週計${ws}</span>`:'';})();
   // Cycle 112: last completed day badge — only shown when uncompleted and ≥2 days since last done
   const _lcd=!isDone?lastCompletedDays(h.id):null;
   const lastDoneBadge=_lcd!==null&&_lcd>=2?`<span class="last-done-badge" title="最後に達成したのは${_lcd}日前">${_lcd}日前</span>`:'';
@@ -3938,7 +3949,7 @@ function _hCard(h,dc,col,focusIds,hIdx=-1,hTotal=0){
   // Cycle 120: difficulty stamp badge (tap to clear)
   const _diffStamp=(completions[today()]||{})[h.id+'_diff'];
   const diffBadge=isDone&&_diffStamp?`<span class="diff-badge" title="今日の難易度（タップで消去）" onclick="event.stopPropagation();_clearDiff('${h.id}')">${_diffStamp}</span>`:'';
-  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}${monthBar}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${diffBadge}${rankBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
+  return `<div class="habit-wrap${_expandedHabits.has(h.id)?' expanded':''}"${dragAttrs}><div class="habit${isDone?' done':''}${isStarred?' focus-habit':''}${isPaused?' paused':''}${isWeekendOff?' weekend-off':''}${isSkipped?' skipped-today':''}${streakGlow}${isLowRate?' low-rate':''}${hcol?' custom-color':''}${wkGoalMet?' weekly-met':''}${isPriority?' high-prio':''}${h.pinned?' pinned':''}${nightRisk}"${hcol?` style="--hcol:${hcol}"`:''} data-id="${h.id}" onclick="toggle('${h.id}',event)">${chkHtml}<div class="habit-info">${nameRowHtml}${noteHtml}${whyHtml}${quickNoteHtml}${monthBar}</div><div class="cat-dot" style="background:${hcol||col}"></div>${dotsHtml}${priBadge}${cntBadge}${streakBadge}${_msBadge}${bestBadge}${lvBadge}${fixBadge}${trendBadge}${wpBadge}${ctrWeekBadge}${lastDoneBadge}${rateRankBadge}${wkGoalBadge}${challBadge}${missAlertBadge}${freqBadge}${customDaysBadge}${weekendLbl}${lowRateLbl}${prioLbl}${timeBadge}${diffBadge}${rankBadge}${durBadge}${recTimeBadge}${goldenBadge}${chainBadge}${ctxBadge102}${noteBtnHtml}${pausedLbl}${skipLbl}${starBtn}${pauseBtn}${skipBtn}${prioBtn}${pinBtnHtml}${moveHtml}${timerBtn}${linkBtnHtml}${copyBtnHtml}${infoBtnHtml}${archiveBtnHtml}<button class="edit-btn" onclick="event.stopPropagation();openModal('${h.id}')" aria-label="編集">✏</button><button class="del-btn" onclick="event.stopPropagation();del('${h.id}')" aria-label="削除">×</button></div><div class="habit-detail${_expandedHabits.has(h.id)?' open':''}" data-hid="${h.id}">${detailContent}</div></div>`;
 }
 
 function renderList(){
@@ -4005,6 +4016,7 @@ function renderList(){
     else if(sortShuffle)ch=[...rawCh].sort((a,b)=>(_shuffleMap[a.id]||0)-(_shuffleMap[b.id]||0));
     else if(sortDur)ch=[...rawCh].sort((a,b)=>{const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);if(aOff!==bOff)return aOff?1:-1;return(parseInt(a.duration)||9999)-(parseInt(b.duration)||9999);});
     else if(sortLowRate)ch=[...rawCh].sort((a,b)=>{const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);if(aOff!==bOff)return aOff?1:-1;return habitFix30(a.id)-habitFix30(b.id);});
+    else if(sortByTime)ch=[...rawCh].sort((a,b)=>{const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);if(aOff!==bOff)return aOff?1:-1;return _recMins(a)-_recMins(b);});
     else ch=[...rawCh].sort((a,b)=>{
       const aOff=a.paused||!isScheduled(a,td),bOff=b.paused||!isScheduled(b,td);
       return aOff&&!bOff?1:!aOff&&bOff?-1:0;
@@ -5198,7 +5210,7 @@ function updateThemeBtn(){
 // ── sort undone (cycle 7) ──
 function toggleSortUndone(){
   sortUndone=!sortUndone;
-  if(sortUndone){sortStreak=false;sortDur=false;sortLowRate=false;document.getElementById('sort-dur-btn')?.classList.remove('active');document.getElementById('sort-lowrate-btn')?.classList.remove('active');}
+  if(sortUndone){sortStreak=false;sortDur=false;sortLowRate=false;sortByTime=false;document.getElementById('sort-dur-btn')?.classList.remove('active');document.getElementById('sort-lowrate-btn')?.classList.remove('active');document.getElementById('sort-time-btn')?.classList.remove('active');}
   const btn=document.getElementById('sort-undone-btn');
   const btn2=document.getElementById('sort-streak-btn');
   if(btn)btn.classList.toggle('active',sortUndone);
@@ -5211,7 +5223,7 @@ function toggleSortUndone(){
 // ── Cycle 93: sort by streak ──
 function toggleSortStreak(){
   sortStreak=!sortStreak;
-  if(sortStreak){sortUndone=false;sortDur=false;sortLowRate=false;document.getElementById('sort-dur-btn')?.classList.remove('active');document.getElementById('sort-lowrate-btn')?.classList.remove('active');}
+  if(sortStreak){sortUndone=false;sortDur=false;sortLowRate=false;sortByTime=false;document.getElementById('sort-dur-btn')?.classList.remove('active');document.getElementById('sort-lowrate-btn')?.classList.remove('active');document.getElementById('sort-time-btn')?.classList.remove('active');}
   const btn=document.getElementById('sort-streak-btn');
   const btn2=document.getElementById('sort-undone-btn');
   if(btn)btn.classList.toggle('active',sortStreak);
@@ -5223,7 +5235,7 @@ function toggleSortStreak(){
 // ── Cycle 96: priority sort ──
 function toggleSortPri(){
   sortPri=!sortPri;
-  if(sortPri){sortUndone=false;sortStreak=false;sortShuffle=false;sortDur=false;sortLowRate=false;const _s=document.getElementById('sort-undone-btn');if(_s)_s.classList.remove('active');const _k=document.getElementById('sort-streak-btn');if(_k)_k.classList.remove('active');const _sh=document.getElementById('sort-shuffle-btn');if(_sh)_sh.classList.remove('active');document.getElementById('sort-dur-btn')?.classList.remove('active');document.getElementById('sort-lowrate-btn')?.classList.remove('active');}
+  if(sortPri){sortUndone=false;sortStreak=false;sortShuffle=false;sortDur=false;sortLowRate=false;sortByTime=false;const _s=document.getElementById('sort-undone-btn');if(_s)_s.classList.remove('active');const _k=document.getElementById('sort-streak-btn');if(_k)_k.classList.remove('active');const _sh=document.getElementById('sort-shuffle-btn');if(_sh)_sh.classList.remove('active');document.getElementById('sort-dur-btn')?.classList.remove('active');document.getElementById('sort-lowrate-btn')?.classList.remove('active');document.getElementById('sort-time-btn')?.classList.remove('active');}
   const btn=document.getElementById('sort-pri-btn');
   if(btn)btn.classList.toggle('active',sortPri);
   if(sortPri)localStorage.setItem('rh_sort_pref','pri');else localStorage.removeItem('rh_sort_pref');
@@ -5233,12 +5245,13 @@ function toggleSortPri(){
 function toggleSortShuffle(){
   sortShuffle=!sortShuffle;
   if(sortShuffle){
-    sortUndone=false;sortStreak=false;sortPri=false;sortDur=false;sortLowRate=false;
+    sortUndone=false;sortStreak=false;sortPri=false;sortDur=false;sortLowRate=false;sortByTime=false;
     const _s=document.getElementById('sort-undone-btn');if(_s)_s.classList.remove('active');
     const _k=document.getElementById('sort-streak-btn');if(_k)_k.classList.remove('active');
     const _p=document.getElementById('sort-pri-btn');if(_p)_p.classList.remove('active');
     document.getElementById('sort-dur-btn')?.classList.remove('active');
     document.getElementById('sort-lowrate-btn')?.classList.remove('active');
+    document.getElementById('sort-time-btn')?.classList.remove('active');
     _shuffleMap={};habits.forEach(h=>{_shuffleMap[h.id]=Math.random();});
     localStorage.removeItem('rh_sort_pref');
   }
@@ -5248,12 +5261,13 @@ function toggleSortShuffle(){
 // ── Cycle 104: sort by duration ──
 function toggleSortDur(){
   sortDur=!sortDur;
-  if(sortDur){sortUndone=false;sortStreak=false;sortPri=false;sortShuffle=false;sortLowRate=false;
+  if(sortDur){sortUndone=false;sortStreak=false;sortPri=false;sortShuffle=false;sortLowRate=false;sortByTime=false;
     document.getElementById('sort-undone-btn')?.classList.remove('active');
     document.getElementById('sort-streak-btn')?.classList.remove('active');
     document.getElementById('sort-pri-btn')?.classList.remove('active');
     document.getElementById('sort-shuffle-btn')?.classList.remove('active');
     document.getElementById('sort-lowrate-btn')?.classList.remove('active');
+    document.getElementById('sort-time-btn')?.classList.remove('active');
   }
   document.getElementById('sort-dur-btn')?.classList.toggle('active',sortDur);
   renderList();
@@ -5261,15 +5275,31 @@ function toggleSortDur(){
 // ── Cycle 109: sort by 30-day achievement rate (low to high) ──
 function toggleSortLowRate(){
   sortLowRate=!sortLowRate;
-  if(sortLowRate){sortUndone=false;sortStreak=false;sortPri=false;sortShuffle=false;sortDur=false;
+  if(sortLowRate){sortUndone=false;sortStreak=false;sortPri=false;sortShuffle=false;sortDur=false;sortByTime=false;
     document.getElementById('sort-undone-btn')?.classList.remove('active');
     document.getElementById('sort-streak-btn')?.classList.remove('active');
     document.getElementById('sort-pri-btn')?.classList.remove('active');
     document.getElementById('sort-shuffle-btn')?.classList.remove('active');
     document.getElementById('sort-dur-btn')?.classList.remove('active');
+    document.getElementById('sort-time-btn')?.classList.remove('active');
   }
   document.getElementById('sort-lowrate-btn')?.classList.toggle('active',sortLowRate);
   if(sortLowRate)localStorage.setItem('rh_sort_lowrate','1');else localStorage.removeItem('rh_sort_lowrate');
+  renderList();
+}
+// ── Cycle 121: sort by recommended execution time ──
+function toggleSortTime(){
+  sortByTime=!sortByTime;
+  if(sortByTime){sortUndone=false;sortStreak=false;sortPri=false;sortShuffle=false;sortDur=false;sortLowRate=false;
+    document.getElementById('sort-undone-btn')?.classList.remove('active');
+    document.getElementById('sort-streak-btn')?.classList.remove('active');
+    document.getElementById('sort-pri-btn')?.classList.remove('active');
+    document.getElementById('sort-shuffle-btn')?.classList.remove('active');
+    document.getElementById('sort-dur-btn')?.classList.remove('active');
+    document.getElementById('sort-lowrate-btn')?.classList.remove('active');
+  }
+  document.getElementById('sort-time-btn')?.classList.toggle('active',sortByTime);
+  if(sortByTime)localStorage.setItem('rh_sort_time','1');else localStorage.removeItem('rh_sort_time');
   renderList();
 }
 // ── Cycle 102: context tag ──
@@ -6124,6 +6154,8 @@ if(hideDone){const _hdb=document.getElementById('hide-done-btn');if(_hdb)_hdb.cl
 (()=>{const sp=localStorage.getItem('rh_sort_pref');if(sp==='undone'){sortUndone=true;const _b=document.getElementById('sort-undone-btn');if(_b)_b.classList.add('active');}else if(sp==='streak'){sortStreak=true;const _b=document.getElementById('sort-streak-btn');if(_b)_b.classList.add('active');}else if(sp==='pri'){sortPri=true;const _b=document.getElementById('sort-pri-btn');if(_b)_b.classList.add('active');}})();
 // Cycle 109: restore low-rate sort
 if(localStorage.getItem('rh_sort_lowrate')==='1'){sortLowRate=true;document.getElementById('sort-lowrate-btn')?.classList.add('active');}
+// Cycle 121: restore time sort
+if(localStorage.getItem('rh_sort_time')==='1'){sortByTime=true;document.getElementById('sort-time-btn')?.classList.add('active');}
 initEmojiPresets();
 initTemplates();
 initIntention();
